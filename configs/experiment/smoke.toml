@@ -1,0 +1,29 @@
+# Our development configuration; not a paper reproduction experiment.
+name = "cpu_sanity"
+seed = 7
+device = "cpu"
+steps = 3
+batch_size = 4
+learning_rate = 0.001
+weight_decay = 0.0
+cpu_threads = 1
+
+[model]
+total_depth = 3
+prefix_depth = 1
+group_size = 1
+hidden_size = 24
+num_heads = 4
+intermediate_size = 48
+vocab_size = 64
+max_sequence_length = 16
+num_classes = 3
+dropout = 0.0
+
+[data]
+name = "synthetic"
+version = "token_modulo_v1"
+sequence_length = 8
+train_size = 24
+validation_size = 12
+test_size = 12

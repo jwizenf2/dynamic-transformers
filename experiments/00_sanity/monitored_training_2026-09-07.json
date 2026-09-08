@@ -1,0 +1,3670 @@
+{
+  "date": "2026-09-07",
+  "scope": "monitored_synthetic_training_not_AG_News_reproduction",
+  "verification": {
+    "pytest_passed": 74,
+    "pytest_seconds": 2.37,
+    "runs_completed": 12,
+    "optimizer_steps_per_run": 300,
+    "total_optimizer_steps": 3600
+  },
+  "statistics": {
+    "fixed": {
+      "validation_accuracy": {
+        "mean": 0.671875,
+        "sd": 0.04878904686248749
+      },
+      "validation_macro_f1": {
+        "mean": 0.643986223056793,
+        "sd": 0.08060621820166625
+      },
+      "test_accuracy": {
+        "mean": 0.7317708333333334,
+        "sd": 0.09547032697824667
+      },
+      "test_macro_f1": {
+        "mean": 0.698601543268142,
+        "sd": 0.1312688565074341
+      },
+      "first_loss": {
+        "mean": 1.153417353630066,
+        "sd": 0.010869152416933743
+      },
+      "last_loss": {
+        "mean": 0.6841250991821289,
+        "sd": 0.09035866926121061
+      },
+      "test_depth": {
+        "mean": 3,
+        "sd": 0
+      },
+      "test_task_ratio": {
+        "mean": 1,
+        "sd": 0
+      },
+      "loss_decreased": true,
+      "clipped_rewards": [
+        0,
+        0,
+        0
+      ],
+      "seeds": [
+        {
+          "seed": 7,
+          "test_macro_f1": 0.5814177579641497
+        },
+        {
+          "seed": 11,
+          "test_macro_f1": 0.8404549698667344
+        },
+        {
+          "seed": 19,
+          "test_macro_f1": 0.6739319019735416
+        }
+      ]
+    },
+    "prefix": {
+      "validation_accuracy": {
+        "mean": 0.5859375,
+        "sd": 0.06394806853025352
+      },
+      "validation_macro_f1": {
+        "mean": 0.5570837870444564,
+        "sd": 0.09577216701282282
+      },
+      "test_accuracy": {
+        "mean": 0.6119791666666666,
+        "sd": 0.05651701670367372
+      },
+      "test_macro_f1": {
+        "mean": 0.5786946327509296,
+        "sd": 0.09379583737082442
+      },
+      "first_loss": {
+        "mean": 1.132714823881785,
+        "sd": 0.007214039891407614
+      },
+      "last_loss": {
+        "mean": 0.8816947269439698,
+        "sd": 0.05895732698984661
+      },
+      "test_depth": {
+        "mean": 1,
+        "sd": 0
+      },
+      "test_task_ratio": {
+        "mean": 0.33373373373373366,
+        "sd": 6.798699777552591e-17
+      },
+      "loss_decreased": true,
+      "clipped_rewards": [
+        0,
+        0,
+        0
+      ],
+      "seeds": [
+        {
+          "seed": 7,
+          "test_macro_f1": 0.4762143890796777
+        },
+        {
+          "seed": 11,
+          "test_macro_f1": 0.6602828822208063
+        },
+        {
+          "seed": 19,
+          "test_macro_f1": 0.5995866269523046
+        }
+      ]
+    },
+    "tree": {
+      "validation_accuracy": {
+        "mean": 0.5598958333333334,
+        "sd": 0.12010263080833547
+      },
+      "validation_macro_f1": {
+        "mean": 0.5262726362499223,
+        "sd": 0.15212471330117916
+      },
+      "test_accuracy": {
+        "mean": 0.5833333333333334,
+        "sd": 0.10606985340841824
+      },
+      "test_macro_f1": {
+        "mean": 0.5241287043623712,
+        "sd": 0.16237133727488062
+      },
+      "first_loss": {
+        "mean": 1.1247647762298583,
+        "sd": 0.01627126572831155
+      },
+      "last_loss": {
+        "mean": 0.8960302257537842,
+        "sd": 0.037392186605729606
+      },
+      "test_depth": {
+        "mean": 1.0052083333333333,
+        "sd": 0.009021097956087902
+      },
+      "test_task_ratio": {
+        "mean": 0.33500166833500167,
+        "sd": 0.002196127150070644
+      },
+      "loss_decreased": true,
+      "clipped_rewards": [
+        0,
+        0,
+        0
+      ],
+      "seeds": [
+        {
+          "seed": 7,
+          "test_macro_f1": 0.33862535339328587,
+          "first_depths": {
+            "1": 144,
+            "2": 24,
+            "3": 32
+          },
+          "last_depths": {
+            "1": 180,
+            "2": 14
+          }
+        },
+        {
+          "seed": 11,
+          "test_macro_f1": 0.6404564535841437,
+          "first_depths": {
+            "1": 120,
+            "2": 48,
+            "3": 32
+          },
+          "last_depths": {
+            "1": 180,
+            "2": 12
+          }
+        },
+        {
+          "seed": 19,
+          "test_macro_f1": 0.593304306109684,
+          "first_depths": {
+            "1": 120,
+            "2": 40,
+            "3": 40
+          },
+          "last_depths": {
+            "1": 183,
+            "2": 9
+          }
+        }
+      ]
+    },
+    "integrated": {
+      "validation_accuracy": {
+        "mean": 0.5364583333333334,
+        "sd": 0.029577647634376425
+      },
+      "validation_macro_f1": {
+        "mean": 0.5045252599145446,
+        "sd": 0.024969509214695353
+      },
+      "test_accuracy": {
+        "mean": 0.5442708333333334,
+        "sd": 0.05022734771350497
+      },
+      "test_macro_f1": {
+        "mean": 0.5107306414233742,
+        "sd": 0.03319919814211742
+      },
+      "first_loss": {
+        "mean": 1.1424403953552245,
+        "sd": 0.016361128364592522
+      },
+      "last_loss": {
+        "mean": 0.9214940325419109,
+        "sd": 0.0499681333834858
+      },
+      "test_depth": {
+        "mean": 1.5651041666666667,
+        "sd": 0.133576235450335
+      },
+      "test_task_ratio": {
+        "mean": 0.4713046379713046,
+        "sd": 0.03251825872024169
+      },
+      "loss_decreased": true,
+      "clipped_rewards": [
+        0,
+        0,
+        0
+      ],
+      "seeds": [
+        {
+          "seed": 7,
+          "test_macro_f1": 0.47942308505688785,
+          "first_depths": {
+            "1": 80,
+            "2": 64,
+            "3": 56
+          },
+          "last_depths": {
+            "1": 80,
+            "2": 112,
+            "3": 8
+          }
+        },
+        {
+          "seed": 11,
+          "test_macro_f1": 0.5072254936698893,
+          "first_depths": {
+            "1": 40,
+            "2": 104,
+            "3": 56
+          },
+          "last_depths": {
+            "1": 85,
+            "2": 100,
+            "3": 7
+          }
+        },
+        {
+          "seed": 19,
+          "test_macro_f1": 0.5455433455433455,
+          "first_depths": {
+            "1": 24,
+            "2": 120,
+            "3": 56
+          },
+          "last_depths": {
+            "1": 60,
+            "2": 125,
+            "3": 7
+          }
+        }
+      ]
+    }
+  },
+  "benchmarks": {
+    "fixed": {
+      "scope": "synthetic_forward_only",
+      "warmup": 5,
+      "repeats": 50,
+      "batch_size": 8,
+      "sequence_length": 8,
+      "batch_seconds": [
+        0.0005805410037282854,
+        0.0005831249873153865,
+        0.0005823330138809979,
+        0.0005989579949527979,
+        0.0005984999879729003,
+        0.0005400000081863254,
+        0.000590666983043775,
+        0.0005528749898076057,
+        0.000559959007659927,
+        0.0005764169909525663,
+        0.0005762910004705191,
+        0.0005482919805217534,
+        0.000562166009331122,
+        0.0005752500146627426,
+        0.0005734580045100302,
+        0.0005725829978473485,
+        0.0005692089907824993,
+        0.0005706250085495412,
+        0.0005720419867429882,
+        0.0005690830003004521,
+        0.0005684579955413938,
+        0.0005720419867429882,
+        0.0005695419968105853,
+        0.000575875019421801,
+        0.0005822500097565353,
+        0.0005691249971278012,
+        0.0005725829978473485,
+        0.0005924160068389028,
+        0.000575915997615084,
+        0.0005723329959437251,
+        0.0005728749965783209,
+        0.0005820410151500255,
+        0.0005689169920515269,
+        0.000575083977309987,
+        0.0005756250175181776,
+        0.0005739579792134464,
+        0.0005717500171158463,
+        0.0005670000100508332,
+        0.0005764589877799153,
+        0.0005735410086344928,
+        0.0005683329945895821,
+        0.0005773330049123615,
+        0.0005856249772477895,
+        0.0005703329807147384,
+        0.0005707080126740038,
+        0.0005722499918192625,
+        0.0005672499828506261,
+        0.0005836250202264637,
+        0.0005684580246452242,
+        0.0007726670010015368
+      ],
+      "mean_batch_seconds": 0.0005775349191389978,
+      "samples_per_second": 13851.976278640575,
+      "includes_routing_or_controller": false,
+      "peak_memory_bytes": null,
+      "peak_memory_note": "not instrumented; not reported as zero",
+      "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-audit-001/fixed-seed7/checkpoint.pt",
+      "metadata": {
+        "config": {
+          "name": "audit_fixed_seed7",
+          "seed": 7,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1007,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": null
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "git_status": "M .gitignore\n M README.md\n?? .python-version\n?? AGENTS.md\n?? configs/\n?? docs/\n?? dynamic_transformers_reference_paper.pdf\n?? experiments/\n?? pyproject.toml\n?? references/\n?? reports/\n?? scripts/\n?? src/\n?? tests/\n?? uv.lock",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_prefix.toml": "86a3ad0c450db934779646b9c7504d9689dd692ec4a04b8a78b3a5ce1e47f459",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false
+      }
+    },
+    "tree": {
+      "scope": "synthetic_dht_routing_policy_and_forward",
+      "warmup": 5,
+      "repeats": 50,
+      "batch_size": 8,
+      "sequence_length": 8,
+      "batch_seconds": [
+        0.005444042006274685,
+        0.0055918750003911555,
+        0.0053500419890042394,
+        0.005657208996126428,
+        0.005271041009109467,
+        0.00560345797566697,
+        0.005594459013082087,
+        0.005594500020379201,
+        0.0057801249786280096,
+        0.005428792006568983,
+        0.005538167024496943,
+        0.005362625000998378,
+        0.005555500014452264,
+        0.005617791990516707,
+        0.005411582998931408,
+        0.005386707984143868,
+        0.005417625012341887,
+        0.005386165983509272,
+        0.005351750005502254,
+        0.0055285419803112745,
+        0.005282333004288375,
+        0.005314416019245982,
+        0.005492584023158997,
+        0.005666958022629842,
+        0.005484915978740901,
+        0.005758792016422376,
+        0.0053132080065552145,
+        0.0058326250000391155,
+        0.005376040993724018,
+        0.005344000004697591,
+        0.005445541988592595,
+        0.005294917005812749,
+        0.005262291990220547,
+        0.0052483329782262444,
+        0.006893000012496486,
+        0.007316999981412664,
+        0.010918874992057681,
+        0.007655791996512562,
+        0.005825792002724484,
+        0.005379625014029443,
+        0.00597787500009872,
+        0.00539674999890849,
+        0.005827540997415781,
+        0.005494790995726362,
+        0.00530945899663493,
+        0.005285249993903562,
+        0.005529542017029598,
+        0.005302167002810165,
+        0.005872000008821487,
+        0.005439375003334135
+      ],
+      "mean_batch_seconds": 0.005708275840734131,
+      "samples_per_second": 1401.4739692346636,
+      "includes_routing_or_controller": true,
+      "peak_memory_bytes": null,
+      "peak_memory_note": "not instrumented; not reported as zero",
+      "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-audit-001/tree-seed7/checkpoint.pt",
+      "metadata": {
+        "config": {
+          "name": "audit_tree_seed7",
+          "seed": 7,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1007,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": {
+            "mode": "tree",
+            "depths": [
+              1,
+              2,
+              3
+            ],
+            "head_counts": [
+              2,
+              4
+            ],
+            "pairs": [],
+            "calibration_samples": 32,
+            "sequence_bins": [
+              1,
+              2
+            ],
+            "depth_embedding_bins": [
+              1,
+              2,
+              4
+            ],
+            "head_embedding_bins": [
+              1,
+              2
+            ],
+            "ts_sequence_bins": [
+              1
+            ],
+            "ts_embedding_bins": [
+              1,
+              2
+            ],
+            "normalization_epsilon": 0.000001,
+            "reward_epsilon": 1e-8,
+            "reward_scale": 1,
+            "reward_cap": 100,
+            "feedback_rule": "paper_literal"
+          }
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "git_status": "M .gitignore\n M README.md\n?? .python-version\n?? AGENTS.md\n?? configs/\n?? docs/\n?? dynamic_transformers_reference_paper.pdf\n?? experiments/\n?? pyproject.toml\n?? references/\n?? reports/\n?? scripts/\n?? src/\n?? tests/\n?? uv.lock",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_prefix.toml": "86a3ad0c450db934779646b9c7504d9689dd692ec4a04b8a78b3a5ce1e47f459",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false
+      }
+    },
+    "integrated": {
+      "scope": "synthetic_dht_routing_policy_and_forward",
+      "warmup": 5,
+      "repeats": 50,
+      "batch_size": 8,
+      "sequence_length": 8,
+      "batch_seconds": [
+        0.006433665985241532,
+        0.006676125020021573,
+        0.006889125012094155,
+        0.00666708400240168,
+        0.006803583004511893,
+        0.006630166986724362,
+        0.006451124994782731,
+        0.006514374981634319,
+        0.006101334001868963,
+        0.00605245798942633,
+        0.006209000013768673,
+        0.006257417000597343,
+        0.006300625012954697,
+        0.006511416984722018,
+        0.006019124994054437,
+        0.00626033399021253,
+        0.00607283299905248,
+        0.006309333984972909,
+        0.00726183399092406,
+        0.006194249988766387,
+        0.006516958004795015,
+        0.006315624981652945,
+        0.006679250014713034,
+        0.0062156249769032,
+        0.006341916014207527,
+        0.005977583990897983,
+        0.006065124995075166,
+        0.006232791987713426,
+        0.006998416007263586,
+        0.006580332992598414,
+        0.0061116669967304915,
+        0.0060508750029839575,
+        0.005990584002574906,
+        0.006403334002243355,
+        0.006222415977390483,
+        0.006024875008733943,
+        0.005940542003372684,
+        0.006134790979558602,
+        0.006333625002298504,
+        0.0062032499990891665,
+        0.006015749997459352,
+        0.006040875014150515,
+        0.006045542017091066,
+        0.006053999997675419,
+        0.006055666977772489,
+        0.006019624997861683,
+        0.006028791016433388,
+        0.005901124997762963,
+        0.006090874987421557,
+        0.005978165980195627
+      ],
+      "mean_batch_seconds": 0.00628370419726707,
+      "samples_per_second": 1273.1344043023837,
+      "includes_routing_or_controller": true,
+      "peak_memory_bytes": null,
+      "peak_memory_note": "not instrumented; not reported as zero",
+      "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-audit-001/integrated-seed7/checkpoint.pt",
+      "metadata": {
+        "config": {
+          "name": "audit_integrated_seed7",
+          "seed": 7,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1007,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": {
+            "mode": "integrated",
+            "depths": [
+              1,
+              2,
+              3
+            ],
+            "head_counts": [
+              2,
+              4
+            ],
+            "pairs": [],
+            "calibration_samples": 32,
+            "sequence_bins": [
+              1,
+              2
+            ],
+            "depth_embedding_bins": [
+              1,
+              2,
+              4
+            ],
+            "head_embedding_bins": [
+              1,
+              2
+            ],
+            "ts_sequence_bins": [
+              1
+            ],
+            "ts_embedding_bins": [
+              1,
+              2
+            ],
+            "normalization_epsilon": 0.000001,
+            "reward_epsilon": 1e-8,
+            "reward_scale": 1,
+            "reward_cap": 100,
+            "feedback_rule": "paper_literal"
+          }
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "git_status": "M .gitignore\n M README.md\n?? .python-version\n?? AGENTS.md\n?? configs/\n?? docs/\n?? dynamic_transformers_reference_paper.pdf\n?? experiments/\n?? pyproject.toml\n?? references/\n?? reports/\n?? scripts/\n?? src/\n?? tests/\n?? uv.lock",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_prefix.toml": "86a3ad0c450db934779646b9c7504d9689dd692ec4a04b8a78b3a5ce1e47f459",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false
+      }
+    }
+  },
+  "authors_reported_ag_news": [
+    {
+      "provenance": "authors_reported",
+      "doi": "10.24874/PES06.02.001",
+      "printed_page": "447",
+      "pdf_page": "9",
+      "table": "1",
+      "cost_phase": "training",
+      "model": "12-VaBERT",
+      "dataset": "ag_news",
+      "f1": "0.944",
+      "flop_ratio": "1.00"
+    },
+    {
+      "provenance": "authors_reported",
+      "doi": "10.24874/PES06.02.001",
+      "printed_page": "447",
+      "pdf_page": "9",
+      "table": "1",
+      "cost_phase": "training",
+      "model": "T-DHT",
+      "dataset": "ag_news",
+      "f1": "0.945",
+      "flop_ratio": "0.42"
+    },
+    {
+      "provenance": "authors_reported",
+      "doi": "10.24874/PES06.02.001",
+      "printed_page": "447",
+      "pdf_page": "9",
+      "table": "1",
+      "cost_phase": "training",
+      "model": "P-DHT",
+      "dataset": "ag_news",
+      "f1": "0.935",
+      "flop_ratio": "0.59"
+    },
+    {
+      "provenance": "authors_reported",
+      "doi": "10.24874/PES06.02.001",
+      "printed_page": "447",
+      "pdf_page": "9",
+      "table": "1",
+      "cost_phase": "training",
+      "model": "S-DHT",
+      "dataset": "ag_news",
+      "f1": "0.941",
+      "flop_ratio": "0.38"
+    },
+    {
+      "provenance": "authors_reported",
+      "doi": "10.24874/PES06.02.001",
+      "printed_page": "447",
+      "pdf_page": "9",
+      "table": "1",
+      "cost_phase": "training",
+      "model": "F-DHT",
+      "dataset": "ag_news",
+      "f1": "0.943",
+      "flop_ratio": "0.59"
+    },
+    {
+      "provenance": "authors_reported",
+      "doi": "10.24874/PES06.02.001",
+      "printed_page": "447",
+      "pdf_page": "9",
+      "table": "2",
+      "cost_phase": "inference",
+      "model": "12-VaBERT",
+      "dataset": "ag_news",
+      "f1": "0.944",
+      "flop_ratio": "1.00"
+    },
+    {
+      "provenance": "authors_reported",
+      "doi": "10.24874/PES06.02.001",
+      "printed_page": "447",
+      "pdf_page": "9",
+      "table": "2",
+      "cost_phase": "inference",
+      "model": "T-DHT",
+      "dataset": "ag_news",
+      "f1": "0.945",
+      "flop_ratio": "0.81"
+    },
+    {
+      "provenance": "authors_reported",
+      "doi": "10.24874/PES06.02.001",
+      "printed_page": "447",
+      "pdf_page": "9",
+      "table": "2",
+      "cost_phase": "inference",
+      "model": "P-DHT",
+      "dataset": "ag_news",
+      "f1": "0.935",
+      "flop_ratio": "0.39"
+    },
+    {
+      "provenance": "authors_reported",
+      "doi": "10.24874/PES06.02.001",
+      "printed_page": "447",
+      "pdf_page": "9",
+      "table": "2",
+      "cost_phase": "inference",
+      "model": "S-DHT",
+      "dataset": "ag_news",
+      "f1": "0.941",
+      "flop_ratio": "0.37"
+    },
+    {
+      "provenance": "authors_reported",
+      "doi": "10.24874/PES06.02.001",
+      "printed_page": "447",
+      "pdf_page": "9",
+      "table": "2",
+      "cost_phase": "inference",
+      "model": "F-DHT",
+      "dataset": "ag_news",
+      "f1": "0.943",
+      "flop_ratio": "0.35"
+    }
+  ],
+  "manifests": [
+    [
+      {
+        "mode": "fixed",
+        "seed": 7,
+        "config_source": "configs/experiment/audit_fixed.toml",
+        "script_sha256": "88932084c7aedfd61dd3f5109d270a53acbd1fe0b4561e28aa58e5502d45ed00",
+        "status": "completed",
+        "optimizer_steps": 300
+      },
+      {
+        "mode": "fixed",
+        "seed": 11,
+        "config_source": "configs/experiment/audit_fixed.toml",
+        "script_sha256": "88932084c7aedfd61dd3f5109d270a53acbd1fe0b4561e28aa58e5502d45ed00",
+        "status": "completed",
+        "optimizer_steps": 300
+      },
+      {
+        "mode": "fixed",
+        "seed": 19,
+        "config_source": "configs/experiment/audit_fixed.toml",
+        "script_sha256": "88932084c7aedfd61dd3f5109d270a53acbd1fe0b4561e28aa58e5502d45ed00",
+        "status": "completed",
+        "optimizer_steps": 300
+      },
+      {
+        "mode": "tree",
+        "seed": 7,
+        "config_source": "configs/experiment/audit_tree.toml",
+        "script_sha256": "88932084c7aedfd61dd3f5109d270a53acbd1fe0b4561e28aa58e5502d45ed00",
+        "status": "completed",
+        "optimizer_steps": 300
+      },
+      {
+        "mode": "tree",
+        "seed": 11,
+        "config_source": "configs/experiment/audit_tree.toml",
+        "script_sha256": "88932084c7aedfd61dd3f5109d270a53acbd1fe0b4561e28aa58e5502d45ed00",
+        "status": "completed",
+        "optimizer_steps": 300
+      },
+      {
+        "mode": "tree",
+        "seed": 19,
+        "config_source": "configs/experiment/audit_tree.toml",
+        "script_sha256": "88932084c7aedfd61dd3f5109d270a53acbd1fe0b4561e28aa58e5502d45ed00",
+        "status": "completed",
+        "optimizer_steps": 300
+      },
+      {
+        "mode": "integrated",
+        "seed": 7,
+        "config_source": "configs/experiment/audit_integrated.toml",
+        "script_sha256": "88932084c7aedfd61dd3f5109d270a53acbd1fe0b4561e28aa58e5502d45ed00",
+        "status": "completed",
+        "optimizer_steps": 300
+      },
+      {
+        "mode": "integrated",
+        "seed": 11,
+        "config_source": "configs/experiment/audit_integrated.toml",
+        "script_sha256": "88932084c7aedfd61dd3f5109d270a53acbd1fe0b4561e28aa58e5502d45ed00",
+        "status": "completed",
+        "optimizer_steps": 300
+      },
+      {
+        "mode": "integrated",
+        "seed": 19,
+        "config_source": "configs/experiment/audit_integrated.toml",
+        "script_sha256": "88932084c7aedfd61dd3f5109d270a53acbd1fe0b4561e28aa58e5502d45ed00",
+        "status": "completed",
+        "optimizer_steps": 300
+      }
+    ],
+    [
+      {
+        "mode": "prefix",
+        "seed": 7,
+        "config_source": "configs/experiment/audit_prefix.toml",
+        "script_sha256": "769a55fd5552a87f2502c214895a1e912253ff2490e9001c7e909c3c5cab8782",
+        "status": "completed",
+        "optimizer_steps": 300
+      },
+      {
+        "mode": "prefix",
+        "seed": 11,
+        "config_source": "configs/experiment/audit_prefix.toml",
+        "script_sha256": "769a55fd5552a87f2502c214895a1e912253ff2490e9001c7e909c3c5cab8782",
+        "status": "completed",
+        "optimizer_steps": 300
+      },
+      {
+        "mode": "prefix",
+        "seed": 19,
+        "config_source": "configs/experiment/audit_prefix.toml",
+        "script_sha256": "769a55fd5552a87f2502c214895a1e912253ff2490e9001c7e909c3c5cab8782",
+        "status": "completed",
+        "optimizer_steps": 300
+      }
+    ]
+  ],
+  "runs": [
+    {
+      "mode": "fixed",
+      "seed": 7,
+      "root": "artifacts/runs/monitored-audit-001",
+      "audit": {
+        "status": "completed",
+        "optimizer_steps": 300,
+        "finite_losses_gradients_parameters": true,
+        "max_abs_gradient": 1.0506373643875122,
+        "first_25_mean_loss": 1.1596452522277831,
+        "last_25_mean_loss": 0.7614460968971253,
+        "training_loss_decreased": true,
+        "queue_conservation_and_finite_converged_bandits": null,
+        "summary": {
+          "scope": "synthetic_deterministic_scaffold",
+          "completed_steps": 300,
+          "segment_start_step": 0,
+          "segment_training_seconds": 1.2642984999984037,
+          "complete": true,
+          "architecture": {
+            "total_depth": 3,
+            "head_indices": {}
+          },
+          "average_total_depth": 3,
+          "average_heads_per_executed_layer": 4,
+          "head_counts_by_layer": [
+            4,
+            4,
+            4
+          ],
+          "forward_matmul_flops_per_sample": 239760,
+          "relative_forward_matmul_flops": 1,
+          "validation": {
+            "accuracy": 0.6328125,
+            "macro_f1": 0.5628319008403161,
+            "micro_f1": 0.6328125,
+            "weighted_f1": 0.5728497995109145
+          },
+          "test": {
+            "accuracy": 0.6484375,
+            "macro_f1": 0.5814177579641497,
+            "micro_f1": 0.6484375,
+            "weighted_f1": 0.5956677521593758
+          },
+          "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-audit-001/fixed-seed7/checkpoint.pt"
+        }
+      },
+      "provenance": {
+        "config": {
+          "name": "audit_fixed_seed7",
+          "seed": 7,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1007,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": null
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null,
+        "started_at": "2026-09-07T22:37:03.771468+00:00"
+      }
+    },
+    {
+      "mode": "fixed",
+      "seed": 11,
+      "root": "artifacts/runs/monitored-audit-001",
+      "audit": {
+        "status": "completed",
+        "optimizer_steps": 300,
+        "finite_losses_gradients_parameters": true,
+        "max_abs_gradient": 1.0429714918136597,
+        "first_25_mean_loss": 1.1597399520874023,
+        "last_25_mean_loss": 0.5847951138019561,
+        "training_loss_decreased": true,
+        "queue_conservation_and_finite_converged_bandits": null,
+        "summary": {
+          "scope": "synthetic_deterministic_scaffold",
+          "completed_steps": 300,
+          "segment_start_step": 0,
+          "segment_training_seconds": 1.212859249993926,
+          "complete": true,
+          "architecture": {
+            "total_depth": 3,
+            "head_indices": {}
+          },
+          "average_total_depth": 3,
+          "average_heads_per_executed_layer": 4,
+          "head_counts_by_layer": [
+            4,
+            4,
+            4
+          ],
+          "forward_matmul_flops_per_sample": 239760,
+          "relative_forward_matmul_flops": 1,
+          "validation": {
+            "accuracy": 0.7265625,
+            "macro_f1": 0.7240329218106996,
+            "micro_f1": 0.7265625,
+            "weighted_f1": 0.7227623456790123
+          },
+          "test": {
+            "accuracy": 0.8359375,
+            "macro_f1": 0.8404549698667344,
+            "micro_f1": 0.8359375,
+            "weighted_f1": 0.8370285045836516
+          },
+          "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-audit-001/fixed-seed11/checkpoint.pt"
+        }
+      },
+      "provenance": {
+        "config": {
+          "name": "audit_fixed_seed11",
+          "seed": 11,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1011,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": null
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null,
+        "started_at": "2026-09-07T22:37:05.148408+00:00"
+      }
+    },
+    {
+      "mode": "fixed",
+      "seed": 19,
+      "root": "artifacts/runs/monitored-audit-001",
+      "audit": {
+        "status": "completed",
+        "optimizer_steps": 300,
+        "finite_losses_gradients_parameters": true,
+        "max_abs_gradient": 1.6246464252471924,
+        "first_25_mean_loss": 1.1408668565750122,
+        "last_25_mean_loss": 0.7061340868473053,
+        "training_loss_decreased": true,
+        "queue_conservation_and_finite_converged_bandits": null,
+        "summary": {
+          "scope": "synthetic_deterministic_scaffold",
+          "completed_steps": 300,
+          "segment_start_step": 0,
+          "segment_training_seconds": 1.2121621250116732,
+          "complete": true,
+          "architecture": {
+            "total_depth": 3,
+            "head_indices": {}
+          },
+          "average_total_depth": 3,
+          "average_heads_per_executed_layer": 4,
+          "head_counts_by_layer": [
+            4,
+            4,
+            4
+          ],
+          "forward_matmul_flops_per_sample": 239760,
+          "relative_forward_matmul_flops": 1,
+          "validation": {
+            "accuracy": 0.65625,
+            "macro_f1": 0.6450938465193632,
+            "micro_f1": 0.65625,
+            "weighted_f1": 0.6488128118317891
+          },
+          "test": {
+            "accuracy": 0.7109375,
+            "macro_f1": 0.6739319019735416,
+            "micro_f1": 0.7109375,
+            "weighted_f1": 0.6925524560832791
+          },
+          "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-audit-001/fixed-seed19/checkpoint.pt"
+        }
+      },
+      "provenance": {
+        "config": {
+          "name": "audit_fixed_seed19",
+          "seed": 19,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1019,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": null
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null,
+        "started_at": "2026-09-07T22:37:06.451191+00:00"
+      }
+    },
+    {
+      "mode": "tree",
+      "seed": 7,
+      "root": "artifacts/runs/monitored-audit-001",
+      "audit": {
+        "status": "completed",
+        "optimizer_steps": 300,
+        "finite_losses_gradients_parameters": true,
+        "max_abs_gradient": 1.9746371507644653,
+        "first_25_mean_loss": 1.1208565402030946,
+        "last_25_mean_loss": 0.9388287329673767,
+        "training_loss_decreased": true,
+        "queue_conservation_and_finite_converged_bandits": true,
+        "summary": {
+          "scope": "independent_dht_synthetic",
+          "mode": "tree",
+          "completed_steps": 300,
+          "segment_start_step": 0,
+          "complete": true,
+          "segment_training_seconds": 3.5196482919855043,
+          "calibration_seconds": 0.0821781670092605,
+          "calibration_forward_matmul_flops": 11403264,
+          "cumulative_routed_samples": 2304,
+          "cumulative_routing_seconds": 1.3360304523957893,
+          "cumulative_routing_forward_matmul_flops": 184025088,
+          "training_segment_architectures": {
+            "samples": 2298,
+            "depth_counts": {
+              "1": 2167,
+              "2": 69,
+              "3": 62
+            },
+            "dynamic_group_head_count_counts": {
+              "2": 137,
+              "4": 56
+            },
+            "head_selection_frequencies_by_group": {
+              "1": [
+                39,
+                65,
+                71,
+                91
+              ],
+              "2": [
+                61,
+                57,
+                57,
+                57
+              ]
+            },
+            "average_total_depth": 1.0839860748476937,
+            "average_heads_per_executed_layer": 3.8900040144520274,
+            "task_forward_matmul_flops": 196346016,
+            "relative_task_forward_matmul_flops": 0.35636524252712243
+          },
+          "route_bandit_observations": [
+            2167,
+            69,
+            54
+          ],
+          "head_count_bandit_observations": [
+            129,
+            48
+          ],
+          "ts_head_observations": [
+            89,
+            106,
+            118,
+            137
+          ],
+          "clipped_rewards": 0,
+          "pending_queues": {
+            "1": 0,
+            "2": 0,
+            "3": 6
+          },
+          "validation": {
+            "accuracy": 0.421875,
+            "macro_f1": 0.35096446277548643,
+            "micro_f1": 0.421875,
+            "weighted_f1": 0.35164061523559553,
+            "architectures": {
+              "samples": 128,
+              "depth_counts": {
+                "1": 126,
+                "2": 2
+              },
+              "dynamic_group_head_count_counts": {
+                "2": 2
+              },
+              "head_selection_frequencies_by_group": {
+                "1": [
+                  2,
+                  1,
+                  0,
+                  1
+                ]
+              },
+              "average_total_depth": 1.015625,
+              "average_heads_per_executed_layer": 3.9692307692307693,
+              "task_forward_matmul_flops": 10358784,
+              "relative_task_forward_matmul_flops": 0.3375375375375375
+            },
+            "routing_forward_matmul_flops": 10223616,
+            "end_to_end_seconds": 0.09690504198078997,
+            "samples_per_second": 1320.8807032494155,
+            "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+          },
+          "test": {
+            "accuracy": 0.4609375,
+            "macro_f1": 0.33862535339328587,
+            "micro_f1": 0.4609375,
+            "weighted_f1": 0.35904735647615393,
+            "architectures": {
+              "samples": 128,
+              "depth_counts": {
+                "1": 126,
+                "2": 2
+              },
+              "dynamic_group_head_count_counts": {
+                "2": 2
+              },
+              "head_selection_frequencies_by_group": {
+                "1": [
+                  1,
+                  1,
+                  1,
+                  1
+                ]
+              },
+              "average_total_depth": 1.015625,
+              "average_heads_per_executed_layer": 3.9692307692307693,
+              "task_forward_matmul_flops": 10358784,
+              "relative_task_forward_matmul_flops": 0.3375375375375375
+            },
+            "routing_forward_matmul_flops": 10223616,
+            "end_to_end_seconds": 0.0935805420158431,
+            "samples_per_second": 1367.8057130544266,
+            "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+          },
+          "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-audit-001/tree-seed7/checkpoint.pt",
+          "limitations": "Matmul estimates exclude backward/optimizer/controller FLOPs. Per-sample execution prioritizes correctness; no paper/runtime speedup is claimed."
+        },
+        "first_25_depth_counts": {
+          "1": 144,
+          "2": 24,
+          "3": 32
+        },
+        "last_25_depth_counts": {
+          "1": 180,
+          "2": 14
+        }
+      },
+      "provenance": {
+        "config": {
+          "name": "audit_tree_seed7",
+          "seed": 7,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1007,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": {
+            "mode": "tree",
+            "depths": [
+              1,
+              2,
+              3
+            ],
+            "head_counts": [
+              2,
+              4
+            ],
+            "pairs": [],
+            "calibration_samples": 32,
+            "sequence_bins": [
+              1,
+              2
+            ],
+            "depth_embedding_bins": [
+              1,
+              2,
+              4
+            ],
+            "head_embedding_bins": [
+              1,
+              2
+            ],
+            "ts_sequence_bins": [
+              1
+            ],
+            "ts_embedding_bins": [
+              1,
+              2
+            ],
+            "normalization_epsilon": 0.000001,
+            "reward_epsilon": 1e-8,
+            "reward_scale": 1,
+            "reward_cap": 100,
+            "feedback_rule": "paper_literal"
+          }
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null
+      }
+    },
+    {
+      "mode": "tree",
+      "seed": 11,
+      "root": "artifacts/runs/monitored-audit-001",
+      "audit": {
+        "status": "completed",
+        "optimizer_steps": 300,
+        "finite_losses_gradients_parameters": true,
+        "max_abs_gradient": 1.6200621128082275,
+        "first_25_mean_loss": 1.142634243965149,
+        "last_25_mean_loss": 0.8696922016143799,
+        "training_loss_decreased": true,
+        "queue_conservation_and_finite_converged_bandits": true,
+        "summary": {
+          "scope": "independent_dht_synthetic",
+          "mode": "tree",
+          "completed_steps": 300,
+          "segment_start_step": 0,
+          "complete": true,
+          "segment_training_seconds": 3.6762767499894835,
+          "calibration_seconds": 0.07547208300093189,
+          "calibration_forward_matmul_flops": 11403264,
+          "cumulative_routed_samples": 2320,
+          "cumulative_routing_seconds": 1.3950649584003258,
+          "cumulative_routing_forward_matmul_flops": 185303040,
+          "training_segment_architectures": {
+            "samples": 2320,
+            "depth_counts": {
+              "1": 2176,
+              "2": 92,
+              "3": 52
+            },
+            "dynamic_group_head_count_counts": {
+              "2": 110,
+              "4": 86
+            },
+            "head_selection_frequencies_by_group": {
+              "1": [
+                122,
+                113,
+                103,
+                120
+              ],
+              "2": [
+                38,
+                13,
+                17,
+                38
+              ]
+            },
+            "average_total_depth": 1.0844827586206895,
+            "average_heads_per_executed_layer": 3.9125596184419713,
+            "task_forward_matmul_flops": 198926592,
+            "relative_task_forward_matmul_flops": 0.3576252114183149
+          },
+          "route_bandit_observations": [
+            2176,
+            92,
+            44
+          ],
+          "head_count_bandit_observations": [
+            102,
+            78
+          ],
+          "ts_head_observations": [
+            145,
+            118,
+            111,
+            142
+          ],
+          "clipped_rewards": 0,
+          "pending_queues": {
+            "1": 0,
+            "2": 0,
+            "3": 0
+          },
+          "validation": {
+            "accuracy": 0.6171875,
+            "macro_f1": 0.6043240342095745,
+            "micro_f1": 0.6171875,
+            "weighted_f1": 0.6060256528054885,
+            "architectures": {
+              "samples": 128,
+              "depth_counts": {
+                "1": 128
+              },
+              "dynamic_group_head_count_counts": {},
+              "head_selection_frequencies_by_group": {},
+              "average_total_depth": 1,
+              "average_heads_per_executed_layer": 4,
+              "task_forward_matmul_flops": 10242048,
+              "relative_task_forward_matmul_flops": 0.3337337337337337
+            },
+            "routing_forward_matmul_flops": 10223616,
+            "end_to_end_seconds": 0.09789054200518876,
+            "samples_per_second": 1307.5829122819164,
+            "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+          },
+          "test": {
+            "accuracy": 0.6484375,
+            "macro_f1": 0.6404564535841437,
+            "micro_f1": 0.6484375,
+            "weighted_f1": 0.6350685726526384,
+            "architectures": {
+              "samples": 128,
+              "depth_counts": {
+                "1": 128
+              },
+              "dynamic_group_head_count_counts": {},
+              "head_selection_frequencies_by_group": {},
+              "average_total_depth": 1,
+              "average_heads_per_executed_layer": 4,
+              "task_forward_matmul_flops": 10242048,
+              "relative_task_forward_matmul_flops": 0.3337337337337337
+            },
+            "routing_forward_matmul_flops": 10223616,
+            "end_to_end_seconds": 0.09776087501086295,
+            "samples_per_second": 1309.3172497256899,
+            "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+          },
+          "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-audit-001/tree-seed11/checkpoint.pt",
+          "limitations": "Matmul estimates exclude backward/optimizer/controller FLOPs. Per-sample execution prioritizes correctness; no paper/runtime speedup is claimed."
+        },
+        "first_25_depth_counts": {
+          "1": 120,
+          "2": 48,
+          "3": 32
+        },
+        "last_25_depth_counts": {
+          "1": 180,
+          "2": 12
+        }
+      },
+      "provenance": {
+        "config": {
+          "name": "audit_tree_seed11",
+          "seed": 11,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1011,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": {
+            "mode": "tree",
+            "depths": [
+              1,
+              2,
+              3
+            ],
+            "head_counts": [
+              2,
+              4
+            ],
+            "pairs": [],
+            "calibration_samples": 32,
+            "sequence_bins": [
+              1,
+              2
+            ],
+            "depth_embedding_bins": [
+              1,
+              2,
+              4
+            ],
+            "head_embedding_bins": [
+              1,
+              2
+            ],
+            "ts_sequence_bins": [
+              1
+            ],
+            "ts_embedding_bins": [
+              1,
+              2
+            ],
+            "normalization_epsilon": 0.000001,
+            "reward_epsilon": 1e-8,
+            "reward_scale": 1,
+            "reward_cap": 100,
+            "feedback_rule": "paper_literal"
+          }
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null
+      }
+    },
+    {
+      "mode": "tree",
+      "seed": 19,
+      "root": "artifacts/runs/monitored-audit-001",
+      "audit": {
+        "status": "completed",
+        "optimizer_steps": 300,
+        "finite_losses_gradients_parameters": true,
+        "max_abs_gradient": 1.941495418548584,
+        "first_25_mean_loss": 1.1108035445213318,
+        "last_25_mean_loss": 0.879569742679596,
+        "training_loss_decreased": true,
+        "queue_conservation_and_finite_converged_bandits": true,
+        "summary": {
+          "scope": "independent_dht_synthetic",
+          "mode": "tree",
+          "completed_steps": 300,
+          "segment_start_step": 0,
+          "complete": true,
+          "segment_training_seconds": 3.6381017499952577,
+          "calibration_seconds": 0.08116695799981244,
+          "calibration_forward_matmul_flops": 11403264,
+          "cumulative_routed_samples": 2312,
+          "cumulative_routing_seconds": 1.3735399216820952,
+          "cumulative_routing_forward_matmul_flops": 184664064,
+          "training_segment_architectures": {
+            "samples": 2312,
+            "depth_counts": {
+              "1": 2166,
+              "2": 85,
+              "3": 61
+            },
+            "dynamic_group_head_count_counts": {
+              "2": 154,
+              "4": 53
+            },
+            "head_selection_frequencies_by_group": {
+              "1": [
+                95,
+                69,
+                85,
+                101
+              ],
+              "2": [
+                46,
+                47,
+                41,
+                36
+              ]
+            },
+            "average_total_depth": 1.0895328719723183,
+            "average_heads_per_executed_layer": 3.8777292576419216,
+            "task_forward_matmul_flops": 198218880,
+            "relative_task_forward_matmul_flops": 0.35758595966208423
+          },
+          "route_bandit_observations": [
+            2166,
+            85,
+            53
+          ],
+          "head_count_bandit_observations": [
+            154,
+            37
+          ],
+          "ts_head_observations": [
+            125,
+            100,
+            110,
+            121
+          ],
+          "clipped_rewards": 0,
+          "pending_queues": {
+            "1": 0,
+            "2": 0,
+            "3": 0
+          },
+          "validation": {
+            "accuracy": 0.640625,
+            "macro_f1": 0.6235294117647059,
+            "micro_f1": 0.640625,
+            "weighted_f1": 0.6332107843137255,
+            "architectures": {
+              "samples": 128,
+              "depth_counts": {
+                "1": 128
+              },
+              "dynamic_group_head_count_counts": {},
+              "head_selection_frequencies_by_group": {},
+              "average_total_depth": 1,
+              "average_heads_per_executed_layer": 4,
+              "task_forward_matmul_flops": 10242048,
+              "relative_task_forward_matmul_flops": 0.3337337337337337
+            },
+            "routing_forward_matmul_flops": 10223616,
+            "end_to_end_seconds": 0.09700529198744334,
+            "samples_per_second": 1319.5156406164801,
+            "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+          },
+          "test": {
+            "accuracy": 0.640625,
+            "macro_f1": 0.593304306109684,
+            "micro_f1": 0.640625,
+            "weighted_f1": 0.6149819642564355,
+            "architectures": {
+              "samples": 128,
+              "depth_counts": {
+                "1": 128
+              },
+              "dynamic_group_head_count_counts": {},
+              "head_selection_frequencies_by_group": {},
+              "average_total_depth": 1,
+              "average_heads_per_executed_layer": 4,
+              "task_forward_matmul_flops": 10242048,
+              "relative_task_forward_matmul_flops": 0.3337337337337337
+            },
+            "routing_forward_matmul_flops": 10223616,
+            "end_to_end_seconds": 0.09554158299579285,
+            "samples_per_second": 1339.7307851350595,
+            "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+          },
+          "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-audit-001/tree-seed19/checkpoint.pt",
+          "limitations": "Matmul estimates exclude backward/optimizer/controller FLOPs. Per-sample execution prioritizes correctness; no paper/runtime speedup is claimed."
+        },
+        "first_25_depth_counts": {
+          "1": 120,
+          "2": 40,
+          "3": 40
+        },
+        "last_25_depth_counts": {
+          "1": 183,
+          "2": 9
+        }
+      },
+      "provenance": {
+        "config": {
+          "name": "audit_tree_seed19",
+          "seed": 19,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1019,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": {
+            "mode": "tree",
+            "depths": [
+              1,
+              2,
+              3
+            ],
+            "head_counts": [
+              2,
+              4
+            ],
+            "pairs": [],
+            "calibration_samples": 32,
+            "sequence_bins": [
+              1,
+              2
+            ],
+            "depth_embedding_bins": [
+              1,
+              2,
+              4
+            ],
+            "head_embedding_bins": [
+              1,
+              2
+            ],
+            "ts_sequence_bins": [
+              1
+            ],
+            "ts_embedding_bins": [
+              1,
+              2
+            ],
+            "normalization_epsilon": 0.000001,
+            "reward_epsilon": 1e-8,
+            "reward_scale": 1,
+            "reward_cap": 100,
+            "feedback_rule": "paper_literal"
+          }
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null
+      }
+    },
+    {
+      "mode": "integrated",
+      "seed": 7,
+      "root": "artifacts/runs/monitored-audit-001",
+      "audit": {
+        "status": "completed",
+        "optimizer_steps": 300,
+        "finite_losses_gradients_parameters": true,
+        "max_abs_gradient": 1.7770782709121704,
+        "first_25_mean_loss": 1.1362758708000182,
+        "last_25_mean_loss": 0.965504903793335,
+        "training_loss_decreased": true,
+        "queue_conservation_and_finite_converged_bandits": true,
+        "summary": {
+          "scope": "independent_dht_synthetic",
+          "mode": "integrated",
+          "completed_steps": 300,
+          "segment_start_step": 0,
+          "complete": true,
+          "segment_training_seconds": 5.015933415998006,
+          "calibration_seconds": 0.07995654200203717,
+          "calibration_forward_matmul_flops": 11403264,
+          "cumulative_routed_samples": 2319,
+          "cumulative_routing_seconds": 1.4562692368053831,
+          "cumulative_routing_forward_matmul_flops": 185223168,
+          "training_segment_architectures": {
+            "samples": 2312,
+            "depth_counts": {
+              "1": 1064,
+              "2": 1122,
+              "3": 126
+            },
+            "dynamic_group_head_count_counts": {
+              "2": 1206,
+              "4": 168
+            },
+            "head_selection_frequencies_by_group": {
+              "1": [
+                623,
+                629,
+                639,
+                825
+              ],
+              "2": [
+                121,
+                96,
+                66,
+                85
+              ]
+            },
+            "average_total_depth": 1.5942906574394464,
+            "average_heads_per_executed_layer": 3.345632121540966,
+            "task_forward_matmul_flops": 268807296,
+            "relative_task_forward_matmul_flops": 0.48492714167454654
+          },
+          "route_bandit_observations": [
+            1064,
+            1070,
+            52,
+            68,
+            50
+          ],
+          "head_count_bandit_observations": null,
+          "ts_head_observations": [
+            728,
+            709,
+            689,
+            894
+          ],
+          "clipped_rewards": 0,
+          "pending_queues": {
+            "1": 7,
+            "2": 0,
+            "3": 0
+          },
+          "validation": {
+            "accuracy": 0.515625,
+            "macro_f1": 0.5070172213029357,
+            "micro_f1": 0.515625,
+            "weighted_f1": 0.5054094272844273,
+            "architectures": {
+              "samples": 128,
+              "depth_counts": {
+                "1": 60,
+                "2": 68
+              },
+              "dynamic_group_head_count_counts": {
+                "2": 68
+              },
+              "head_selection_frequencies_by_group": {
+                "1": [
+                  62,
+                  2,
+                  39,
+                  33
+                ]
+              },
+              "average_total_depth": 1.53125,
+              "average_heads_per_executed_layer": 3.306122448979592,
+              "task_forward_matmul_flops": 14211072,
+              "relative_task_forward_matmul_flops": 0.46306306306306305
+            },
+            "routing_forward_matmul_flops": 10223616,
+            "end_to_end_seconds": 0.11129724999773316,
+            "samples_per_second": 1150.0733396611959,
+            "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+          },
+          "test": {
+            "accuracy": 0.5078125,
+            "macro_f1": 0.47942308505688785,
+            "micro_f1": 0.5078125,
+            "weighted_f1": 0.49347322674787464,
+            "architectures": {
+              "samples": 128,
+              "depth_counts": {
+                "1": 64,
+                "2": 64
+              },
+              "dynamic_group_head_count_counts": {
+                "2": 64
+              },
+              "head_selection_frequencies_by_group": {
+                "1": [
+                  58,
+                  5,
+                  28,
+                  37
+                ]
+              },
+              "average_total_depth": 1.5,
+              "average_heads_per_executed_layer": 3.3333333333333335,
+              "task_forward_matmul_flops": 13977600,
+              "relative_task_forward_matmul_flops": 0.45545545545545546
+            },
+            "routing_forward_matmul_flops": 10223616,
+            "end_to_end_seconds": 0.11093008401803672,
+            "samples_per_second": 1153.879951800882,
+            "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+          },
+          "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-audit-001/integrated-seed7/checkpoint.pt",
+          "limitations": "Matmul estimates exclude backward/optimizer/controller FLOPs. Per-sample execution prioritizes correctness; no paper/runtime speedup is claimed."
+        },
+        "first_25_depth_counts": {
+          "1": 80,
+          "2": 64,
+          "3": 56
+        },
+        "last_25_depth_counts": {
+          "1": 80,
+          "2": 112,
+          "3": 8
+        }
+      },
+      "provenance": {
+        "config": {
+          "name": "audit_integrated_seed7",
+          "seed": 7,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1007,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": {
+            "mode": "integrated",
+            "depths": [
+              1,
+              2,
+              3
+            ],
+            "head_counts": [
+              2,
+              4
+            ],
+            "pairs": [],
+            "calibration_samples": 32,
+            "sequence_bins": [
+              1,
+              2
+            ],
+            "depth_embedding_bins": [
+              1,
+              2,
+              4
+            ],
+            "head_embedding_bins": [
+              1,
+              2
+            ],
+            "ts_sequence_bins": [
+              1
+            ],
+            "ts_embedding_bins": [
+              1,
+              2
+            ],
+            "normalization_epsilon": 0.000001,
+            "reward_epsilon": 1e-8,
+            "reward_scale": 1,
+            "reward_cap": 100,
+            "feedback_rule": "paper_literal"
+          }
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null
+      }
+    },
+    {
+      "mode": "integrated",
+      "seed": 11,
+      "root": "artifacts/runs/monitored-audit-001",
+      "audit": {
+        "status": "completed",
+        "optimizer_steps": 300,
+        "finite_losses_gradients_parameters": true,
+        "max_abs_gradient": 1.7668813467025757,
+        "first_25_mean_loss": 1.1609882807731629,
+        "last_25_mean_loss": 0.9318010830879211,
+        "training_loss_decreased": true,
+        "queue_conservation_and_finite_converged_bandits": true,
+        "summary": {
+          "scope": "independent_dht_synthetic",
+          "mode": "integrated",
+          "completed_steps": 300,
+          "segment_start_step": 0,
+          "complete": true,
+          "segment_training_seconds": 5.455467375024455,
+          "calibration_seconds": 0.07902345800539479,
+          "calibration_forward_matmul_flops": 11403264,
+          "cumulative_routed_samples": 2320,
+          "cumulative_routing_seconds": 1.5732799044344574,
+          "cumulative_routing_forward_matmul_flops": 185303040,
+          "training_segment_architectures": {
+            "samples": 2320,
+            "depth_counts": {
+              "1": 950,
+              "2": 1233,
+              "3": 137
+            },
+            "dynamic_group_head_count_counts": {
+              "2": 1376,
+              "4": 131
+            },
+            "head_selection_frequencies_by_group": {
+              "1": [
+                687,
+                691,
+                737,
+                799
+              ],
+              "2": [
+                96,
+                97,
+                51,
+                118
+              ]
+            },
+            "average_total_depth": 1.6495689655172414,
+            "average_heads_per_executed_layer": 3.2808988764044944,
+            "task_forward_matmul_flops": 276414720,
+            "relative_task_forward_matmul_flops": 0.49693141417279346
+          },
+          "route_bandit_observations": [
+            950,
+            1190,
+            43,
+            93,
+            36
+          ],
+          "head_count_bandit_observations": null,
+          "ts_head_observations": [
+            767,
+            772,
+            772,
+            901
+          ],
+          "clipped_rewards": 0,
+          "pending_queues": {
+            "1": 0,
+            "2": 0,
+            "3": 0
+          },
+          "validation": {
+            "accuracy": 0.5234375,
+            "macro_f1": 0.4784032066454462,
+            "micro_f1": 0.5234375,
+            "weighted_f1": 0.48387126941807,
+            "architectures": {
+              "samples": 128,
+              "depth_counts": {
+                "1": 73,
+                "2": 55
+              },
+              "dynamic_group_head_count_counts": {
+                "2": 55
+              },
+              "head_selection_frequencies_by_group": {
+                "1": [
+                  0,
+                  0,
+                  55,
+                  55
+                ]
+              },
+              "average_total_depth": 1.4296875,
+              "average_heads_per_executed_layer": 3.398907103825137,
+              "task_forward_matmul_flops": 13452288,
+              "relative_task_forward_matmul_flops": 0.43833833833833835
+            },
+            "routing_forward_matmul_flops": 10223616,
+            "end_to_end_seconds": 0.10848995801643468,
+            "samples_per_second": 1179.832699175806,
+            "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+          },
+          "test": {
+            "accuracy": 0.5234375,
+            "macro_f1": 0.5072254936698893,
+            "micro_f1": 0.5234375,
+            "weighted_f1": 0.5036652458366376,
+            "architectures": {
+              "samples": 128,
+              "depth_counts": {
+                "1": 67,
+                "2": 61
+              },
+              "dynamic_group_head_count_counts": {
+                "2": 61
+              },
+              "head_selection_frequencies_by_group": {
+                "1": [
+                  0,
+                  0,
+                  61,
+                  61
+                ]
+              },
+              "average_total_depth": 1.4765625,
+              "average_heads_per_executed_layer": 3.3544973544973544,
+              "task_forward_matmul_flops": 13802496,
+              "relative_task_forward_matmul_flops": 0.44974974974974974
+            },
+            "routing_forward_matmul_flops": 10223616,
+            "end_to_end_seconds": 0.10970387500128709,
+            "samples_per_second": 1166.7773813686915,
+            "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+          },
+          "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-audit-001/integrated-seed11/checkpoint.pt",
+          "limitations": "Matmul estimates exclude backward/optimizer/controller FLOPs. Per-sample execution prioritizes correctness; no paper/runtime speedup is claimed."
+        },
+        "first_25_depth_counts": {
+          "1": 40,
+          "2": 104,
+          "3": 56
+        },
+        "last_25_depth_counts": {
+          "1": 85,
+          "2": 100,
+          "3": 7
+        }
+      },
+      "provenance": {
+        "config": {
+          "name": "audit_integrated_seed11",
+          "seed": 11,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1011,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": {
+            "mode": "integrated",
+            "depths": [
+              1,
+              2,
+              3
+            ],
+            "head_counts": [
+              2,
+              4
+            ],
+            "pairs": [],
+            "calibration_samples": 32,
+            "sequence_bins": [
+              1,
+              2
+            ],
+            "depth_embedding_bins": [
+              1,
+              2,
+              4
+            ],
+            "head_embedding_bins": [
+              1,
+              2
+            ],
+            "ts_sequence_bins": [
+              1
+            ],
+            "ts_embedding_bins": [
+              1,
+              2
+            ],
+            "normalization_epsilon": 0.000001,
+            "reward_epsilon": 1e-8,
+            "reward_scale": 1,
+            "reward_cap": 100,
+            "feedback_rule": "paper_literal"
+          }
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null
+      }
+    },
+    {
+      "mode": "integrated",
+      "seed": 19,
+      "root": "artifacts/runs/monitored-audit-001",
+      "audit": {
+        "status": "completed",
+        "optimizer_steps": 300,
+        "finite_losses_gradients_parameters": true,
+        "max_abs_gradient": 2.36348032951355,
+        "first_25_mean_loss": 1.1300570344924927,
+        "last_25_mean_loss": 0.8671761107444763,
+        "training_loss_decreased": true,
+        "queue_conservation_and_finite_converged_bandits": true,
+        "summary": {
+          "scope": "independent_dht_synthetic",
+          "mode": "integrated",
+          "completed_steps": 300,
+          "segment_start_step": 0,
+          "complete": true,
+          "segment_training_seconds": 5.826374750002287,
+          "calibration_seconds": 0.0763242089888081,
+          "calibration_forward_matmul_flops": 11403264,
+          "cumulative_routed_samples": 2333,
+          "cumulative_routing_seconds": 1.5322972008725628,
+          "cumulative_routing_forward_matmul_flops": 186341376,
+          "training_segment_architectures": {
+            "samples": 2328,
+            "depth_counts": {
+              "1": 547,
+              "2": 1662,
+              "3": 119
+            },
+            "dynamic_group_head_count_counts": {
+              "2": 1743,
+              "4": 157
+            },
+            "head_selection_frequencies_by_group": {
+              "1": [
+                860,
+                861,
+                1055,
+                1002
+              ],
+              "2": [
+                93,
+                96,
+                74,
+                73
+              ]
+            },
+            "average_total_depth": 1.8161512027491409,
+            "average_heads_per_executed_layer": 3.1754966887417218,
+            "task_forward_matmul_flops": 300552576,
+            "relative_task_forward_matmul_flops": 0.5384690532456855
+          },
+          "route_bandit_observations": [
+            547,
+            1603,
+            59,
+            70,
+            41
+          ],
+          "head_count_bandit_observations": null,
+          "ts_head_observations": [
+            937,
+            941,
+            1113,
+            1059
+          ],
+          "clipped_rewards": 0,
+          "pending_queues": {
+            "1": 0,
+            "2": 5,
+            "3": 0
+          },
+          "validation": {
+            "accuracy": 0.5703125,
+            "macro_f1": 0.5281553517952519,
+            "micro_f1": 0.5703125,
+            "weighted_f1": 0.5334733895989627,
+            "architectures": {
+              "samples": 128,
+              "depth_counts": {
+                "1": 34,
+                "2": 94
+              },
+              "dynamic_group_head_count_counts": {
+                "2": 94
+              },
+              "head_selection_frequencies_by_group": {
+                "1": [
+                  26,
+                  22,
+                  72,
+                  68
+                ]
+              },
+              "average_total_depth": 1.734375,
+              "average_heads_per_executed_layer": 3.1531531531531534,
+              "task_forward_matmul_flops": 15728640,
+              "relative_task_forward_matmul_flops": 0.5125125125125125
+            },
+            "routing_forward_matmul_flops": 10223616,
+            "end_to_end_seconds": 0.12065891700331122,
+            "samples_per_second": 1060.8416118676694,
+            "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+          },
+          "test": {
+            "accuracy": 0.6015625,
+            "macro_f1": 0.5455433455433455,
+            "micro_f1": 0.6015625,
+            "weighted_f1": 0.5649152930402931,
+            "architectures": {
+              "samples": 128,
+              "depth_counts": {
+                "1": 36,
+                "2": 92
+              },
+              "dynamic_group_head_count_counts": {
+                "2": 92
+              },
+              "head_selection_frequencies_by_group": {
+                "1": [
+                  23,
+                  14,
+                  78,
+                  69
+                ]
+              },
+              "average_total_depth": 1.71875,
+              "average_heads_per_executed_layer": 3.1636363636363636,
+              "task_forward_matmul_flops": 15611904,
+              "relative_task_forward_matmul_flops": 0.5087087087087087
+            },
+            "routing_forward_matmul_flops": 10223616,
+            "end_to_end_seconds": 0.11960050000925548,
+            "samples_per_second": 1070.2296394253744,
+            "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+          },
+          "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-audit-001/integrated-seed19/checkpoint.pt",
+          "limitations": "Matmul estimates exclude backward/optimizer/controller FLOPs. Per-sample execution prioritizes correctness; no paper/runtime speedup is claimed."
+        },
+        "first_25_depth_counts": {
+          "1": 24,
+          "2": 120,
+          "3": 56
+        },
+        "last_25_depth_counts": {
+          "1": 60,
+          "2": 125,
+          "3": 7
+        }
+      },
+      "provenance": {
+        "config": {
+          "name": "audit_integrated_seed19",
+          "seed": 19,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1019,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": {
+            "mode": "integrated",
+            "depths": [
+              1,
+              2,
+              3
+            ],
+            "head_counts": [
+              2,
+              4
+            ],
+            "pairs": [],
+            "calibration_samples": 32,
+            "sequence_bins": [
+              1,
+              2
+            ],
+            "depth_embedding_bins": [
+              1,
+              2,
+              4
+            ],
+            "head_embedding_bins": [
+              1,
+              2
+            ],
+            "ts_sequence_bins": [
+              1
+            ],
+            "ts_embedding_bins": [
+              1,
+              2
+            ],
+            "normalization_epsilon": 0.000001,
+            "reward_epsilon": 1e-8,
+            "reward_scale": 1,
+            "reward_cap": 100,
+            "feedback_rule": "paper_literal"
+          }
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null
+      }
+    },
+    {
+      "mode": "prefix",
+      "seed": 7,
+      "root": "artifacts/runs/monitored-prefix-control-001",
+      "audit": {
+        "status": "completed",
+        "optimizer_steps": 300,
+        "finite_losses_gradients_parameters": true,
+        "max_abs_gradient": 0.9118149876594543,
+        "first_25_mean_loss": 1.124429759979248,
+        "last_25_mean_loss": 0.9495947313308716,
+        "training_loss_decreased": true,
+        "queue_conservation_and_finite_converged_bandits": null,
+        "summary": {
+          "scope": "synthetic_deterministic_scaffold",
+          "completed_steps": 300,
+          "segment_start_step": 0,
+          "segment_training_seconds": 0.6847245419921819,
+          "complete": true,
+          "architecture": {
+            "total_depth": 1,
+            "head_indices": {}
+          },
+          "average_total_depth": 1,
+          "average_heads_per_executed_layer": 4,
+          "head_counts_by_layer": [
+            4
+          ],
+          "forward_matmul_flops_per_sample": 80016,
+          "relative_forward_matmul_flops": 0.3337337337337337,
+          "validation": {
+            "accuracy": 0.515625,
+            "macro_f1": 0.45249838518293245,
+            "micro_f1": 0.515625,
+            "weighted_f1": 0.4593226626254001
+          },
+          "test": {
+            "accuracy": 0.546875,
+            "macro_f1": 0.4762143890796777,
+            "micro_f1": 0.546875,
+            "weighted_f1": 0.4907790681899177
+          },
+          "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-prefix-control-001/prefix-seed7/checkpoint.pt"
+        }
+      },
+      "provenance": {
+        "config": {
+          "name": "audit_prefix_seed7",
+          "seed": 7,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1007,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": {
+            "total_depth": 1,
+            "head_indices": {}
+          },
+          "dht": null
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_prefix.toml": "86a3ad0c450db934779646b9c7504d9689dd692ec4a04b8a78b3a5ce1e47f459",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null,
+        "started_at": "2026-09-07T22:38:10.536245+00:00"
+      }
+    },
+    {
+      "mode": "prefix",
+      "seed": 11,
+      "root": "artifacts/runs/monitored-prefix-control-001",
+      "audit": {
+        "status": "completed",
+        "optimizer_steps": 300,
+        "finite_losses_gradients_parameters": true,
+        "max_abs_gradient": 1.100756049156189,
+        "first_25_mean_loss": 1.1361085844039918,
+        "last_25_mean_loss": 0.8434834504127502,
+        "training_loss_decreased": true,
+        "queue_conservation_and_finite_converged_bandits": null,
+        "summary": {
+          "scope": "synthetic_deterministic_scaffold",
+          "completed_steps": 300,
+          "segment_start_step": 0,
+          "segment_training_seconds": 0.6373643749975599,
+          "complete": true,
+          "architecture": {
+            "total_depth": 1,
+            "head_indices": {}
+          },
+          "average_total_depth": 1,
+          "average_heads_per_executed_layer": 4,
+          "head_counts_by_layer": [
+            4
+          ],
+          "forward_matmul_flops_per_sample": 80016,
+          "relative_forward_matmul_flops": 0.3337337337337337,
+          "validation": {
+            "accuracy": 0.640625,
+            "macro_f1": 0.6405008877674984,
+            "micro_f1": 0.640625,
+            "weighted_f1": 0.6408659237454443
+          },
+          "test": {
+            "accuracy": 0.6484375,
+            "macro_f1": 0.6602828822208063,
+            "micro_f1": 0.6484375,
+            "weighted_f1": 0.6516790460647188
+          },
+          "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-prefix-control-001/prefix-seed11/checkpoint.pt"
+        }
+      },
+      "provenance": {
+        "config": {
+          "name": "audit_prefix_seed11",
+          "seed": 11,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1011,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": {
+            "total_depth": 1,
+            "head_indices": {}
+          },
+          "dht": null
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_prefix.toml": "86a3ad0c450db934779646b9c7504d9689dd692ec4a04b8a78b3a5ce1e47f459",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null,
+        "started_at": "2026-09-07T22:38:11.324836+00:00"
+      }
+    },
+    {
+      "mode": "prefix",
+      "seed": 19,
+      "root": "artifacts/runs/monitored-prefix-control-001",
+      "audit": {
+        "status": "completed",
+        "optimizer_steps": 300,
+        "finite_losses_gradients_parameters": true,
+        "max_abs_gradient": 1.8743658065795898,
+        "first_25_mean_loss": 1.1376061272621154,
+        "last_25_mean_loss": 0.8520059990882873,
+        "training_loss_decreased": true,
+        "queue_conservation_and_finite_converged_bandits": null,
+        "summary": {
+          "scope": "synthetic_deterministic_scaffold",
+          "completed_steps": 300,
+          "segment_start_step": 0,
+          "segment_training_seconds": 0.6354501250025351,
+          "complete": true,
+          "architecture": {
+            "total_depth": 1,
+            "head_indices": {}
+          },
+          "average_total_depth": 1,
+          "average_heads_per_executed_layer": 4,
+          "head_counts_by_layer": [
+            4
+          ],
+          "forward_matmul_flops_per_sample": 80016,
+          "relative_forward_matmul_flops": 0.3337337337337337,
+          "validation": {
+            "accuracy": 0.6015625,
+            "macro_f1": 0.5782520881829386,
+            "micro_f1": 0.6015625,
+            "weighted_f1": 0.5879777841726004
+          },
+          "test": {
+            "accuracy": 0.640625,
+            "macro_f1": 0.5995866269523046,
+            "micro_f1": 0.640625,
+            "weighted_f1": 0.617573247221904
+          },
+          "checkpoint": "/Users/jeremywizenfeld/development/school/dynamic-transformers/artifacts/runs/monitored-prefix-control-001/prefix-seed19/checkpoint.pt"
+        }
+      },
+      "provenance": {
+        "config": {
+          "name": "audit_prefix_seed19",
+          "seed": 19,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 300,
+          "batch_size": 8,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 256,
+            "validation_size": 128,
+            "test_size": 128,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 1019,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": {
+            "total_depth": 1,
+            "head_indices": {}
+          },
+          "dht": null
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "294b999542a03af5c76bd016a42346f8986b73f9a50987270006580d24c64fb4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "a86233b328711a4629c9c7b10b789367150ddeb436166e1decc0276852628b6b",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "08af2607e78996406df81c66e90baefaae1e80308dba893f088cfe7f63c28993",
+          "src/dht/models/attention.py": "25aedb6c5a69e9a8cb8b8da8013abdf1e8456e5e5c765ce16f38eb4a5ba8297a",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "b1181ebbc6fa87766c8b25114972b23c86468535f0d3274511bf580733dcb69d",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/audit_fixed.toml": "74cdc24c8536a0f159f98f9d36a4da6b0039471eab6eaafa12bf16a005a4969e",
+          "configs/experiment/audit_integrated.toml": "9f15ccccab882fe49cc6ba9f259f674aefcc26c7fae212ff9eee7896048459aa",
+          "configs/experiment/audit_prefix.toml": "86a3ad0c450db934779646b9c7504d9689dd692ec4a04b8a78b3a5ce1e47f459",
+          "configs/experiment/audit_tree.toml": "1bfbf37cfb7afcca52639553c5c4b5c597ec31cc6765bfd2cb3a929ea492ec0e",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null,
+        "started_at": "2026-09-07T22:38:12.044839+00:00"
+      }
+    }
+  ]
+}

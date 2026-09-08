@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Research outputs (curated summaries belong under experiments/ or reports/)
+artifacts/
+datasets/
+*.pt
+*.pth
+*.safetensors
+.DS_Store

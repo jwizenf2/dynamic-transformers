@@ -1,0 +1,52 @@
+# Bounded REAL-DATA pilot, not the full paper experiment.
+# §6.1 pp.445–446 specifies model dimensions and actions. See D010 for other choices.
+# No test evaluation, warmup, or checkpoint selection in this predeclared 128-step pilot.
+name = "ag_news_bert_tree_pilot"
+seed = 7
+device = "mps"
+allow_device_fallback = false
+steps = 128
+batch_size = 8
+learning_rate = 0.00002
+weight_decay = 0.01
+cpu_threads = 4
+log_every = 8
+evaluate_test = false
+pretrained_weights = "artifacts/pretrained/bert-base-uncased/model.safetensors"
+pretrained_sha256 = "68d45e234eb4a928074dfd868cead0219ab85354cc53d20e772753c6bb9169d3"
+
+[model]
+vocab_size = 30522
+total_depth = 12
+prefix_depth = 3
+group_size = 3
+hidden_size = 768
+num_heads = 12
+intermediate_size = 3072
+max_sequence_length = 512
+num_classes = 4
+dropout = 0.1
+layer_norm_eps = 1e-12
+
+[data]
+name = "ag_news"
+version = "ag_news_wordpiece_v1"
+prepared_directory = "datasets/ag_news_wordpiece_v1"
+manifest_sha256 = "3aeed9048c40a8a2d2b6ffac168bdc7f1000c0d3a108f8fd72e54ef91fe3adaf"
+train_size = 1024
+validation_size = 128
+test_size = 7600
+sequence_length = 128
+
+[dht]
+mode = "tree"
+depths = [3, 6, 9, 12]
+head_counts = [8, 10, 12]
+calibration_samples = 4
+sequence_bins = [1, 2]
+depth_embedding_bins = [4, 8, 16]
+head_embedding_bins = [2, 4, 8]
+ts_sequence_bins = [1]
+ts_embedding_bins = [4, 8]
+feedback_rule = "paper_literal"
+

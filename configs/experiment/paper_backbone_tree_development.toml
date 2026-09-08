@@ -1,0 +1,29 @@
+# Published architecture/action dimensions with SYNTHETIC data only.
+# This is a reference-sized development template, not an AG News experiment.
+# Do not launch without checking memory/runtime on the target device.
+name = "paper_backbone_tree_development"
+device = "auto"
+steps = 3
+batch_size = 2
+
+[model]
+total_depth = 12
+prefix_depth = 3
+group_size = 3
+hidden_size = 768
+num_heads = 12
+intermediate_size = 3072
+max_sequence_length = 128
+num_classes = 4
+
+[dht]
+mode = "tree"
+depths = [3, 6, 9, 12]
+head_counts = [8, 10, 12]
+calibration_samples = 4
+sequence_bins = [1, 2]
+depth_embedding_bins = [4, 8, 16]
+head_embedding_bins = [2, 4, 8]
+ts_sequence_bins = [1]
+ts_embedding_bins = [4, 8]
+feedback_rule = "paper_literal"

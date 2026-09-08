@@ -1,0 +1,59 @@
+# D013: BOUNDED readiness check, not full reproduction.
+# Keep the primary reproduction feedback literal. The alternative is a named diagnostic.
+name = "ag_news_readiness_improvement"
+seed = 7
+device = "mps"
+allow_device_fallback = false
+batch_size = 8
+learning_rate = 0.00002
+weight_decay = 0.01
+cpu_threads = 4
+log_every = 32
+evaluate_test = false
+pretrained_weights = "artifacts/pretrained/bert-base-uncased/model.safetensors"
+pretrained_sha256 = "68d45e234eb4a928074dfd868cead0219ab85354cc53d20e772753c6bb9169d3"
+
+[model]
+vocab_size = 30522
+total_depth = 12
+prefix_depth = 3
+group_size = 3
+hidden_size = 768
+num_heads = 12
+intermediate_size = 3072
+max_sequence_length = 512
+num_classes = 4
+dropout = 0.1
+layer_norm_eps = 1e-12
+
+[training]
+epochs = 2
+schedule = "linear_warmup_decay"
+warmup_fraction = 0.1
+checkpoint_every_steps = 64
+selection_metric = "macro_f1"
+
+[data]
+name = "ag_news"
+version = "ag_news_wordpiece_v1"
+prepared_directory = "datasets/ag_news_wordpiece_v1"
+manifest_sha256 = "3aeed9048c40a8a2d2b6ffac168bdc7f1000c0d3a108f8fd72e54ef91fe3adaf"
+train_size = 1024
+validation_size = 512
+test_size = 7600
+sequence_length = 128
+
+[dht]
+mode = "tree"
+depths = [3, 6, 9, 12]
+head_counts = [8, 10, 12]
+calibration_samples = 512
+calibration_sampling = "stratified"
+calibration_seed = 42
+sequence_bins = [1, 2]
+depth_embedding_bins = [4, 8, 16]
+head_embedding_bins = [2, 4, 8]
+ts_sequence_bins = [1]
+ts_embedding_bins = [4, 8]
+feedback_rule = "improvement"
+

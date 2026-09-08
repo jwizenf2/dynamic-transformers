@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dynamic-transformers"
+version = "0.1.0"
+description = "Independent, provenance-aware reproduction of contextual-bandit DHT"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = ["numpy>=2.2,<3", "torch>=2.6,<3", "pydantic>=2.10,<3"]
+
+[project.optional-dependencies]
+nlp = ["tokenizers>=0.21,<1", "safetensors>=0.5,<1"]
+
+[project.scripts]
+dht = "dht.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8.3,<10", "ruff>=0.11,<1"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dht"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.uv]
+cache-dir = ".cache/uv"

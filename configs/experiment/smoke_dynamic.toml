@@ -1,0 +1,12 @@
+# Deterministic supplied architecture, NOT a learned DHT policy.
+name = "cpu_dynamic_sanity"
+seed = 7
+device = "cpu"
+steps = 3
+batch_size = 4
+
+[architecture]
+total_depth = 2
+
+[architecture.head_indices]
+"1" = [1, 3]

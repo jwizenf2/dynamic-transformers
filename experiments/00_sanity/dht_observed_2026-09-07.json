@@ -1,0 +1,542 @@
+{
+  "date": "2026-09-07",
+  "scope": "independent_DHT_synthetic_mechanics_not_NLP_reproduction",
+  "tests": {
+    "passed": 74,
+    "seconds": 2.51
+  },
+  "notes": [
+    "No author code imported.",
+    "Run source hashes identify the uncommitted implementation at execution time; later explanatory docstrings may change hashes without changing these measurements.",
+    "Task-forward FLOP ratios exclude routing, calibration, backward, optimizer and controller operations; no speedup claim.",
+    "Only eight optimizer updates per smoke run; these are not quality comparisons."
+  ],
+  "runs": [
+    {
+      "summary": {
+        "scope": "independent_dht_synthetic",
+        "mode": "tree",
+        "completed_steps": 8,
+        "segment_start_step": 0,
+        "complete": true,
+        "segment_training_seconds": 0.10058587501407601,
+        "calibration_seconds": 0.05411608298891224,
+        "calibration_forward_matmul_flops": 2850816,
+        "cumulative_routed_samples": 24,
+        "cumulative_routing_seconds": 0.028123837138991803,
+        "cumulative_routing_forward_matmul_flops": 1916928,
+        "training_segment_architectures": {
+          "samples": 22,
+          "depth_counts": {
+            "1": 13,
+            "2": 3,
+            "3": 6
+          },
+          "dynamic_group_head_count_counts": {
+            "2": 7,
+            "4": 8
+          },
+          "head_selection_frequencies_by_group": {
+            "1": [
+              4,
+              9,
+              4,
+              5
+            ],
+            "2": [
+              6,
+              6,
+              6,
+              6
+            ]
+          },
+          "average_total_depth": 1.6818181818181819,
+          "average_heads_per_executed_layer": 3.6216216216216215,
+          "task_forward_matmul_flops": 2807904,
+          "relative_task_forward_matmul_flops": 0.5323323323323323
+        },
+        "route_bandit_observations": [
+          13,
+          3,
+          3
+        ],
+        "head_count_bandit_observations": [
+          4,
+          5
+        ],
+        "ts_head_observations": [
+          6,
+          9,
+          6,
+          7
+        ],
+        "clipped_rewards": 0,
+        "pending_queues": {
+          "1": 0,
+          "2": 1,
+          "3": 1
+        },
+        "validation": {
+          "accuracy": 0.4166666666666667,
+          "macro_f1": 0.19607843137254902,
+          "micro_f1": 0.4166666666666667,
+          "weighted_f1": 0.2450980392156863,
+          "architectures": {
+            "samples": 12,
+            "depth_counts": {
+              "1": 12
+            },
+            "dynamic_group_head_count_counts": {},
+            "head_selection_frequencies_by_group": {},
+            "average_total_depth": 1,
+            "average_heads_per_executed_layer": 4,
+            "task_forward_matmul_flops": 960192,
+            "relative_task_forward_matmul_flops": 0.3337337337337337
+          },
+          "routing_forward_matmul_flops": 958464,
+          "end_to_end_seconds": 0.009513708006124943,
+          "samples_per_second": 1261.3378497925705,
+          "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+        },
+        "test": {
+          "accuracy": 0.16666666666666666,
+          "macro_f1": 0.09523809523809523,
+          "micro_f1": 0.16666666666666666,
+          "weighted_f1": 0.047619047619047616,
+          "architectures": {
+            "samples": 12,
+            "depth_counts": {
+              "1": 12
+            },
+            "dynamic_group_head_count_counts": {},
+            "head_selection_frequencies_by_group": {},
+            "average_total_depth": 1,
+            "average_heads_per_executed_layer": 4,
+            "task_forward_matmul_flops": 960192,
+            "relative_task_forward_matmul_flops": 0.3337337337337337
+          },
+          "routing_forward_matmul_flops": 958464,
+          "end_to_end_seconds": 0.009410750004462898,
+          "samples_per_second": 1275.1374751543917,
+          "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+        },
+        "checkpoint": "artifacts/runs/tree-dht-v1/checkpoint.pt",
+        "limitations": "Matmul estimates exclude backward/optimizer/controller FLOPs. Per-sample execution prioritizes correctness; no paper/runtime speedup is claimed."
+      },
+      "metadata": {
+        "config": {
+          "name": "tree_dht_cpu",
+          "seed": 7,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 8,
+          "batch_size": 3,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0.1,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 24,
+            "validation_size": 12,
+            "test_size": 12,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 17,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": {
+            "mode": "tree",
+            "depths": [
+              1,
+              2,
+              3
+            ],
+            "head_counts": [
+              2,
+              4
+            ],
+            "pairs": [],
+            "calibration_samples": 8,
+            "sequence_bins": [
+              1,
+              2
+            ],
+            "depth_embedding_bins": [
+              1,
+              2,
+              4
+            ],
+            "head_embedding_bins": [
+              1,
+              2
+            ],
+            "ts_sequence_bins": [
+              1
+            ],
+            "ts_embedding_bins": [
+              1,
+              2
+            ],
+            "normalization_epsilon": 0.000001,
+            "reward_epsilon": 1e-8,
+            "reward_scale": 1,
+            "reward_cap": 100,
+            "feedback_rule": "paper_literal"
+          }
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "b4a3ddfc0dee4aacb5919c83a32295c46edb57c4de1f6fe1e3e83aa08a6989e4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "c261dc931066d4b20b798b85a403d0c739e1b37ba3c21c87a700e7a7efadd622",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "a665cd2c9bf931ee77fd4e549b3ad06506415f6a912e6f3dd3a8cae21be4acbf",
+          "src/dht/models/attention.py": "156faf7921983e5c167b8de2fe59628542e211138908fa94eb9d8c542b72370f",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "f047dee47d4d0541bfbc6b79a953b38846f5678b037ab0bb8cdf7c5169babbbd",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null
+      }
+    },
+    {
+      "summary": {
+        "scope": "independent_dht_synthetic",
+        "mode": "integrated",
+        "completed_steps": 8,
+        "segment_start_step": 0,
+        "complete": true,
+        "segment_training_seconds": 0.10499029100174084,
+        "calibration_seconds": 0.05354891699971631,
+        "calibration_forward_matmul_flops": 2850816,
+        "cumulative_routed_samples": 24,
+        "cumulative_routing_seconds": 0.0227823750465177,
+        "cumulative_routing_forward_matmul_flops": 1916928,
+        "training_segment_architectures": {
+          "samples": 24,
+          "depth_counts": {
+            "1": 9,
+            "2": 6,
+            "3": 9
+          },
+          "dynamic_group_head_count_counts": {
+            "2": 9,
+            "4": 15
+          },
+          "head_selection_frequencies_by_group": {
+            "1": [
+              10,
+              14,
+              14,
+              10
+            ],
+            "2": [
+              7,
+              9,
+              7,
+              7
+            ]
+          },
+          "average_total_depth": 2,
+          "average_heads_per_executed_layer": 3.625,
+          "task_forward_matmul_flops": 3643776,
+          "relative_task_forward_matmul_flops": 0.6332332332332332
+        },
+        "route_bandit_observations": [
+          9,
+          3,
+          3,
+          3,
+          3
+        ],
+        "head_count_bandit_observations": null,
+        "ts_head_observations": [
+          11,
+          17,
+          15,
+          11
+        ],
+        "clipped_rewards": 0,
+        "pending_queues": {
+          "1": 0,
+          "2": 0,
+          "3": 0
+        },
+        "validation": {
+          "accuracy": 0.4166666666666667,
+          "macro_f1": 0.19607843137254902,
+          "micro_f1": 0.4166666666666667,
+          "weighted_f1": 0.2450980392156863,
+          "architectures": {
+            "samples": 12,
+            "depth_counts": {
+              "1": 12
+            },
+            "dynamic_group_head_count_counts": {},
+            "head_selection_frequencies_by_group": {},
+            "average_total_depth": 1,
+            "average_heads_per_executed_layer": 4,
+            "task_forward_matmul_flops": 960192,
+            "relative_task_forward_matmul_flops": 0.3337337337337337
+          },
+          "routing_forward_matmul_flops": 958464,
+          "end_to_end_seconds": 0.009904459002427757,
+          "samples_per_second": 1211.5755133176472,
+          "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+        },
+        "test": {
+          "accuracy": 0.16666666666666666,
+          "macro_f1": 0.09523809523809523,
+          "micro_f1": 0.16666666666666666,
+          "weighted_f1": 0.047619047619047616,
+          "architectures": {
+            "samples": 12,
+            "depth_counts": {
+              "1": 11,
+              "3": 1
+            },
+            "dynamic_group_head_count_counts": {
+              "4": 2
+            },
+            "head_selection_frequencies_by_group": {
+              "1": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "2": [
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "average_total_depth": 1.1666666666666667,
+            "average_heads_per_executed_layer": 4,
+            "task_forward_matmul_flops": 1119936,
+            "relative_task_forward_matmul_flops": 0.3892559225892559
+          },
+          "routing_forward_matmul_flops": 958464,
+          "end_to_end_seconds": 0.010440375015605241,
+          "samples_per_second": 1149.3840002934364,
+          "timing_scope": "routing + per-sample policy + task forward + transfers + predictions"
+        },
+        "checkpoint": "artifacts/runs/integrated-dht-v1/checkpoint.pt",
+        "limitations": "Matmul estimates exclude backward/optimizer/controller FLOPs. Per-sample execution prioritizes correctness; no paper/runtime speedup is claimed."
+      },
+      "metadata": {
+        "config": {
+          "name": "integrated_dht_cpu",
+          "seed": 7,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 8,
+          "batch_size": 3,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 24,
+            "validation_size": 12,
+            "test_size": 12,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 17,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "diagonal_laplace",
+            "ts_prior_precision": 1,
+            "ts_max_iterations": 30,
+            "ts_tolerance": 1e-7
+          },
+          "architecture": null,
+          "dht": {
+            "mode": "integrated",
+            "depths": [
+              1,
+              2,
+              3
+            ],
+            "head_counts": [
+              2,
+              4
+            ],
+            "pairs": [
+              [
+                1,
+                4
+              ],
+              [
+                2,
+                2
+              ],
+              [
+                2,
+                4
+              ],
+              [
+                3,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            "calibration_samples": 8,
+            "sequence_bins": [
+              1,
+              2
+            ],
+            "depth_embedding_bins": [
+              1,
+              2,
+              4
+            ],
+            "head_embedding_bins": [
+              1,
+              2
+            ],
+            "ts_sequence_bins": [
+              1
+            ],
+            "ts_embedding_bins": [
+              1,
+              2
+            ],
+            "normalization_epsilon": 0.000001,
+            "reward_epsilon": 1e-8,
+            "reward_scale": 1,
+            "reward_cap": 100,
+            "feedback_rule": "paper_literal"
+          }
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/bandits/__init__.py": "59cb7ad6f6afc6774c348db81a6306faeb9472b7aa6407e49787366dd7e8c989",
+          "src/dht/bandits/features.py": "518ec0bb508ee97f13f40c9a2ffda9ed92bedb0171285a7d1fd80d00aad5bdab",
+          "src/dht/bandits/linear_ucb.py": "3819c7e0ddb8b8b7fec236c78045571407ee515b2ee04cd378fe02096fa98a7b",
+          "src/dht/bandits/logistic_ts.py": "17618b15da69247a6255994a4bc3c62dc3ec33e5a9611b4d13d9c3ff2f429b69",
+          "src/dht/cli.py": "b4a3ddfc0dee4aacb5919c83a32295c46edb57c4de1f6fe1e3e83aa08a6989e4",
+          "src/dht/config.py": "e7c99a9f9f3818631718ececa48aa21979b8e364361cd6e95072e7a41ad722a1",
+          "src/dht/data.py": "c261dc931066d4b20b798b85a403d0c739e1b37ba3c21c87a700e7a7efadd622",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "a665cd2c9bf931ee77fd4e549b3ad06506415f6a912e6f3dd3a8cae21be4acbf",
+          "src/dht/models/attention.py": "156faf7921983e5c167b8de2fe59628542e211138908fa94eb9d8c542b72370f",
+          "src/dht/models/transformer.py": "37501624958157eb0c67206fe1c6ce0b8cec7d827d3263d8faaba97e6e099484",
+          "src/dht/policies/__init__.py": "191064dbb5aa22922969429d8d5cac66cbc81bcd02d91f0b6912db225aac2495",
+          "src/dht/policies/controller.py": "4c7ba69a4fc839e6b7be265cb8b862191c286433330b65a100c45175bed771d9",
+          "src/dht/policies/rewards.py": "7d314055ddf7cfa46ab92a2e416e5d686381d6b903bfc6708269e66d9b49a884",
+          "src/dht/runtime.py": "f047dee47d4d0541bfbc6b79a953b38846f5678b037ab0bb8cdf7c5169babbbd",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "4af8063ab1c8c8eeef2599091d865c5bb54617b75c610ac0117322fd69603051",
+          "src/dht/training/queues.py": "f48ca401d9a07d47a08defa7f8334dbc226c7e7f7f56a1a81094d815fc7835e4",
+          "src/dht/training/trainer.py": "9dfb2140591dd28335a58b39c980f11347e46fe77b70bf690dee6c8693e784b0",
+          "configs/experiment/dht_integrated_smoke.toml": "8bb047334bb954340d457c1d13529f40d3f093b038ac2444c6935ec14193eb34",
+          "configs/experiment/dht_tree_smoke.toml": "affe63c4f37cee49fac9339ee6eefe8e0ec5dd352de43d28e6839267d87db0af",
+          "configs/experiment/paper_backbone_tree_development.toml": "10f3391f4cd8a218ea0a7a9013cd8e502e6108670789594f499abb376b615832",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null
+      }
+    }
+  ]
+}

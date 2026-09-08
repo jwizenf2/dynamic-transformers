@@ -1,0 +1,14 @@
+# Integrated depth/count selection; TSB still chooses identities per group.
+name = "integrated_dht_cpu"
+seed = 7
+device = "cpu"
+steps = 8
+batch_size = 3
+
+[dht]
+mode = "integrated"
+depths = [1, 2, 3]
+head_counts = [2, 4]
+pairs = [[1, 4], [2, 2], [2, 4], [3, 2], [3, 4]]
+calibration_samples = 8
+feedback_rule = "paper_literal"

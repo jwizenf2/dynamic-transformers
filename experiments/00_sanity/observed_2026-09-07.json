@@ -1,0 +1,375 @@
+{
+  "scope": "observed_synthetic_software_sanity_not_paper_reproduction",
+  "date": "2026-09-07",
+  "code_note": "Initial Git revision plus uncommitted implementation; exact source/config/lock hashes retained below.",
+  "runs": [
+    {
+      "scope": "synthetic_deterministic_scaffold",
+      "completed_steps": 3,
+      "segment_start_step": 0,
+      "segment_training_seconds": 0.013308749999850988,
+      "complete": true,
+      "architecture": {
+        "total_depth": 3,
+        "head_indices": {}
+      },
+      "average_total_depth": 3,
+      "average_heads_per_executed_layer": 4,
+      "head_counts_by_layer": [
+        4,
+        4,
+        4
+      ],
+      "forward_matmul_flops_per_sample": 239760,
+      "relative_forward_matmul_flops": 1,
+      "validation": {
+        "accuracy": 0.4166666666666667,
+        "macro_f1": 0.19607843137254902,
+        "micro_f1": 0.4166666666666667,
+        "weighted_f1": 0.2450980392156863
+      },
+      "test": {
+        "accuracy": 0.16666666666666666,
+        "macro_f1": 0.09523809523809523,
+        "micro_f1": 0.16666666666666666,
+        "weighted_f1": 0.047619047619047616
+      },
+      "checkpoint": "artifacts/runs/fixed-smoke/checkpoint.pt",
+      "provenance": {
+        "config": {
+          "name": "cpu_sanity",
+          "seed": 7,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 3,
+          "batch_size": 4,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 24,
+            "validation_size": 12,
+            "test_size": 12,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 17,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "unresolved"
+          },
+          "architecture": null
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/cli.py": "c9d430f934c8b256f678d681bb77a0fd08e89aaf89cd14ef7e3c0009c377da5b",
+          "src/dht/config.py": "2d7403c7f0b35958da8fcda64b05d9003164df2fc9cd93f3be00f0beb5886494",
+          "src/dht/data.py": "c261dc931066d4b20b798b85a403d0c739e1b37ba3c21c87a700e7a7efadd622",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "a665cd2c9bf931ee77fd4e549b3ad06506415f6a912e6f3dd3a8cae21be4acbf",
+          "src/dht/models/attention.py": "156faf7921983e5c167b8de2fe59628542e211138908fa94eb9d8c542b72370f",
+          "src/dht/models/transformer.py": "8e9b4fb7574aa122be63a4fd542d979926b8945184e48742f58e27266ebb54ad",
+          "src/dht/runtime.py": "f047dee47d4d0541bfbc6b79a953b38846f5678b037ab0bb8cdf7c5169babbbd",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "ed68e26948b15ea0a25b8aa97a905e3d1b00e652af3134a697d0147096e0b9d8",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null,
+        "started_at": "2026-09-07T16:29:30.493411+00:00"
+      }
+    },
+    {
+      "scope": "synthetic_deterministic_scaffold",
+      "completed_steps": 3,
+      "segment_start_step": 0,
+      "segment_training_seconds": 0.009000041987746954,
+      "complete": true,
+      "architecture": {
+        "total_depth": 2,
+        "head_indices": {
+          "1": [
+            1,
+            3
+          ]
+        }
+      },
+      "average_total_depth": 2,
+      "average_heads_per_executed_layer": 3,
+      "head_counts_by_layer": [
+        4,
+        2
+      ],
+      "forward_matmul_flops_per_sample": 138384,
+      "relative_forward_matmul_flops": 0.5771771771771772,
+      "validation": {
+        "accuracy": 0.4166666666666667,
+        "macro_f1": 0.19607843137254902,
+        "micro_f1": 0.4166666666666667,
+        "weighted_f1": 0.2450980392156863
+      },
+      "test": {
+        "accuracy": 0.16666666666666666,
+        "macro_f1": 0.09523809523809523,
+        "micro_f1": 0.16666666666666666,
+        "weighted_f1": 0.047619047619047616
+      },
+      "checkpoint": "artifacts/runs/dynamic-smoke/checkpoint.pt",
+      "provenance": {
+        "config": {
+          "name": "cpu_dynamic_sanity",
+          "seed": 7,
+          "device": "cpu",
+          "allow_device_fallback": true,
+          "steps": 3,
+          "batch_size": 4,
+          "learning_rate": 0.001,
+          "weight_decay": 0,
+          "cpu_threads": 1,
+          "model": {
+            "vocab_size": 64,
+            "total_depth": 3,
+            "prefix_depth": 1,
+            "group_size": 1,
+            "hidden_size": 24,
+            "num_heads": 4,
+            "intermediate_size": 48,
+            "max_sequence_length": 16,
+            "num_classes": 3,
+            "dropout": 0,
+            "layer_norm_eps": 0.00001
+          },
+          "data": {
+            "name": "synthetic",
+            "version": "token_modulo_v1",
+            "train_size": 24,
+            "validation_size": 12,
+            "test_size": 12,
+            "sequence_length": 8
+          },
+          "bandit": {
+            "seed": 17,
+            "ucb_ridge": 1,
+            "ucb_exploration": 1,
+            "aggregate_feature_dim": null,
+            "ts_interpretation": "unresolved"
+          },
+          "architecture": {
+            "total_depth": 2,
+            "head_indices": {
+              "1": [
+                1,
+                3
+              ]
+            }
+          }
+        },
+        "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+        "file_sha256": {
+          "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+          "src/dht/cli.py": "c9d430f934c8b256f678d681bb77a0fd08e89aaf89cd14ef7e3c0009c377da5b",
+          "src/dht/config.py": "2d7403c7f0b35958da8fcda64b05d9003164df2fc9cd93f3be00f0beb5886494",
+          "src/dht/data.py": "c261dc931066d4b20b798b85a403d0c739e1b37ba3c21c87a700e7a7efadd622",
+          "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+          "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+          "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+          "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+          "src/dht/models/architecture.py": "a665cd2c9bf931ee77fd4e549b3ad06506415f6a912e6f3dd3a8cae21be4acbf",
+          "src/dht/models/attention.py": "156faf7921983e5c167b8de2fe59628542e211138908fa94eb9d8c542b72370f",
+          "src/dht/models/transformer.py": "8e9b4fb7574aa122be63a4fd542d979926b8945184e48742f58e27266ebb54ad",
+          "src/dht/runtime.py": "f047dee47d4d0541bfbc6b79a953b38846f5678b037ab0bb8cdf7c5169babbbd",
+          "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+          "src/dht/training/checkpointing.py": "ed68e26948b15ea0a25b8aa97a905e3d1b00e652af3134a697d0147096e0b9d8",
+          "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+          "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+          "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+          "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+        },
+        "versions": {
+          "torch": "2.14.0",
+          "numpy": "2.5.3",
+          "pydantic": "2.13.5",
+          "dynamic-transformers": "0.1.0"
+        },
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "machine": "arm64",
+        "device": "cpu",
+        "device_name": "arm64",
+        "deterministic_algorithms": true,
+        "torch_threads": 1,
+        "cuda_runtime": null,
+        "mps_available": false,
+        "resume_from": null,
+        "started_at": "2026-09-07T16:30:01.648745+00:00"
+      }
+    }
+  ],
+  "benchmark": {
+    "scope": "synthetic_forward_only",
+    "warmup": 3,
+    "repeats": 10,
+    "batch_size": 4,
+    "sequence_length": 8,
+    "batch_seconds": [
+      0.00037024999619461596,
+      0.0003598750045057386,
+      0.0003635419998317957,
+      0.00034983400837518275,
+      0.0003488750080578029,
+      0.0003479579754639417,
+      0.0003478330036159605,
+      0.00034175001201219857,
+      0.00037962498026899993,
+      0.0003486250061541796
+    ],
+    "mean_batch_seconds": 0.0003558166994480416,
+    "samples_per_second": 11241.743308296025,
+    "includes_routing_or_controller": false,
+    "peak_memory_bytes": null,
+    "peak_memory_note": "not instrumented; not reported as zero",
+    "checkpoint": "artifacts/runs/dynamic-smoke/checkpoint.pt",
+    "metadata": {
+      "config": {
+        "name": "cpu_dynamic_sanity",
+        "seed": 7,
+        "device": "cpu",
+        "allow_device_fallback": true,
+        "steps": 3,
+        "batch_size": 4,
+        "learning_rate": 0.001,
+        "weight_decay": 0,
+        "cpu_threads": 1,
+        "model": {
+          "vocab_size": 64,
+          "total_depth": 3,
+          "prefix_depth": 1,
+          "group_size": 1,
+          "hidden_size": 24,
+          "num_heads": 4,
+          "intermediate_size": 48,
+          "max_sequence_length": 16,
+          "num_classes": 3,
+          "dropout": 0,
+          "layer_norm_eps": 0.00001
+        },
+        "data": {
+          "name": "synthetic",
+          "version": "token_modulo_v1",
+          "train_size": 24,
+          "validation_size": 12,
+          "test_size": 12,
+          "sequence_length": 8
+        },
+        "bandit": {
+          "seed": 17,
+          "ucb_ridge": 1,
+          "ucb_exploration": 1,
+          "aggregate_feature_dim": null,
+          "ts_interpretation": "unresolved"
+        },
+        "architecture": {
+          "total_depth": 2,
+          "head_indices": {
+            "1": [
+              1,
+              3
+            ]
+          }
+        }
+      },
+      "git_commit": "12b88cdb467e9be775902cd736d95fc206d5371c",
+      "file_sha256": {
+        "src/dht/__init__.py": "b8ae87cc472500d62dfd1f3cd23b68333063c4dbf28d93d6274a9186fce7e6c7",
+        "src/dht/cli.py": "c9d430f934c8b256f678d681bb77a0fd08e89aaf89cd14ef7e3c0009c377da5b",
+        "src/dht/config.py": "2d7403c7f0b35958da8fcda64b05d9003164df2fc9cd93f3be00f0beb5886494",
+        "src/dht/data.py": "c261dc931066d4b20b798b85a403d0c739e1b37ba3c21c87a700e7a7efadd622",
+        "src/dht/evaluation/__init__.py": "44a66e06c7a2c6aed3ab77df792b5792026a5ad31e4d20f0f2d4b98e9991c4c0",
+        "src/dht/evaluation/flops.py": "a71920f8d5aa6fe0442f3b2db8f548dd4f99b6c5ed12fb8321caa5c8af00c1ef",
+        "src/dht/evaluation/metrics.py": "ee2ccce2b0a2f6794b0fc7151c2d3b24044179448f97ce2611cdc8f15c86a26b",
+        "src/dht/models/__init__.py": "f531524f586d06be7f7c5d8f62c97cffb0c523be10ba0876ed202d0cdf9a8a2b",
+        "src/dht/models/architecture.py": "a665cd2c9bf931ee77fd4e549b3ad06506415f6a912e6f3dd3a8cae21be4acbf",
+        "src/dht/models/attention.py": "156faf7921983e5c167b8de2fe59628542e211138908fa94eb9d8c542b72370f",
+        "src/dht/models/transformer.py": "8e9b4fb7574aa122be63a4fd542d979926b8945184e48742f58e27266ebb54ad",
+        "src/dht/runtime.py": "f047dee47d4d0541bfbc6b79a953b38846f5678b037ab0bb8cdf7c5169babbbd",
+        "src/dht/training/__init__.py": "c0708dd33845f0859438f928ce1aa40d71ea36d5c42460d97fdc44bf0332daad",
+        "src/dht/training/checkpointing.py": "ed68e26948b15ea0a25b8aa97a905e3d1b00e652af3134a697d0147096e0b9d8",
+        "configs/experiment/smoke.toml": "09f459c392be4c9b70bd7eacebbd525990086f178c5ad3f3438bcab58a33d22b",
+        "configs/experiment/smoke_dynamic.toml": "50eb36b0e1f37c1c4544205511809ac69ae2f87169fc5499ece510af764b0c0c",
+        "uv.lock": "92fcc2785661f113f874df916d46304541a9ce905aecd3c9f88689fa99d20feb",
+        "pyproject.toml": "fd5757e9dfac6141870195281021050a92e0cc9a42513309feb3142aeb1782be"
+      },
+      "versions": {
+        "torch": "2.14.0",
+        "numpy": "2.5.3",
+        "pydantic": "2.13.5",
+        "dynamic-transformers": "0.1.0"
+      },
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "platform": "macOS-26.6.2-arm64-arm-64bit",
+      "machine": "arm64",
+      "device": "cpu",
+      "device_name": "arm64",
+      "deterministic_algorithms": true,
+      "torch_threads": 1,
+      "cuda_runtime": null,
+      "mps_available": false
+    }
+  },
+  "checks": {
+    "pytest": {
+      "passed": 45,
+      "seconds": 1.27
+    },
+    "ruff_lint": "passed",
+    "ruff_format_check": "38 files already formatted",
+    "locked_sync": "passed",
+    "git_diff_check": "passed",
+    "cli": [
+      "fixed train",
+      "dynamic train",
+      "evaluate validation",
+      "benchmark",
+      "partial train",
+      "resumed train"
+    ],
+    "resume_note": "Integration test proves CPU dropout model/optimizer equivalence; manual CLI resumption also completed."
+  }
+}
