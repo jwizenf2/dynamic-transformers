@@ -1,0 +1,377 @@
+<title>Routing Compute for Tool Calling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap">
+<style>
+:root {
+  --bg:#F6F7F9; --paper:#FFFFFF; --ink:#1F2933; --body:#36404C; --muted:#667080; --rule:#D8DDE3;
+  --accent:#9A3B3B; --slate:#3D5A73; --panel:#EEF1F4;
+  --peer-bg:#E3ECF3; --peer-fg:#2F4E66; --pre-bg:#F1ECE4; --pre-fg:#6B5536; --wd-bg:#F4E1E1; --wd-fg:#8A2F2F;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  color-scheme: dark; --bg:#14181D; --paper:#1B2027; --ink:#E7EBF0; --body:#C5CCD5; --muted:#8C96A3; --rule:#313943;
+  --accent:#D98080; --slate:#8FB0CC; --panel:#232A33;
+  --peer-bg:#22313E; --peer-fg:#A9C6DD; --pre-bg:#352D22; --pre-fg:#D8C3A0; --wd-bg:#3A2323; --wd-fg:#E7A3A3; } }
+:root[data-theme="dark"] {
+  color-scheme: dark; --bg:#14181D; --paper:#1B2027; --ink:#E7EBF0; --body:#C5CCD5; --muted:#8C96A3; --rule:#313943;
+  --accent:#D98080; --slate:#8FB0CC; --panel:#232A33;
+  --peer-bg:#22313E; --peer-fg:#A9C6DD; --pre-bg:#352D22; --pre-fg:#D8C3A0; --wd-bg:#3A2323; --wd-fg:#E7A3A3; }
+body { background:var(--bg); color:var(--body); font:17px/1.62 "Literata", Georgia, serif; padding:0 20px; }
+.wrap { max-width:880px; margin:0 auto; padding-block:48px 80px; }
+header { border-bottom:1px solid var(--rule); padding-bottom:26px; margin-bottom:10px; }
+.kicker { font:600 12px/1 "IBM Plex Sans", system-ui, sans-serif; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); }
+h1 { font:600 clamp(28px,4.4vw,40px)/1.15 "Literata", Georgia, serif; color:var(--ink); margin:14px 0 12px; text-wrap:balance; }
+.sub { color:var(--muted); font:15px/1.5 "IBM Plex Sans", system-ui, sans-serif; max-width:65ch; }
+.legend { display:flex; flex-wrap:wrap; gap:10px 16px; margin-top:16px; font:13px "IBM Plex Sans", system-ui, sans-serif; color:var(--muted); align-items:center; }
+h2 { font:600 24px/1.25 "Literata", Georgia, serif; color:var(--ink); margin:44px 0 12px; text-wrap:balance; }
+p, li { max-width:68ch; }
+p { margin:0 0 14px; }
+strong { color:var(--ink); font-weight:600; }
+em { color:var(--ink); }
+ul, ol { padding-left:22px; } li { margin:6px 0; }
+code { font:14px "IBM Plex Mono", ui-monospace, monospace; background:var(--panel); padding:1px 5px; border-radius:3px; color:var(--ink); }
+.tag { display:inline-block; font:500 11px/1 "IBM Plex Sans", system-ui, sans-serif; letter-spacing:.04em; padding:4px 7px; border-radius:3px; vertical-align:2px; white-space:nowrap; }
+.peer { background:var(--peer-bg); color:var(--peer-fg); } .pre { background:var(--pre-bg); color:var(--pre-fg); } .wd { background:var(--wd-bg); color:var(--wd-fg); }
+.tw { overflow-x:auto; margin:18px 0 22px; border:1px solid var(--rule); background:var(--paper); }
+table { border-collapse:collapse; width:100%; font:14px/1.45 "IBM Plex Sans", system-ui, sans-serif; font-variant-numeric:tabular-nums; }
+th { text-align:left; background:var(--panel); color:var(--ink); font-weight:600; }
+th, td { padding:9px 12px; border-bottom:1px solid var(--rule); vertical-align:top; min-width:90px; }
+tr:last-child td { border-bottom:0; }
+section:last-of-type li { font-size:14.5px; line-height:1.5; margin:5px 0; }
+.ck { color:var(--slate); font-weight:600; }
+section:nth-of-type(8) { background:var(--paper); border:1px solid var(--rule); border-left:3px solid var(--accent); padding:4px 24px 12px; margin-top:40px; }
+a { color:var(--slate); }
+</style>
+<div class="wrap">
+<header>
+  <div class="kicker">Literature review · 23 September 2026</div>
+  <h1>Routing Compute for Tool Calling</h1>
+  <p class="sub">Dynamic layer, head and model routing relevant to extending DHT (Meng et al., 2024) from text classification to per-request routing in a small tool-calling model, trained with bandits or RL. Prepared by Jeremy Wizenfeld.</p>
+  <div class="legend"><span class="tag peer">peer-reviewed</span><span class="tag pre">preprint</span><span class="tag wd">withdrawn</span><span><span class="ck">✓</span> abstract read directly</span></div>
+</header>
+<div class="lede"><p>Written 2026-09-23. Scope: work relevant to extending DHT (Meng et al., 2024), which chooses
+layers and attention heads per input with contextual bandits, from text classification to
+<strong>tool (function) calling</strong> with a small decoder-only model. Status markers: <span class="tag peer">peer-reviewed</span>
+peer-reviewed venue; <span class="tag pre">preprint</span> arXiv only; <span class="tag wd">withdrawn</span>. Abstracts were read for every
+paper marked ✓ in the reference list; numbers for the others are as reported in search
+summaries of the papers and should be checked against the PDF before being cited in a paper.</p>
+</div><section><h2>1. The question</h2>
+<p>Can a small tool-calling model decide, <strong>per request</strong>, how much of itself to run (which
+layers, which heads) so that easy calls are cheap and hard calls keep full capacity, and can
+that decision be learned with bandits or reinforcement learning using the objective
+correct/incorrect signal that tool-calling benchmarks provide?</p>
+<p>The literature splits into four strands that each touch part of this question:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Strand</th>
+<th>What is routed</th>
+<th>Typical learner</th>
+<th>Tool-calling specific?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A. Model routing and cascades</td>
+<td>the request, to one of several whole models</td>
+<td>supervised classifier; some bandits</td>
+<td>one paper (Switchcraft)</td>
+</tr>
+<tr>
+<td>B. In-model dynamic compute</td>
+<td>layers / heads / tokens inside one model</td>
+<td>differentiable gates; rarely RL</td>
+<td>one line of work (LayerRoute)</td>
+</tr>
+<tr>
+<td>C. Reasoning-budget control</td>
+<td>how many reasoning tokens before answering</td>
+<td>RL (GRPO / PPO) or prompting</td>
+<td>one paper (Brief Is Better)</td>
+</tr>
+<tr>
+<td>D. Tool-calling substrate</td>
+<td>— (benchmarks, data, small models)</td>
+<td>supervised fine-tuning</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table></div>
+</section><section><h2>2. Starting point: DHT</h2>
+<p>Meng et al. (2024) <span class="tag peer">peer-reviewed</span> route each sample through a BERT-base encoder: LinUCB picks depth
+and head count, and a contextual combinatorial Thompson sampler (per-head Bayesian logistic
+regression) picks which heads run. Decisions are made once per sample from a 3-layer prefix, and
+the bandits are trained jointly with the network from a loss×cost reward. The paper reports
+AG News F1 on par with full BERT at 0.35–0.81× inference FLOPs. Our reproduction reached .940/.941
+macro F1 (tree/integrated) against .949 for full BERT at ~0.4× task FLOPs, and needed batched
+execution before those FLOP savings became wall-clock savings. Semantic Scholar lists 17 citing
+papers, none of which extends the method, so related work has to come from the wider field.</p>
+</section><section><h2>3. Strand A: routing a request between whole models</h2>
+<p><strong>Tool-calling routers.</strong> <em>Switchcraft</em> (Agarwal et al., 2026) <span class="tag pre">preprint</span> is the only router
+built specifically for agentic tool calling that we found. A 66M-parameter DistilBERT classifier
+reads the query and agent context and picks the cheapest of eight models expected to produce a
+correct call, trained on an evaluation suite built from five function-calling benchmarks. It
+matches the best single model (82.9% vs 82.3%) at 84% lower cost. Two findings matter for us:
+larger models were <strong>not</strong> consistently better at tool calls, and simple heuristics (route by
+number of tools, input length, or turns) underperformed the learned router, so tool-call
+difficulty is not trivially readable from surface features. <em>Toward Super Agent System with
+Hybrid AI Routers</em> (Yao et al., 2025) <span class="tag pre">preprint</span> is a position paper arguing for
+local/cloud routing inside agent systems; it has no experiments to compare against.</p>
+<p><strong>General LLM routers</strong> (built for chat, used here as method background):
+<em>Hybrid LLM</em> (Ding et al., ICLR 2024) <span class="tag peer">peer-reviewed</span> and <em>RouteLLM</em> (Ong et al., ICLR 2025)
+<span class="tag peer">peer-reviewed</span> train supervised small-vs-large routers; <em>FrugalGPT</em> (Chen et al., TMLR 2024)
+<span class="tag peer">peer-reviewed</span> uses a cascade. Two routers use the same learner family as DHT: <em>MixLLM</em> (Wang et al.,
+NAACL 2025) <span class="tag peer">peer-reviewed</span>, a contextual bandit, and <em>PILOT</em> (Panda et al., Findings of EMNLP 2025)
+<span class="tag peer">peer-reviewed</span>, LinUCB under a budget constraint. PILOT is the closest methodological analogue to a
+budgeted version of DHT.</p>
+<p><strong>Cascades and escalation.</strong> <em>Language Model Cascades: Token-Level Uncertainty and Beyond</em>
+(Gupta et al., 2024) <span class="tag pre">preprint</span> shows sequence-level uncertainty has a length bias and
+learns deferral rules from token-level uncertainty. <em>When Does Confidence-Based Cascade Deferral
+Suffice?</em> (Jitkrittum et al., NeurIPS 2023) <span class="tag peer">peer-reviewed</span> characterises when simple confidence
+thresholds are optimal. <em>Signed Rescue Routing</em> (Wang et al., 2026) <span class="tag pre">preprint</span> argues
+escalation should be ranked by the <em>signed</em> gain (large model fixes vs. breaks the small
+model's answer), not by uncertainty; evaluated with Qwen3-4B→8B on multiple-choice tasks.
+<em>Bayesian Self-Escalation in Hierarchical LLM Agents</em> (Shaikh, 2026) <span class="tag pre">preprint</span> makes the
+escalation decision <strong>during</strong> generation as an optimal-stopping problem with a time-varying
+threshold; its experiment is a Qwen2.5-Coder 1.5B→7B cascade on MBPP (code, not tool calls).</p>
+<p><em>Relevance:</em> strand A answers "which model", not "how much of this model". It supplies the
+evaluation habits we should copy (cost-accuracy curves, heuristic baselines, a best-single-model
+control) and, in PILOT/MixLLM, evidence that bandit routers are competitive.</p>
+</section><section><h2>4. Strand B: dynamic compute inside one model</h2>
+<p><strong>Agent-specific.</strong> <em>LayerRoute</em> (Sikdar, 2026) is the only in-model routing work aimed at agents.
+Version 1 (arXiv 2606.01838) <span class="tag wd">withdrawn</span> claimed tool-call steps skip more layers than
+planning steps in Qwen2.5-0.5B-Instruct; the author withdrew it after the effect failed to
+reproduce across 10 seeds (range −19.6% to +5.1%). Version 2 (arXiv 2609.13682) <span class="tag pre">preprint</span>
+reframes the claim: per-layer straight-through gates plus rank-8 LoRA, trained end to end
+(no RL) in under 7 minutes, converge to the <strong>same</strong> skip-eligible band (layers 8–16) in all
+10 seeds, gate decisions change outcomes for 87–100% of held-out samples, perplexity improves,
+and wall-clock speedup is <strong>1.02–1.06×</strong>. Takeaway: a learned router can look input-dependent
+while delivering little more than a fixed pruning pattern, which is why a
+fixed-architecture-at-matched-compute control is essential.</p>
+<p><strong>Layer skipping and early exit in LLMs (not tool-specific).</strong> Learned routers without RL:
+<em>Router-Tuning</em> (He et al., EMNLP 2025) <span class="tag peer">peer-reviewed</span>, <em>FlexiDepth</em> (Luo et al., COLM 2025)
+<span class="tag peer">peer-reviewed</span>, <em>Dr.LLM</em> (Heakl et al., ICLR 2026) <span class="tag peer">peer-reviewed</span>, routers supervised by MCTS search;
+<em>GateSkip</em> (Laitenberger et al., ICLR 2026) <span class="tag peer">peer-reviewed</span>, smooth residual gates, ~15% savings on
+long-form reasoning and near-baseline quality at ~50% savings on instruction-tuned models;
+<em>Mixture-of-Depths</em> (Raposo et al., 2024) <span class="tag pre">preprint</span>. Confidence-based exits: <em>CALM</em>
+(Schuster et al., NeurIPS 2022) <span class="tag peer">peer-reviewed</span>, <em>LayerSkip</em> (Elhoushi et al., ACL 2024) <span class="tag peer">peer-reviewed</span>,
+<em>SkipDecode</em> (Del Corro et al., 2023) <span class="tag pre">preprint</span>, which forces exit depth to be monotone
+decreasing so batching and the KV cache keep working. With RL: <em>LEDE</em> (Zhu et al., 2026)
+<span class="tag pre">preprint</span> uses offline RL to pick an exit layer and speculation length per decoding step.</p>
+<p><strong>Head-level routing.</strong> <em>Mixture of Attention Heads</em> (Zhang et al., EMNLP 2022) <span class="tag peer">peer-reviewed</span> and
+<em>MoH</em> (Jin et al., 2024) <span class="tag pre">preprint</span> route each token to a top-k subset of heads; MoH-LLaMA3-8B
+used 75% of heads with a reported +2.4 average accuracy after continued training. Both use a
+learned softmax router, not bandits, and route per token, not per request.</p>
+<p><strong>Reported limits on real speedups.</strong> Several papers find that per-token dynamic depth rarely
+turns into wall-clock gains in autoregressive decoding: skipped layers leave holes in the KV
+cache that must be copied (quality loss) or recomputed (lost savings) (<em>River-LLM</em>, 2026;
+<em>FFN-SkipLLM</em>, 2024); in batched decoding the batch waits for its deepest token, capping even
+oracle early exit at ~1.14× in SLEB's analysis (Song et al., ICML 2024) <span class="tag peer">peer-reviewed</span>; gains shrink
+with batch size (<em>LEAP</em>, 2026); and modern LLMs show diminishing early-exit returns (<em>The
+Diminishing Returns of Early-Exit Decoding in Modern LLMs</em>, 2026). Reasoning is fragile:
+FlexiDepth reports a weaker router dropping GSM8K from 0.657 to 0.131.</p>
+<p><em>Relevance:</em> per-request routing, as in DHT, sidesteps the KV-cache and batching problems
+because every token of a response shares one architecture. Per-token routing is where most of
+the reported failures sit.</p>
+</section><section><h2>5. Strand C: controlling how much the model reasons</h2>
+<p><em>Brief Is Better</em> (Qi, 2026) <span class="tag pre">preprint</span> is the one tool-calling study here. On BFCL v3
+<em>multiple</em> with Qwen2.5-1.5B-Instruct, ~32 reasoning tokens before the call raise accuracy
+from 44% to 64%, while 256 tokens drop it to 25%; the short reasoning acts as a
+function-selection step (wrong-function rate 30.5% → 1.5%). Outside tool calling, RL is the
+standard tool for budget control: <em>L1</em> (Aggarwal &amp; Welleck, COLM 2025) <span class="tag peer">peer-reviewed</span>, <em>Thinkless</em>
+(Fang et al., NeurIPS 2025) <span class="tag peer">peer-reviewed</span>, <em>AdaptThink</em> (Zhang et al., EMNLP 2025) <span class="tag peer">peer-reviewed</span>, and
+<em>S-GRPO</em> (Dai et al., 2025) <span class="tag pre">preprint</span>, which rewards earlier correct exits from a chain of
+thought.</p>
+<p><em>Relevance:</em> this is compute measured in tokens rather than layers, but it shows (i) the
+optimal compute for tool calls is small and request-dependent, and (ii) GRPO-style group-relative
+rewards over sampled attempts are an established recipe for learning compute policies.</p>
+</section><section><h2>6. Strand D: benchmarks, data and small tool-calling models</h2>
+<ul>
+<li><strong>Benchmark.</strong> <em>BFCL</em> (Patil et al., ICML 2025) <span class="tag peer">peer-reviewed</span> grades calls by parsing them into
+  an abstract syntax tree and checking function, required arguments, types and values
+  (order-insensitive; alternatives allowed), plus executable checks and <em>irrelevance</em> cases
+  where the correct output is no call. This gives the objective 0/1 reward a bandit needs.</li>
+<li><strong>Training data.</strong> <em>APIGen</em> / <em>xlam-function-calling-60k</em> (Liu et al., NeurIPS 2024 Datasets
+  &amp; Benchmarks) <span class="tag peer">peer-reviewed</span>: 60k calls verified by format, execution and semantic checks.</li>
+<li><strong>Earlier foundations.</strong> <em>Toolformer</em> (Schick et al., NeurIPS 2023) <span class="tag peer">peer-reviewed</span>; <em>Gorilla</em>
+  (Patil et al., NeurIPS 2024) <span class="tag peer">peer-reviewed</span>.</li>
+<li><strong>Small models.</strong> <em>Hammer</em> (Lin et al., 2024) <span class="tag pre">preprint</span>, Qwen-based 0.5–7B
+  function-calling models with function masking and an irrelevance set; <em>TinyAgent</em> (Erdogan
+  et al., EMNLP 2024 Demos) <span class="tag peer">peer-reviewed</span>, 1.1B/7B on-device agents with tool retrieval to shorten
+  prompts; <em>Small Language Models for Efficient Agentic Tool Calling</em> (Jhandi et al., AAAI 2026
+  workshop) <span class="tag peer">workshop</span>, a fine-tuned OPT-350M reporting a 77.55% ToolBench pass rate;
+  <em>Small Reasoning Models are Instruction Followers in Function Calling</em> (Taheri et al., 2026)
+  <span class="tag pre">preprint</span>, which delegates call formatting to a smaller instruction-following model.
+  Independent evaluations (TinyLLM, 2025) find sub-2B models reasonable on single-turn BFCL but
+  near zero on multi-turn.</li>
+</ul>
+<p><em>Relevance:</em> single-turn BFCL with a ~0.5B model is a feasible, objectively graded testbed;
+multi-turn is not, at this scale.</p>
+</section><section><h2>7. Synthesis</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Work</th>
+<th>Routes</th>
+<th>Granularity</th>
+<th>Learner</th>
+<th>Tool calls</th>
+<th>Real speedup reported</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DHT (2024)</td>
+<td>layers + heads</td>
+<td>per input</td>
+<td>LinUCB + Thompson sampling</td>
+<td>no (classification)</td>
+<td>not reported (ours: 1.12× inference after batching)</td>
+</tr>
+<tr>
+<td>Switchcraft (2026)</td>
+<td>whole models</td>
+<td>per request</td>
+<td>supervised classifier</td>
+<td><strong>yes</strong></td>
+<td>cost −84% (API pricing)</td>
+</tr>
+<tr>
+<td>PILOT / MixLLM (2025)</td>
+<td>whole models</td>
+<td>per request</td>
+<td>contextual bandit</td>
+<td>no</td>
+<td>cost only</td>
+</tr>
+<tr>
+<td>LayerRoute v2 (2026)</td>
+<td>layers</td>
+<td>per input</td>
+<td>straight-through gates + LoRA</td>
+<td>agentic data</td>
+<td>1.02–1.06×</td>
+</tr>
+<tr>
+<td>Dr.LLM / FlexiDepth / Router-Tuning</td>
+<td>layers</td>
+<td>per token or per layer</td>
+<td>supervised / MCTS labels</td>
+<td>no</td>
+<td>mixed</td>
+</tr>
+<tr>
+<td>MoA / MoH</td>
+<td>heads</td>
+<td>per token</td>
+<td>softmax router</td>
+<td>no</td>
+<td>not the focus</td>
+</tr>
+<tr>
+<td>LEDE (2026)</td>
+<td>exit layer</td>
+<td>per decoding step</td>
+<td>offline RL</td>
+<td>no</td>
+<td>2.0–2.7× vs token-by-token decoding (with speculation)</td>
+</tr>
+<tr>
+<td>Brief Is Better (2026)</td>
+<td>reasoning length</td>
+<td>per request</td>
+<td>prompting / templates</td>
+<td><strong>yes</strong></td>
+<td>fewer tokens</td>
+</tr>
+<tr>
+<td>S-GRPO / L1 / Thinkless</td>
+<td>reasoning length</td>
+<td>per request</td>
+<td>RL</td>
+<td>no</td>
+<td>fewer tokens</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Patterns.</strong>
+1. Routing that is <em>tool-calling specific</em> exists only at the whole-model level (Switchcraft)
+   or reasoning-length level (Brief Is Better).
+2. In-model routing for agents has one line of work (LayerRoute), trained without RL, with a
+   withdrawn first version and ~1.04× real speedup in the second.
+3. RL for compute allocation is common at the token-budget level (GRPO family) and rare at the
+   architecture level (LEDE, offline; BlockDrop/SkipNet in vision).
+4. Per-token dynamic depth repeatedly fails to deliver wall-clock savings; per-request
+   decisions do not have the KV-cache or batching problem.</p>
+</section><section><h2>8. Gap and positioning</h2>
+<p>We found no work that routes <strong>layers and heads inside a model, per request, for tool calling,
+with a bandit or RL policy trained on an objective correctness reward</strong>. The proposed project
+sits between Switchcraft (per-request, tool-calling, but between models) and LayerRoute
+(in-model, agentic, but gradient-trained gates with little real speedup), and inherits DHT's
+bandit formulation, replacing its loss×cost ratio with <code>𝟙[call correct] − λ·compute</code>.</p>
+<p>Minimum evaluation implied by the literature:
+- a <strong>fixed architecture at matched average compute</strong> (LayerRoute's lesson);
+- simple <strong>heuristic routers</strong> (number of tools, prompt length; Switchcraft's baselines);
+- <strong>wall-clock</strong> throughput at realistic batch sizes, not only FLOPs (SLEB, LEAP, our D017);
+- <strong>≥3 seeds</strong> with variance (LayerRoute v1's failure mode);
+- per-category BFCL results, including irrelevance, since skipping may raise false calls.</p>
+</section><section><h2>9. Open questions</h2>
+<ol>
+<li>Is tool-call difficulty predictable from a shallow prefix? Switchcraft's weak heuristics
+   suggest surface features are insufficient; whether early hidden states suffice is untested.</li>
+<li>Does per-request routing beat the best fixed sub-network, or does it collapse to one
+   (LayerRoute v2's same-band convergence)?</li>
+<li>Is a bandit enough, or does a GRPO-style policy over sampled architectures learn a better
+   frontier for the same training budget?</li>
+<li>Can a single switch point (reasoning text → call emission) add adaptivity without the
+   per-token costs catalogued in §4?</li>
+</ol>
+</section><section><h2>References</h2>
+<p>✓ = abstract or proceedings page read on 2026-09-22/23.</p>
+<ul>
+<li>Meng, Zhang, Chen, Wang. Sample-Based Dynamic Hierarchical Transformer with Layer and Head
+  Flexibility via Contextual Bandit. <em>Proceedings on Engineering Sciences</em> 6(2), 2024. arXiv:2312.03038 <span class="ck" title="abstract read">✓</span></li>
+<li>Agarwal, Namyar, Wolman, Ambavat, Gupta, Zhang. Switchcraft: AI Model Router for Agentic Tool Calling. arXiv:2605.07112, 2026 <span class="ck" title="abstract read">✓</span></li>
+<li>Yao et al. Toward Super Agent System with Hybrid AI Routers. arXiv:2504.10519, 2025 <span class="ck" title="abstract read">✓</span></li>
+<li>Ding et al. Hybrid LLM: Cost-Efficient and Quality-Aware Query Routing. ICLR 2024. arXiv:2404.14618</li>
+<li>Ong et al. RouteLLM: Learning to Route LLMs from Preference Data. ICLR 2025. arXiv:2406.18665 <span class="ck" title="abstract read">✓</span></li>
+<li>Chen, Zaharia, Zou. FrugalGPT. TMLR 2024. arXiv:2305.05176 <span class="ck" title="abstract read">✓</span></li>
+<li>Wang et al. MixLLM: Dynamic Routing in Mixed Large Language Models. NAACL 2025. arXiv:2502.18482 <span class="ck" title="abstract read">✓</span></li>
+<li>Panda et al. Adaptive LLM Routing under Budget Constraints (PILOT). Findings of EMNLP 2025. arXiv:2508.21141 <span class="ck" title="abstract read">✓</span></li>
+<li>Gupta, Narasimhan, Jitkrittum, Rawat, Menon, Kumar. Language Model Cascades: Token-Level Uncertainty and Beyond. arXiv:2404.10136, 2024 <span class="ck" title="abstract read">✓</span></li>
+<li>Jitkrittum et al. When Does Confidence-Based Cascade Deferral Suffice? NeurIPS 2023. arXiv:2307.02764</li>
+<li>Wang, Li, Song, Chen, Song, Liu. Signed Rescue Routing: Harm-Aware Cascades for Efficient LLM Inference. arXiv:2609.07786, 2026 <span class="ck" title="abstract read">✓</span></li>
+<li>Shaikh. Knowing When to Ask for Help: Bayesian Self-Escalation in Hierarchical LLM Agents. arXiv:2608.24087, 2026 <span class="ck" title="abstract read">✓</span></li>
+<li>Sikdar. LayerRoute: Input-Conditioned Adaptive Layer Skipping via LoRA Fine-Tuning for Agentic Language Models. arXiv:2606.01838, 2026 (withdrawn) <span class="ck" title="abstract read">✓</span></li>
+<li>Sikdar. LayerRoute: Adaptive Layer-Skipping with LoRA-Preserved Quality for Efficient LLM Inference. arXiv:2609.13682, 2026 <span class="ck" title="abstract read">✓</span></li>
+<li>He et al. Router-Tuning. EMNLP 2025. arXiv:2410.13184 <span class="ck" title="abstract read">✓</span></li>
+<li>Luo, Wang, Yan. Adaptive Layer-skipping in Pre-trained LLMs (FlexiDepth). COLM 2025. arXiv:2503.23798 <span class="ck" title="abstract read">✓</span></li>
+<li>Heakl et al. Dr.LLM: Dynamic Layer Routing in LLMs. ICLR 2026. arXiv:2510.12773 <span class="ck" title="abstract read">✓</span></li>
+<li>Laitenberger et al. What Layers When: Learning to Skip Compute in LLMs with Residual Gates (GateSkip). ICLR 2026. arXiv:2510.13876 <span class="ck" title="abstract read">✓</span></li>
+<li>Raposo et al. Mixture-of-Depths. arXiv:2404.02258, 2024 <span class="ck" title="abstract read">✓</span></li>
+<li>Schuster et al. Confident Adaptive Language Modeling (CALM). NeurIPS 2022. arXiv:2207.07061 <span class="ck" title="abstract read">✓</span></li>
+<li>Elhoushi et al. LayerSkip. ACL 2024. arXiv:2404.16710 <span class="ck" title="abstract read">✓</span></li>
+<li>Del Corro et al. SkipDecode. arXiv:2307.02628, 2023 <span class="ck" title="abstract read">✓</span></li>
+<li>Zhu et al. Experience-Driven Dynamic Exits for LLMs with Reinforcement Learning (LEDE). arXiv:2606.03113, 2026 <span class="ck" title="abstract read">✓</span></li>
+<li>Zhang et al. Mixture of Attention Heads. EMNLP 2022. arXiv:2210.05144 <span class="ck" title="abstract read">✓</span></li>
+<li>Jin et al. MoH: Multi-Head Attention as Mixture-of-Head Attention. arXiv:2410.11842, 2024 <span class="ck" title="abstract read">✓</span></li>
+<li>Song et al. SLEB: Streamlining LLMs through Redundancy Verification and Elimination of Transformer Blocks. ICML 2024. arXiv:2402.09025</li>
+<li>River-LLM: Large Language Model Seamless Exit Based on KV Share. arXiv:2604.18396, 2026</li>
+<li>FFN-SkipLLM. arXiv:2404.03865, 2024</li>
+<li>LEAP: Layer-wise Exit-Aware Pretraining for Efficient Transformer Inference. arXiv:2605.01058, 2026</li>
+<li>The Diminishing Returns of Early-Exit Decoding in Modern LLMs. arXiv:2603.23701, 2026</li>
+<li>Qi. Brief Is Better: Non-Monotonic Chain-of-Thought Budget Effects in Function-Calling Language Agents. arXiv:2604.02155, 2026 <span class="ck" title="abstract read">✓</span></li>
+<li>Aggarwal, Welleck. L1. COLM 2025. arXiv:2503.04697 <span class="ck" title="abstract read">✓</span></li>
+<li>Fang, Ma, Wang. Thinkless. NeurIPS 2025. arXiv:2505.13379 <span class="ck" title="abstract read">✓</span></li>
+<li>Zhang et al. AdaptThink. EMNLP 2025. arXiv:2505.13417 <span class="ck" title="abstract read">✓</span></li>
+<li>Dai et al. S-GRPO: Early Exit via Reinforcement Learning in Reasoning Models. arXiv:2505.07686, 2025</li>
+<li>Patil et al. The Berkeley Function Calling Leaderboard (BFCL). ICML 2025 <span class="ck" title="abstract read">✓</span></li>
+<li>Liu et al. APIGen: Automated Pipeline for Generating Verifiable and Diverse Function-Calling Datasets. NeurIPS 2024 D&amp;B. arXiv:2406.18518</li>
+<li>Schick et al. Toolformer. NeurIPS 2023. arXiv:2302.04761</li>
+<li>Patil et al. Gorilla: Large Language Model Connected with Massive APIs. NeurIPS 2024. arXiv:2305.15334</li>
+<li>Lin et al. Hammer: Robust Function-Calling for On-Device Language Models via Function Masking. arXiv:2410.04587, 2024 <span class="ck" title="abstract read">✓</span></li>
+<li>Erdogan et al. TinyAgent: Function Calling at the Edge. EMNLP 2024 System Demonstrations <span class="ck" title="abstract read">✓</span></li>
+<li>Jhandi, Kazi, Subramanian, Sendas. Small Language Models for Efficient Agentic Tool Calling. AAAI 2026 Workshop. arXiv:2512.15943 <span class="ck" title="abstract read">✓</span></li>
+<li>Taheri, Heydari, Naaman, Fatemi. Small Reasoning Models are Instruction Followers in Function Calling. arXiv:2608.22472, 2026 <span class="ck" title="abstract read">✓</span></li>
+<li>TinyLLM: Evaluation and Optimization of Small Language Models for Agentic Tasks on Edge Devices. arXiv:2511.22138, 2025</li>
+</ul></section>
+</div>
