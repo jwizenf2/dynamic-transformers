@@ -1,0 +1,69 @@
+{
+  "status": "complete_with_documented_resume",
+  "date": "2026-09-09",
+  "seed": 7,
+  "dataset": "ag_news_wordpiece_v1",
+  "public_test_evaluations_per_selected_checkpoint": 1,
+  "fixed": {
+    "run": "artifacts/runs/ag-news-fixed-full-seed7",
+    "epochs": 3,
+    "trained_samples": 342000,
+    "best_step": 42750,
+    "validation_macro_f1": 0.9480104812751007,
+    "test_macro_f1": 0.9490335290404949,
+    "test_accuracy": 0.949078947368421,
+    "training_step_seconds": 6765.0895070379775,
+    "benchmark_samples_per_second": 174.0606239979764
+  },
+  "tree_dht": {
+    "failed_run": "artifacts/runs/ag-news-tree-full-seed7",
+    "final_run": "artifacts/runs/ag-news-tree-full-seed7-resume-d015",
+    "resumed_from_step": 8000,
+    "epochs": 3,
+    "trained_samples": 342000,
+    "routed_samples": 342000,
+    "best_step": 42756,
+    "validation_macro_f1": 0.943830452993411,
+    "test_macro_f1": 0.9399541766070085,
+    "test_accuracy": 0.94,
+    "training_task_flop_ratio": 0.3978067056556154,
+    "test_task_flop_ratio": 0.385764897417917,
+    "test_task_plus_routing_flop_ratio": 0.635764897417917,
+    "test_average_total_depth": 4.748289473684211,
+    "test_average_heads_per_executed_layer": 11.143237176822678,
+    "test_depth_counts": {"3": 4759, "6": 1514, "9": 1066, "12": 261},
+    "test_dynamic_head_count_counts": {"8": 1579, "10": 1995, "12": 855},
+    "training_step_seconds": 10669.597577602864,
+    "benchmark_samples_per_second": 68.12770791738312,
+    "clipped_reward_events": 81574,
+    "pending_queues": {"3": 0, "6": 0, "9": 0, "12": 0}
+  },
+  "paper_ag_news": {
+    "source": "references/paper_results.csv, printed p.447",
+    "fixed_test_f1": 0.944,
+    "tree_dht_test_f1": 0.945,
+    "fixed_training_flop_ratio": 1.0,
+    "fixed_inference_flop_ratio": 1.0,
+    "tree_dht_training_flop_ratio": 0.42,
+    "tree_dht_inference_flop_ratio": 0.81
+  },
+  "verification": {
+    "mps_tests": "111 passed",
+    "format": "passed",
+    "lint": "passed",
+    "diff_check": "passed",
+    "physical_skipping": {
+      "artifact": "artifacts/runs/ag-news-tree-full-seed7-resume-d015/execution.json",
+      "semantic_audit_total_depth": 9,
+      "semantic_audit_dynamic_head_count": 8,
+      "learned_policy_audit_total_depth": 6,
+      "learned_policy_audit_dynamic_head_count": 8,
+      "sliced_to_full_matmul_ratio": 0.6914415262743904,
+      "sliced_to_dense_masked_matmul_ratio": 0.9219219505435793,
+      "max_sliced_dense_logit_difference": 0.0,
+      "observed_equals_analytic_matmul_flops": true
+    },
+    "mps_resume": "operational, not bitwise guaranteed; D014",
+    "solver_recovery": "relative Newton-step convergence criterion; D015"
+  }
+}

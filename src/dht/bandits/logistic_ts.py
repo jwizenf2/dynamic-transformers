@@ -80,20 +80,127 @@ def fit_logistic_map(
                 break
             raise RuntimeError("logistic MAP line search failed")
     # Check the final accepted step too (including one taken on the last iteration).
+    #
+    # Absolute gradient magnitude alone is not a scale-invariant stopping rule. As
+    # online observations accumulate, the prior precision can become large enough
+    # that a residual gradient around 1e-6 implies a vanishingly small Newton step.
+    # Treat that case as converged when the next local Newton update is smaller than
+    # tolerance relative to the current parameter scale. This does not change the
+    # MAP objective or accept a materially movable solution; it prevents harmless
+    # floating-point stationarity floors from aborting a long experiment (D015).
     gradient = prior_precision * (theta - prior_mean) + features.T @ (
         (features @ theta).sigmoid() - labels
     )
     gradient_norm = float(gradient.abs().max())
-    converged = converged or gradient_norm <= 10 * tolerance
+    probability = (features @ theta).sigmoid()
+    curvature = probability * (1 - probability)
+    hessian = torch.diag(prior_precision) + features.T @ (curvature[:, None] * features)
+    newton_step = torch.linalg.solve(hessian, gradient)
+    relative_newton_step = float(newton_step.abs().max() / (1.0 + theta.abs().max()))
+    converged = converged or gradient_norm <= 10 * tolerance or relative_newton_step <= tolerance
     diagnostics = {
         "iterations": iterations,
         "gradient_max": gradient_norm,
+        "relative_newton_step_max": relative_newton_step,
         "converged": converged,
         "objective": float(
             logistic_objective(theta, features, labels, prior_mean, prior_precision)
         ),
     }
     if not converged:
+        raise RuntimeError(f"logistic MAP did not converge: {diagnostics}")
+    return theta, diagnostics
+
+
+def fit_logistic_map_many(
+    features: Tensor,
+    label: float,
+    prior_mean: Tensor,
+    prior_precision: Tensor,
+    max_iterations: int = 30,
+    tolerance: float = 1e-7,
+) -> tuple[Tensor, list[dict]]:
+    """fit_logistic_map for K INDEPENDENT heads at once, one observation each (D017).
+
+    features, prior_mean, prior_precision: [K,p]; every head shares the superarm's
+    binary ``label``. Each head runs exactly the per-head algorithm above (damped
+    Newton, Armijo backtracking, same absolute-gradient and D015 relative-Newton
+    stopping rules); converged heads are frozen while others keep iterating.
+    Vectorizing only removes the Python loop over heads: the objective, step rule
+    and acceptance tests are unchanged. Tests compare it with the looped solver.
+    """
+    count = len(features)
+    labels = torch.full((count,), float(label), dtype=torch.float64)
+
+    def objective(theta: Tensor) -> Tensor:  # per-head negative log posterior, [K]
+        logits = (features * theta).sum(-1)
+        return 0.5 * (prior_precision * (theta - prior_mean).square()).sum(-1) + (
+            F.softplus(logits) - labels * logits
+        )
+
+    def gradient_and_hessian(theta: Tensor) -> tuple[Tensor, Tensor]:
+        probability = (features * theta).sum(-1).sigmoid()
+        gradient = (
+            prior_precision * (theta - prior_mean) + features * (probability - labels)[:, None]
+        )
+        curvature = probability * (1 - probability)
+        hessian = torch.diag_embed(prior_precision) + curvature[:, None, None] * (
+            features[:, :, None] * features[:, None, :]
+        )
+        return gradient, hessian
+
+    theta = prior_mean.clone()
+    active = torch.ones(count, dtype=torch.bool)
+    converged = torch.zeros(count, dtype=torch.bool)
+    iterations = torch.zeros(count, dtype=torch.long)
+    for _ in range(max_iterations):
+        if not active.any():
+            break
+        iterations += active
+        gradient, hessian = gradient_and_hessian(theta)
+        gradient_norm = gradient.abs().amax(-1)
+        done = active & (gradient_norm <= tolerance)
+        converged |= done
+        active &= ~done
+        if not active.any():
+            break
+        direction = torch.linalg.solve(hessian, gradient)
+        before = objective(theta)
+        slope = (gradient * direction).sum(-1)
+        step = torch.ones(count, dtype=torch.float64)
+        searching = active.clone()
+        for _ in range(30):
+            candidate = theta - step[:, None] * direction
+            accept = searching & (objective(candidate) <= before - 1e-4 * step * slope)
+            theta = torch.where(accept[:, None], candidate, theta)
+            searching &= ~accept
+            if not searching.any():
+                break
+            step = torch.where(searching, step * 0.5, step)
+        if searching.any():
+            # Same fallback as the scalar solver: tiny gradients count as converged.
+            floor = searching & (gradient_norm <= 10 * tolerance)
+            converged |= floor
+            active &= ~floor
+            if (searching & ~floor).any():
+                raise RuntimeError("logistic MAP line search failed")
+    gradient, hessian = gradient_and_hessian(theta)
+    gradient_norm = gradient.abs().amax(-1)
+    newton = torch.linalg.solve(hessian, gradient)
+    relative = newton.abs().amax(-1) / (1.0 + theta.abs().amax(-1))
+    converged |= (gradient_norm <= 10 * tolerance) | (relative <= tolerance)
+    final = objective(theta)
+    diagnostics = [
+        {
+            "iterations": int(iterations[k]),
+            "gradient_max": float(gradient_norm[k]),
+            "relative_newton_step_max": float(relative[k]),
+            "converged": bool(converged[k]),
+            "objective": float(final[k]),
+        }
+        for k in range(count)
+    ]
+    if not converged.all():
         raise RuntimeError(f"logistic MAP did not converge: {diagnostics}")
     return theta, diagnostics
 
@@ -139,7 +246,19 @@ class LogisticThompsonSampling:
         noise = torch.randn(self.mean.shape, generator=self.generator, dtype=torch.float64)
         return self.mean + noise / self.precision.sqrt()
 
-    def select(self, features: Tensor, count: int, *, explore: bool = True) -> tuple[int, ...]:
+    def probabilities(self, features: Tensor) -> Tensor:
+        """Posterior-mean σ(θ̄_hᵀw_h) per head: the frozen-policy ranking score."""
+        w = feature_tensor(features, tuple(self.mean.shape))
+        return (w * self.mean).sum(-1).sigmoid()
+
+    def select(
+        self,
+        features: Tensor,
+        count: int,
+        *,
+        explore: bool = True,
+        parameters: Tensor | None = None,
+    ) -> tuple[int, ...]:
         """Return a sorted set of original head positions, not compacted positions.
 
         At evaluation use posterior means, so neither RNG nor posterior changes.
@@ -149,13 +268,29 @@ class LogisticThompsonSampling:
         w = feature_tensor(features, tuple(self.mean.shape))
         if type(count) is not int or not 1 <= count <= self.num_arms:
             raise ValueError("head count must lie in [1,num_arms]")
-        theta = self.sample_parameters() if explore else self.mean
+        # Batched DHT pre-draws parameters in the per-sample path's RNG order and
+        # passes them here, so both execution modes consume identical random draws.
+        if parameters is not None:
+            theta = parameters
+        else:
+            theta = self.sample_parameters() if explore else self.mean
         probability = (w * theta).sum(-1).sigmoid()
         selected = torch.argsort(probability, descending=True, stable=True)[:count].tolist()
         return tuple(sorted(selected))
 
-    def update(self, selected: tuple[int, ...], features: Tensor, feedback: int) -> None:
-        """Observe the executed superarm's 0/1 label; unselected heads stay untouched."""
+    def update(
+        self,
+        selected: tuple[int, ...],
+        features: Tensor,
+        feedback: int,
+        *,
+        vectorized: bool = False,
+    ) -> None:
+        """Observe the executed superarm's 0/1 label; unselected heads stay untouched.
+
+        vectorized=True fits all selected heads in one fit_logistic_map_many call
+        (batched execution, D017); False keeps the original per-head loop.
+        """
         if type(feedback) is not int or feedback not in (0, 1):
             raise ValueError("feedback must be binary integer 0 or 1")
         if (
@@ -165,6 +300,25 @@ class LogisticThompsonSampling:
         ):
             raise ValueError("selected arms must be nonempty, unique and valid")
         w = feature_tensor(features, tuple(self.mean.shape))
+        if vectorized:
+            arms = list(selected)
+            thetas, infos = fit_logistic_map_many(
+                w[arms],
+                feedback,
+                self.mean[arms],
+                self.precision[arms],
+                self.max_iterations,
+                self.tolerance,
+            )
+            probability = (w[arms] * thetas).sum(-1).sigmoid()
+            precisions = (
+                self.precision[arms] + (probability * (1 - probability))[:, None] * w[arms].square()
+            )
+            for row, arm in enumerate(arms):  # Commit only after ALL fits succeeded.
+                self.mean[arm], self.precision[arm] = thetas[row], precisions[row]
+                self.counts[arm] += 1
+                self.last_fit[arm] = infos[row]
+            return
         pending = {}
         # Calculate first and commit only if ALL selected-head fits succeed.
         for arm in selected:

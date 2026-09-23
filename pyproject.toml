@@ -12,6 +12,13 @@ dependencies = ["numpy>=2.2,<3", "torch>=2.6,<3", "pydantic>=2.10,<3"]
 
 [project.optional-dependencies]
 nlp = ["tokenizers>=0.21,<1", "safetensors>=0.5,<1"]
+analysis = [
+    "ipykernel>=6.29,<8",
+    "matplotlib>=3.9,<4",
+    "nbclient>=0.10,<1",
+    "nbformat>=5.10,<6",
+    "pandas>=2.2,<3",
+]
 
 [project.scripts]
 dht = "dht.cli:main"
@@ -32,6 +39,10 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# Exploratory analysis notebooks: long table/plot lines and plain zip() are fine.
+"notebooks/*.ipynb" = ["E501", "B905", "B007"]
 
 [tool.uv]
 cache-dir = ".cache/uv"

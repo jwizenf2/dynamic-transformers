@@ -22,8 +22,8 @@ class DepthQueues:
         """Retain the ORIGINAL routing context while model weights may change."""
         if decision.total_depth not in self.pending:
             raise ValueError("unknown queue depth")
-        if len(self.pending[decision.total_depth]) >= self.capacity:
-            raise ValueError("release a full queue before pushing more samples")
+        # Chunked routing (routing_batch_size > 1) may briefly overfill a queue;
+        # FIFO order is kept and pop() releases capacity-sized batches in order.
         self.pending[decision.total_depth].append(decision)
 
     def pop(self, *, flush: bool = False) -> list[RouteDecision] | None:
@@ -51,8 +51,6 @@ class DepthQueues:
             raise ValueError("incompatible queue checkpoint")
         restored = {}
         for depth, records in state["pending"].items():
-            if len(records) > self.capacity:
-                raise ValueError("queue exceeds capacity")
             restored[depth] = [RouteDecision(**record) for record in records]
             if any(record.total_depth != depth for record in restored[depth]):
                 raise ValueError("queue record depth mismatch")

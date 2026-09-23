@@ -35,6 +35,14 @@ The hidden dimension and residual/FFN widths stay fixed. DHT routes each sample
 and executes its own head subsets inside a depth-homogeneous training batch. Selected total depth includes the full-head prefix. See
 [decisions](docs/project/decisions.md) for this interpretation and its evidence.
 
+**Update 2026-09-22:** integrated search (F-DHT) now has a full matched AG News run
+(test macro F1 .9409 vs T-DHT .9400, fixed .9490), an opt-in batched execution engine
+(`[dht] execution = "batched"`, D017; plus `context_pooling = "device"`, D018) under which
+T-DHT trains 1.6× and infers ~1.1× faster than fixed BERT on MPS, analysis notebooks in `notebooks/`, and a verified research-topic list in
+`docs/research/next_topics.md`. See
+[the report](reports/reproduction/ag_news_fdht_and_batched_execution.md). 130 tests pass.
+Notebooks need `uv sync --locked --extra nlp --extra analysis`.
+
 ## Setup and verification
 
 Python 3.12.12 and [uv](https://docs.astral.sh/uv/) are used. Install uv separately

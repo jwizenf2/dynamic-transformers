@@ -1,0 +1,333 @@
+<title>Head-Pruning Thompson Sampling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Literata:opsz,wght@7..72,500;7..72,650&display=swap">
+<style>
+:root {
+  --paper: #f5f7f3; --panel: #eaeee7; --ink: #18211b; --ink2: #4f5b53; --rule: #d6dcd3;
+  --accent: #3a48b8; --accent-soft: #e3e6f7; --muted: #8d979c; --warn: #8a5a00; --warn-soft: #f6ecd6;
+  --code-ink: #1d2a22; --code-c: #6b7a70;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #121614; --panel: #1b211d; --ink: #e5ebe6; --ink2: #a3aea6; --rule: #2d3530;
+    --accent: #9aa6ff; --accent-soft: #232845; --muted: #6f797e; --warn: #e2b45c; --warn-soft: #2f2716;
+    --code-ink: #dbe3dc; --code-c: #86958b;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #121614; --panel: #1b211d; --ink: #e5ebe6; --ink2: #a3aea6; --rule: #2d3530;
+  --accent: #9aa6ff; --accent-soft: #232845; --muted: #6f797e; --warn: #e2b45c; --warn-soft: #2f2716;
+  --code-ink: #dbe3dc; --code-c: #86958b;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 400 16.5px/1.62 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 54rem; margin: 0 auto; padding-block: 3.2rem 5rem; padding-inline: 20px; }
+.prose > * { max-width: 42rem; }
+h1, h2, h3 { font-family: "Literata", Georgia, "Times New Roman", serif; text-wrap: balance; color: var(--ink); }
+h1 { font-size: clamp(2rem, 4.6vw, 2.8rem); line-height: 1.12; font-weight: 650; margin: .35rem 0 1rem; letter-spacing: -.01em; }
+h2 { font-size: 1.55rem; font-weight: 650; margin: 3.2rem 0 .7rem; line-height: 1.25; }
+h3 { font-size: 1.12rem; font-weight: 650; margin: 1.9rem 0 .4rem; }
+p { margin: 0 0 1rem; }
+.kicker { font: 500 .76rem/1 "IBM Plex Mono", ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); }
+.lede { font-size: 1.14rem; color: var(--ink); }
+.meta { color: var(--ink2); font-size: .9rem; }
+code, .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88em; }
+p code, li code, td code { background: var(--panel); padding: .05em .3em; border-radius: 3px; }
+.answer { border-left: 3px solid var(--accent); padding: .2rem 0 .2rem 1.1rem; margin: 1.6rem 0; font-size: 1.08rem; }
+.answer strong { color: var(--accent); font-weight: 600; }
+nav.toc { margin: 2rem 0 0; font-size: .92rem; }
+nav.toc ol { margin: .4rem 0 0; padding-left: 1.3rem; columns: 2 16rem; column-gap: 2rem; }
+nav.toc a { color: var(--ink2); text-decoration: none; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); text-decoration: underline; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.eq { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .95rem; background: var(--panel); padding: .75rem 1rem; border-radius: 4px; overflow-x: auto; margin: .6rem 0 1.1rem; white-space: pre; max-width: 42rem; }
+figure.code { margin: 1rem 0 1.5rem; max-width: 100%; }
+figure.code figcaption { font: 500 .74rem/1.3 "IBM Plex Mono", monospace; color: var(--ink2); padding: .5rem .9rem; border: 1px solid var(--rule); border-bottom: 0; border-radius: 5px 5px 0 0; background: var(--paper); }
+figure.code pre { margin: 0; background: var(--panel); border: 1px solid var(--rule); border-radius: 0 0 5px 5px; padding: .7rem 1rem; overflow-x: auto; }
+figure.code code { font-size: .8rem; line-height: 1.5; color: var(--code-ink); background: none; padding: 0; }
+.c { color: var(--code-c); }
+ol.steps { list-style: none; padding: 0; margin: 1.2rem 0 0; counter-reset: s; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 2.6rem; margin-bottom: 2.3rem; }
+ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: .05rem; width: 1.75rem; height: 1.75rem; border-radius: 50%; border: 1.5px solid var(--accent); color: var(--accent); font: 600 .85rem/1.65rem "IBM Plex Mono", monospace; text-align: center; }
+ol.steps h3 { margin-top: 0; }
+.example { background: var(--panel); border-radius: 6px; padding: 1.3rem 1.3rem 1rem; margin: 1.2rem 0 1.4rem; }
+.example blockquote { margin: 0 0 .8rem; font-family: "Literata", Georgia, serif; font-size: 1.05rem; }
+.chart { overflow-x: auto; }
+svg.strip { width: 100%; min-width: 520px; height: auto; display: block; }
+svg .grid { stroke: var(--rule); stroke-width: 1; }
+svg .cut { stroke: var(--accent); stroke-width: 1.4; stroke-dasharray: 5 4; }
+svg .cutlabel { fill: var(--accent); font: 500 11px "IBM Plex Mono", monospace; }
+svg .tick { fill: var(--ink2); font: 11px "IBM Plex Mono", monospace; }
+svg .val { fill: var(--ink2); font: 10px "IBM Plex Mono", monospace; }
+svg .axis { fill: var(--ink2); font: 11px "IBM Plex Sans", sans-serif; }
+svg .stem { stroke-width: 2; }
+svg .stem.kept { stroke: var(--accent); }
+svg .stem.dropped { stroke: var(--muted); stroke-dasharray: 2 3; }
+svg .dot.kept { fill: var(--accent); stroke: var(--panel); stroke-width: 2; }
+svg .dot.dropped { fill: var(--panel); stroke: var(--muted); stroke-width: 2; }
+.legend { display: flex; gap: 1.4rem; flex-wrap: wrap; font-size: .85rem; color: var(--ink2); margin-top: .5rem; }
+.legend span::before { content: ""; display: inline-block; width: .7rem; height: .7rem; border-radius: 50%; margin-right: .4rem; vertical-align: -.05rem; }
+.legend .k::before { background: var(--accent); }
+.legend .d::before { border: 2px solid var(--muted); width: .55rem; height: .55rem; }
+.tablewrap { overflow-x: auto; margin: 1rem 0 1.4rem; }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { text-align: left; vertical-align: top; padding: .55rem .8rem .55rem 0; border-bottom: 1px solid var(--rule); }
+th { font-weight: 600; color: var(--ink2); font-size: .78rem; letter-spacing: .05em; text-transform: uppercase; }
+td.num { font-variant-numeric: tabular-nums; font-family: "IBM Plex Mono", monospace; font-size: .85rem; }
+.flag { background: var(--warn-soft); border-radius: 5px; padding: .9rem 1.1rem; margin: 1.2rem 0; }
+.flag strong { color: var(--warn); }
+footer { margin-top: 3.5rem; padding-top: 1.2rem; border-top: 1px solid var(--rule); color: var(--ink2); font-size: .88rem; }
+@media (max-width: 560px) { ol.steps > li { padding-left: 2.2rem; } body { font-size: 16px; } }
+</style>
+
+<main>
+<div class="prose">
+<div class="kicker">DHT reproduction · head selection · §3.2 pp. 441–442</div>
+<h1>Which attention heads does DHT drop, and how is that decided?</h1>
+<p class="lede">A plain-language and code-level explanation of the Thompson sampling that picks the attention heads in our Dynamic Hierarchical Transformer reproduction (Meng et al., 2024).</p>
+<p class="meta">Every snippet below is copied from the repository with its file and line. The worked example is a real decision made by our trained T-DHT model on AG News.</p>
+
+<div class="answer"><strong>Short answer.</strong> It is <strong>contextual, combinatorial (top-K) Thompson sampling</strong> with a <strong>Bayesian logistic-regression</strong> reward model for each head. Each head's posterior is kept as a <strong>diagonal Gaussian updated by an online Laplace approximation</strong>. This is the logistic Thompson sampling of Chapelle &amp; Li (2011), extended to choose K heads at once.</div>
+
+<p>Said as one sentence for a slide: <em>each attention head is an arm with its own logistic model of "is keeping this head good for this input?"; for every sample and every 3-layer group we draw one parameter vector per head from its approximate Gaussian posterior, score all 12 heads with a sigmoid, keep the K best, then update only the kept heads with one shared 0/1 label derived from the batch reward.</em></p>
+
+<nav class="toc" aria-label="Contents"><span class="kicker">Contents</span>
+<ol>
+<li><a href="#where">Where it sits in DHT</a></li>
+<li><a href="#steps">The algorithm, step by step</a></li>
+<li><a href="#example">A real decision</a></li>
+<li><a href="#flavor">Which flavor of TS, precisely</a></li>
+<li><a href="#paper">Paper gaps and our choices</a></li>
+<li><a href="#caveats">Caveats worth raising</a></li>
+</ol></nav>
+
+<h2 id="where">Where it sits in DHT</h2>
+<p>BERT-base has 12 layers with 12 attention heads each. DHT always runs the first 3 layers in full (the <em>prefix</em>). It then treats layers 3–5, 6–8 and 9–11 as three <strong>groups</strong>. For every sample, two separate decisions are made at each group the sample reaches:</p>
+<ul>
+<li><strong>How many heads (K).</strong> Tree search (T-DHT) asks a LinUCB bandit per group (8, 10 or 12). Integrated search (F-DHT) fixes K once from its (depth, heads) pair.</li>
+<li><strong>Which K heads.</strong> This is the Thompson sampler described here. The same K heads, at their original positions, are used in all three layers of the group.</li>
+</ul>
+<p>So Thompson sampling never chooses <em>how much</em> to prune, only <em>which</em> heads survive once K is known.</p>
+</div>
+
+<h2 id="steps">The algorithm, step by step</h2>
+<ol class="steps">
+<li>
+<h3>Build a feature vector for every head</h3>
+<div class="prose"><p>For head <code>h</code> in group <code>g</code> the bandit sees a 24-number vector
+<code>w_h = [context ; descriptor_h]</code>:</p>
+<ul>
+<li><strong>context</strong> (12 numbers): the sample's hidden state <em>entering</em> this group, mean-pooled over its real tokens (1 sequence bin × 4 + 8 embedding bins) and standardised with training-set statistics. Identical for all heads.</li>
+<li><strong>descriptor_h</strong> (12 numbers): computed once from 512 training samples before training. It is the average pooled representation in head <code>h</code>'s 64-dimensional slice of the hidden vector after this group. Different per head and per group.</li>
+</ul></div>
+<figure class="code"><figcaption><span class="path">src/dht/bandits/features.py:265 · FeatureBank.aggregate</span></figcaption><pre><code>def aggregate(self, hidden, mask, kind, group=0):
+    <span class="c">&quot;&quot;&quot;Return [candidate_arms,p] detached decision-time features.&quot;&quot;&quot;</span>
+    family = &quot;depth&quot; if kind in (&quot;depth&quot;, &quot;pair&quot;) else kind
+    context = self.normalizers[family].transform(self.raw(hidden, mask, family))
+    ...
+    elif kind == &quot;ts&quot;:
+        arms = self.ts_arms[group]          <span class="c"># [12 heads, 12] head descriptors for this group</span>
+    ...
+    result = torch.cat([context.expand(len(arms), -1), arms], dim=1)   <span class="c"># [12, 24]</span>
+    return result.clone()</code></pre></figure>
+<figure class="code"><figcaption><span class="path">src/dht/bandits/features.py:216 · FeatureBank.calibrate (runs once, 512 training samples)</span></figcaption><pre><code><span class="c"># Split by original hidden-position chunks as described on p.443.</span>
+<span class="c"># These are representation descriptors, NOT isolated head outputs.</span>
+for head, chunk in enumerate(hidden.chunk(full_count, dim=-1)):
+    raw = self.raw(chunk, mask, &quot;ts&quot;)
+    ts_rows[(start, head)].append(raw)</code></pre></figure>
+</li>
+
+<li>
+<h3>Start every head with the same prior</h3>
+<div class="prose"><p>Each head keeps a posterior mean <code>m_h</code> and a diagonal precision <code>q_h</code> (both 24-vectors). They start at <code>m = 1</code>, following the paper's notation, and <code>q = 1</code>, which is our repair of the paper's singular 0. There is <strong>one set of 12 head models shared by all three groups</strong>; the groups differ only through their contexts and descriptors.</p></div>
+<figure class="code"><figcaption><span class="path">src/dht/bandits/logistic_ts.py:238 · LogisticThompsonSampling.__init__</span></figcaption><pre><code>self.mean = torch.ones(num_arms, feature_dim, dtype=torch.float64)       <span class="c"># m_h = 1</span>
+self.precision = torch.full_like(self.mean, prior_precision)             <span class="c"># q_h = 1 (paper prints 0)</span>
+self.generator = torch.Generator(device=&quot;cpu&quot;).manual_seed(seed)         <span class="c"># private, checkpointed RNG</span></code></pre></figure>
+</li>
+
+<li>
+<h3>Draw one sample per head, score, keep the top K</h3>
+<div class="prose"><p>For each (sample, group) decision the sampler draws fresh parameters for all 12 heads at once, scores each head, and keeps the K highest:</p>
+<div class="eq">θ̃_h ~ N( m_h , diag(1 / q_h) )    for h = 0 … 11
+score_h = σ( θ̃_hᵀ w_h )
+keep    = top-K heads by score_h</div>
+<p>During training this draw is the exploration. At inference (<code>explore=False</code>) there is no draw: the posterior mean <code>m_h</code> is used, so the choice is deterministic.</p></div>
+<figure class="code"><figcaption><span class="path">src/dht/bandits/logistic_ts.py:244 · sample_parameters / select</span></figcaption><pre><code>def sample_parameters(self) -&gt; Tensor:
+    <span class="c">&quot;&quot;&quot;θ_h ~ N(mean_h, diag(1/precision_h)); no model gradients are involved.&quot;&quot;&quot;</span>
+    noise = torch.randn(self.mean.shape, generator=self.generator, dtype=torch.float64)
+    return self.mean + noise / self.precision.sqrt()
+
+def select(self, features, count, *, explore=True, parameters=None):
+    w = feature_tensor(features, tuple(self.mean.shape))                 <span class="c"># [12, 24]</span>
+    if parameters is not None:
+        theta = parameters
+    else:
+        theta = self.sample_parameters() if explore else self.mean
+    probability = (w * theta).sum(-1).sigmoid()                          <span class="c"># σ(θ_hᵀ w_h), [12]</span>
+    selected = torch.argsort(probability, descending=True, stable=True)[:count].tolist()
+    return tuple(sorted(selected))                                       <span class="c"># original head IDs</span></code></pre></figure>
+</li>
+
+<li>
+<h3>Run only the kept heads</h3>
+<div class="prose"><p>The controller calls the sampler once per group and executes those heads in all three layers. Inside attention, only the kept heads' rows of the Q, K and V weights (and the matching output columns) are multiplied, so dropped heads cost no matrix work at all. They are not computed and then zeroed.</p></div>
+<figure class="code"><figcaption><span class="path">src/dht/policies/controller.py:172 · DHTController.execute</span></figcaption><pre><code>for group_index, start in enumerate(self.features.groups):       <span class="c"># starts 3, 6, 9</span>
+    if start &gt;= route.total_depth:
+        break
+    if self.options.mode == &quot;tree&quot;:
+        w_count = self.features.aggregate(hidden, mask, &quot;head&quot;, group_index)
+        count_arm = self.head_ucb.select(w_count, explore=explore)
+        count = self.counts[count_arm]                           <span class="c"># K ∈ {8, 10, 12}</span>
+    else:
+        count = route.head_count  <span class="c"># The integrated count stays fixed over groups.</span>
+    w_ts = self.features.aggregate(hidden, mask, &quot;ts&quot;, group_index)
+    ...
+    selected = self.ts.select(w_ts, count, explore=explore)
+    for layer_index in range(start, start + self.config.model.group_size):
+        head_indices[layer_index] = selected                     <span class="c"># same heads for all 3 layers</span>
+        hidden = model.layers[layer_index](hidden, mask, selected)</code></pre></figure>
+<figure class="code"><figcaption><span class="path">src/dht/models/attention.py:121 · SelectableAttention.forward</span></figcaption><pre><code>def project(projection: nn.Linear) -&gt; Tensor:
+    <span class="c">&quot;&quot;&quot;Project only active rows, then reshape into [batch,heads,sequence,head_dim].&quot;&quot;&quot;</span>
+    result = F.linear(
+        hidden,
+        projection.weight if full_order
+        else _UniqueIndexSelect.apply(projection.weight, 0, columns),   <span class="c"># kept heads&#x27; rows only</span>
+        projection.bias if full_order
+        else _UniqueIndexSelect.apply(projection.bias, 0, columns),
+    )
+    ...</code></pre></figure>
+</li>
+
+<li>
+<h3>Turn the batch loss into one 0/1 label</h3>
+<div class="prose"><p>After the optimizer step, each sample's loss is multiplied by a cost: the head count K for the tree group, or depth × heads for integrated search. It is then compared with the <em>previous</em> batch's average:</p>
+<div class="eq">r = mean_prev_batch(loss × cost) / (loss × cost)
+y = 1 if r ≤ 1 else 0</div>
+<p>The ratio is capped at 100, and the rule for <code>y</code> is the paper-literal one printed on p. 444. That single label <code>y</code> is given to <strong>every kept head</strong> of that group. Unkept heads are not updated at all.</p></div>
+<figure class="code"><figcaption><span class="path">src/dht/policies/controller.py:209 · DHTController.update</span></figcaption><pre><code>for execution, loss in zip(executions, losses, strict=True):
+    depth = execution.route.total_depth
+    route_cost = depth if route_key == &quot;depth&quot; else depth * execution.route.head_count
+    sample = {route_key: loss * route_cost}
+    if route_key == &quot;depth&quot;:                                     <span class="c"># tree: one key per group</span>
+        sample.update({f&quot;head:{event.start_layer}&quot;: loss * len(event.head_indices)
+                       for event in execution.groups})
+    products.append(sample)
+rewards = self.rewards.observe_batch(products)   <span class="c"># ratio vs PREVIOUS batch mean, capped at 100</span>
+...
+for event in execution.groups:
+    relevant = sample[f&quot;head:{event.start_layer}&quot;] if route_key == &quot;depth&quot; else route_reward
+    ...
+    self.ts.update(
+        event.head_indices,
+        event.ts_features,                                       <span class="c"># decision-time features</span>
+        self.rewards.binary_feedback(relevant, self.options.feedback_rule),
+    )</code></pre></figure>
+<figure class="code"><figcaption><span class="path">src/dht/policies/rewards.py:57 · RewardHistory.binary_feedback</span></figcaption><pre><code>def binary_feedback(self, reward: float, rule: str) -&gt; int:
+    <span class="c">&quot;&quot;&quot;paper_literal: 1 when reward&lt;=1, as printed p.444.</span>
+    improvement: 1 when reward&gt;1, a prose-consistent correction/ablation.<span class="c">&quot;&quot;&quot;</span>
+    if rule == &quot;paper_literal&quot;:
+        return int(reward &lt;= 1)
+    if rule == &quot;improvement&quot;:
+        return int(reward &gt; 1)</code></pre></figure>
+</li>
+
+<li>
+<h3>Update each kept head's posterior (the Laplace step)</h3>
+<div class="prose"><p>Each kept head solves a tiny Bayesian logistic regression with one new observation, using its current posterior as the prior. The new mean is the MAP estimate. The precision grows by the logistic curvature at that point, times the squared features (element-wise, so the covariance stays diagonal):</p>
+<div class="eq">m_h ← argmin_θ  ½ Σ q_h (θ − m_h)²  +  softplus(θᵀw_h) − y·θᵀw_h
+q_h ← q_h  +  σ(m_hᵀw_h) · (1 − σ(m_hᵀw_h)) · w_h²</div>
+<p>The MAP is found with damped Newton steps and an Armijo line search. The precision update is exactly the form printed in the paper, and it is the update in Chapelle &amp; Li's regularized logistic regression.</p></div>
+<figure class="code"><figcaption><span class="path">src/dht/bandits/logistic_ts.py:323 · LogisticThompsonSampling.update</span></figcaption><pre><code>for arm in selected:                                              <span class="c"># unselected heads untouched</span>
+    theta, diagnostics = fit_logistic_map(
+        w[arm : arm + 1],                                         <span class="c"># ONE new observation</span>
+        torch.tensor([feedback], dtype=torch.float64),            <span class="c"># shared superarm label</span>
+        self.mean[arm],                                           <span class="c"># old posterior = prior</span>
+        self.precision[arm],
+        self.max_iterations,
+        self.tolerance,
+    )
+    probability = torch.sigmoid(w[arm] @ theta)
+    new_precision = self.precision[arm] + probability * (1 - probability) * w[arm].square()
+    pending[arm] = theta, new_precision, diagnostics
+for arm, (theta, precision, diagnostics) in pending.items():     <span class="c"># commit only if all fits succeed</span>
+    self.mean[arm], self.precision[arm] = theta, precision</code></pre></figure>
+<figure class="code"><figcaption><span class="path">src/dht/bandits/logistic_ts.py:21 · logistic_objective / fit_logistic_map</span></figcaption><pre><code>def logistic_objective(theta, features, labels, prior_mean, prior_precision):
+    logits = features @ theta
+    return (0.5 * (prior_precision * (theta - prior_mean).square()).sum()
+            + (F.softplus(logits) - labels * logits).sum())      <span class="c"># stable Bernoulli NLL</span>
+
+def fit_logistic_map(features, labels, prior_mean, prior_precision, ...):
+    theta = prior_mean.clone()
+    for _ in range(max_iterations):
+        probability = (features @ theta).sigmoid()
+        gradient = prior_precision * (theta - prior_mean) + features.T @ (probability - labels)
+        ...
+        curvature = probability * (1 - probability)
+        hessian = torch.diag(prior_precision) + features.T @ (curvature[:, None] * features)
+        direction = torch.linalg.solve(hessian, gradient)        <span class="c"># Newton step</span>
+        ...                                                       <span class="c"># Armijo backtracking line search</span></code></pre></figure>
+</li>
+</ol>
+
+<h2 id="example">A real decision from our trained model</h2>
+<div class="prose"><p>This is the frozen T-DHT checkpoint on AG News test sentence #0 (true class Business). The depth bandit sent it through all 12 layers. For layers 3–5, the head-count bandit scored 8 heads at +9.17, 10 heads at −2.03 and 12 heads at +4.77, so K = 8. Thompson sampling then ranked the heads by their posterior-mean scores:</p></div>
+<div class="example">
+<blockquote>“Fears for T N pension after talks. Unions representing workers at Turner Newall say they are ‘disappointed’ after talks with stricken parent firm Federal Mogul.”</blockquote>
+<div class="chart"><svg viewBox="0 0 640 250" role="img" aria-labelledby="stripTitle" class="strip"><title id="stripTitle">Posterior-mean score of each of the 12 heads; the 8 highest are kept</title><line x1="56" x2="620" y1="176.4" y2="176.4" class="grid"/><text x="48" y="180.4" class="tick" text-anchor="end">0.340</text><line x1="56" x2="620" y1="121.3" y2="121.3" class="grid"/><text x="48" y="125.3" class="tick" text-anchor="end">0.350</text><line x1="56" x2="620" y1="66.1" y2="66.1" class="grid"/><text x="48" y="70.1" class="tick" text-anchor="end">0.360</text><line x1="56" x2="620" y1="115.8" y2="115.8" class="cut"/><text x="620" y="109.8" class="cutlabel" text-anchor="end">top-8 cut</text><line x1="79.5" x2="79.5" y1="204" y2="93.7" class="stem kept"/><circle cx="79.5" cy="93.7" r="7" class="dot kept"><title>head 0: 0.355 (kept)</title></circle><text x="79.5" y="222" class="tick" text-anchor="middle">h0</text><text x="79.5" y="81.7" class="val" text-anchor="middle">0.355</text><line x1="126.5" x2="126.5" y1="204" y2="187.5" class="stem dropped"/><circle cx="126.5" cy="187.5" r="7" class="dot dropped"><title>head 1: 0.338 (dropped)</title></circle><text x="126.5" y="222" class="tick" text-anchor="middle">h1</text><text x="126.5" y="175.5" class="val" text-anchor="middle">0.338</text><line x1="173.5" x2="173.5" y1="204" y2="66.1" class="stem kept"/><circle cx="173.5" cy="66.1" r="7" class="dot kept"><title>head 2: 0.360 (kept)</title></circle><text x="173.5" y="222" class="tick" text-anchor="middle">h2</text><text x="173.5" y="54.1" class="val" text-anchor="middle">0.360</text><line x1="220.5" x2="220.5" y1="204" y2="126.8" class="stem dropped"/><circle cx="220.5" cy="126.8" r="7" class="dot dropped"><title>head 3: 0.349 (dropped)</title></circle><text x="220.5" y="222" class="tick" text-anchor="middle">h3</text><text x="220.5" y="114.8" class="val" text-anchor="middle">0.349</text><line x1="267.5" x2="267.5" y1="204" y2="38.5" class="stem kept"/><circle cx="267.5" cy="38.5" r="7" class="dot kept"><title>head 4: 0.365 (kept)</title></circle><text x="267.5" y="222" class="tick" text-anchor="middle">h4</text><text x="267.5" y="26.5" class="val" text-anchor="middle">0.365</text><line x1="314.5" x2="314.5" y1="204" y2="49.6" class="stem kept"/><circle cx="314.5" cy="49.6" r="7" class="dot kept"><title>head 5: 0.363 (kept)</title></circle><text x="314.5" y="222" class="tick" text-anchor="middle">h5</text><text x="314.5" y="37.6" class="val" text-anchor="middle">0.363</text><line x1="361.5" x2="361.5" y1="204" y2="77.2" class="stem kept"/><circle cx="361.5" cy="77.2" r="7" class="dot kept"><title>head 6: 0.358 (kept)</title></circle><text x="361.5" y="222" class="tick" text-anchor="middle">h6</text><text x="361.5" y="65.2" class="val" text-anchor="middle">0.358</text><line x1="408.5" x2="408.5" y1="204" y2="77.2" class="stem kept"/><circle cx="408.5" cy="77.2" r="7" class="dot kept"><title>head 7: 0.358 (kept)</title></circle><text x="408.5" y="222" class="tick" text-anchor="middle">h7</text><text x="408.5" y="65.2" class="val" text-anchor="middle">0.358</text><line x1="455.5" x2="455.5" y1="204" y2="143.3" class="stem dropped"/><circle cx="455.5" cy="143.3" r="7" class="dot dropped"><title>head 8: 0.346 (dropped)</title></circle><text x="455.5" y="222" class="tick" text-anchor="middle">h8</text><text x="455.5" y="131.3" class="val" text-anchor="middle">0.346</text><line x1="502.5" x2="502.5" y1="204" y2="165.4" class="stem dropped"/><circle cx="502.5" cy="165.4" r="7" class="dot dropped"><title>head 9: 0.342 (dropped)</title></circle><text x="502.5" y="222" class="tick" text-anchor="middle">h9</text><text x="502.5" y="153.4" class="val" text-anchor="middle">0.342</text><line x1="549.5" x2="549.5" y1="204" y2="93.7" class="stem kept"/><circle cx="549.5" cy="93.7" r="7" class="dot kept"><title>head 10: 0.355 (kept)</title></circle><text x="549.5" y="222" class="tick" text-anchor="middle">h10</text><text x="549.5" y="81.7" class="val" text-anchor="middle">0.355</text><line x1="596.5" x2="596.5" y1="204" y2="104.7" class="stem kept"/><circle cx="596.5" cy="104.7" r="7" class="dot kept"><title>head 11: 0.353 (kept)</title></circle><text x="596.5" y="222" class="tick" text-anchor="middle">h11</text><text x="596.5" y="92.7" class="val" text-anchor="middle">0.353</text><text x="56" y="244" class="axis">attention head (layers 3–5) · vertical axis spans 0.335–0.368 only</text></svg></div>
+<div class="legend"><span class="k">kept (8): heads 0, 2, 4, 5, 6, 7, 10, 11</span><span class="d">dropped (4): heads 1, 3, 8, 9</span></div>
+</div>
+<div class="prose"><p>The four dropped heads are exactly the four with the lowest scores (0.338–0.349). Two things are worth pointing out:</p>
+<ul>
+<li><strong>The scores are tightly bunched.</strong> All 12 lie between 0.338 and 0.365, and the axis above is zoomed in to show them. After three epochs the posterior means barely separate the heads, so during training the random draw, not the mean, usually decides which heads are dropped. At inference, small differences still decide deterministically.</li>
+<li><strong>Every score is below 0.5.</strong> Under the paper-literal label rule, a label of 1 means "this batch was <em>less</em> efficient than the last one" (see below). The scores are therefore relative rankings, not calibrated "probability this head helps".</li>
+</ul></div>
+
+<h2 id="flavor">Which flavor of Thompson sampling, precisely</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Question</th><th>Answer in this implementation</th></tr></thead>
+<tbody>
+<tr><td>Contextual?</td><td>Yes. The choice depends on the sample's current hidden state and on per-head descriptors.</td></tr>
+<tr><td>Reward model</td><td>Bernoulli with a logistic link, one independent model per head.</td></tr>
+<tr><td>Posterior</td><td>Gaussian approximation with <strong>diagonal</strong> covariance, updated online (Laplace: MAP mean, Hessian-diagonal precision).</td></tr>
+<tr><td>Samples per decision</td><td>One draw of all 12 heads' parameters per (sample, group), from a private, checkpointed RNG.</td></tr>
+<tr><td>Action</td><td>Top-K superarm (combinatorial). K comes from the count bandit (tree) or the chosen pair (integrated).</td></tr>
+<tr><td>Feedback</td><td>One binary label per superarm, copied to every kept head. Semi-bandit-style update, without per-head credit assignment.</td></tr>
+<tr><td>Inference</td><td>No sampling: rank by the posterior mean.</td></tr>
+</tbody></table></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Often assumed</th><th>What it actually is</th></tr></thead>
+<tbody>
+<tr><td>Beta–Bernoulli TS per head</td><td>No. That has no context; ours conditions on the input.</td></tr>
+<tr><td>Linear-Gaussian TS (Agrawal &amp; Goyal)</td><td>No. The reward is logistic, so the posterior is approximate, not conjugate.</td></tr>
+<tr><td>Exact Bayesian posterior</td><td>No. It is an online diagonal Laplace approximation, and feature correlations are ignored.</td></tr>
+<tr><td>TS over all C(12, K) subsets</td><td>No. Per-head draws followed by top-K, which keeps 495 possible 8-head subsets tractable.</td></tr>
+</tbody></table></div>
+
+<div class="prose">
+<h2 id="paper">What the paper specifies, and what we had to choose</h2>
+<p>§3.2 gives the sampling, the sigmoid scores, the top-K selection and the precision update. Three pieces could not be implemented as printed. Decision D005 in <code>docs/project/decisions.md</code> records each repair:</p>
+<ul>
+<li><strong>Prior precision printed as 0.</strong> That makes the first draw undefined (infinite variance). We use 1.</li>
+<li><strong>The printed MAP objective has a positive quadratic term inside a maximization, and its likelihood term vanishes when y = 0.</strong> We use the standard penalized logistic loss shown above.</li>
+<li><strong>Diagonal vs full covariance is ambiguous.</strong> The update squares features element-wise, which implies a diagonal; the initialization is printed as a matrix. We keep the diagonal.</li>
+</ul>
+<div class="flag"><strong>The label direction contradicts the paper's own text.</strong> The printed rule (p. 444) sets <code>y = 1</code> when <code>r ≤ 1</code>, i.e. when the sample was <em>costlier or lossier</em> than the previous batch average. The prose says 1 should mean "more effective". Our main runs follow the printed rule for fidelity, and the corrected rule (<code>y = 1 when r &gt; 1</code>) is available as <code>feedback_rule = "improvement"</code>. A bounded two-epoch check gave similar accuracy under both (.8707 vs .8723 macro F1 on 512 validation samples), so the question is still open, and it is a fair point to raise with the paper.</div>
+
+<h2 id="caveats">Caveats worth raising</h2>
+<ul>
+<li><strong>Shared credit.</strong> All kept heads get the same label, so a head that hurt the prediction is rewarded alongside the ones that helped. Per-head effects are never observed.</li>
+<li><strong>The descriptor is a slice, not a head output.</strong> Head <code>h</code>'s 64-dimensional slice of the hidden vector after a full layer group has been mixed by the output projection and the feed-forward block, so it identifies a position, not what head <code>h</code> computed. The paper describes the descriptor the same way ("split each vector into sub-matrices along the embedding dimension").</li>
+<li><strong>Non-stationary reward.</strong> The label compares against the previous batch's average, and the network changes underneath the bandit. The reward ratio hit its cap of 100 about 81,500 times in the full T-DHT run.</li>
+<li><strong>Weak separation.</strong> As the example shows, posterior means end up close together. Which heads get dropped is therefore largely exploratory noise during training, and our two search modes do not agree on which heads are unimportant.</li>
+</ul>
+
+<h3>Reference</h3>
+<p>O. Chapelle and L. Li, “An Empirical Evaluation of Thompson Sampling,” <em>Advances in Neural Information Processing Systems 24</em> (NeurIPS 2011). It introduces the regularized-logistic-regression Thompson sampling with a diagonal Gaussian (Laplace) posterior used here. The DHT paper is F. Meng, L. Zhang, Y. Chen and Y. Wang, <em>Proceedings on Engineering Sciences</em> 6(2), 439–452, 2024, DOI 10.24874/PES06.02.001.</p>
+</div>
+
+<footer>Code references are to the dynamic-transformers repository as of 2026-09-22 (<code>src/dht/bandits/logistic_ts.py</code>, <code>src/dht/policies/controller.py</code>, <code>src/dht/policies/rewards.py</code>, <code>src/dht/bandits/features.py</code>, <code>src/dht/models/attention.py</code>). The worked example comes from the frozen T-DHT checkpoint via <code>DHTController.explain()</code>.</footer>
+</main>

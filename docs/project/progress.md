@@ -1,5 +1,47 @@
 # Project progress
 
+## 2026-09-22 — Dataset EDA, F-DHT (integrated search), batched execution, next topics
+
+- User-approved downloads of DBpedia / Yelp Polarity / Yelp Full (Zhang et al. CSVs,
+  hashes in the curated record) for EDA only; sizes match the paper exactly.
+- `notebooks/01_dataset_eda_and_dht_examples.ipynb`: four-dataset EDA (balance, lengths
+  vs 128/300 limits, vocabulary, quality, Naive Bayes difficulty) and fixed BERT vs T-DHT
+  per-sample analysis, including Part 3 "one sample at a time" anatomy cards.
+- D016: full-data F-DHT run completed (342,000 samples, per-sample engine). Selected
+  epoch 2; test macro F1 .94093 (T-DHT .93995, fixed .94903); task FLOPs .432x.
+- D017: batched execution engine (opt-in) plus `DHTController.explain`,
+  `fit_logistic_map_many`, `scripts/{export_predictions,benchmark_inference,benchmark_training}.py`.
+  MPS: batched T-DHT trains 1.55× faster than fixed BERT (was 0.61×); inference
+  0.84–0.90× fixed at batch 32 (was 0.20–0.38×); decisions identical to per-sample.
+- `notebooks/02_tree_vs_integrated_search.ipynb`: concepts, code diff, results, per-sample
+  traces, head usage, dynamics and speed. `docs/research/next_topics.md`: verified list.
+- Verification: 126 tests pass; ruff clean. Report:
+  `../../reports/reproduction/ag_news_fdht_and_batched_execution.md`.
+- D018 device context pooling (opt-in): batched T-DHT inference 1.12× and training 1.60×
+  fixed BERT; F-DHT 1.11× / 0.96×. 6,000/6,000 validation decisions unchanged. 130 tests.
+- Next: ≥3 seeds per mode, S-DHT, a cheaper head-sliced backward, a full batched retrain.
+
+
+## 2026-09-09 — Full-run monitoring and T-DHT numerical recovery
+
+- Fixed AG News seed-7 completed all three epochs and 342,000 sample exposures.
+  Validation macro F1 progressed `.94444`, `.94604`, `.94801`; public test remains
+  untouched. The final epoch is the validation-selected best checkpoint.
+- The initial paper-literal T-DHT attempt stopped in epoch 1 at optimizer step 8,721
+  after 69,768 trained samples: a logistic MAP fit reached gradient `1.0217e-6`
+  after 30 iterations and narrowly missed its absolute convergence cutoff. Its
+  atomic step-8,000 checkpoint and failed logs are retained.
+- Added D015's relative Newton-step convergence criterion and a high-precision
+  regression. This changes only numerical stopping, not the posterior objective,
+  actions, reward formulation, or paper-facing configuration.
+- Focused bandit verification: `17 passed`. Full verification and resumed T-DHT
+  completion subsequently passed 111 MPS tests. The resumed run completed all
+  three epochs; validation/test macro F1 was `.94383`/`.93995`, versus fixed
+  `.94801`/`.94903`. Each selected checkpoint was evaluated on public test exactly
+  once. T-DHT test task-path matmul ratio was `.38576x` (`.63576x` with routing),
+  but matched MPS throughput was 68.13 versus fixed 174.06 samples/s. Full report:
+  `../../reports/reproduction/ag_news_full_seed7.md`.
+
 ## Latest session: 2026-09-08 — Long-run readiness and two-pass verification
 
 Objective: implement the three approved readiness fixes and explicitly verify the

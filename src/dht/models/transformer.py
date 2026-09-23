@@ -28,9 +28,17 @@ class EncoderLayer(nn.Module):
         self.dropout = nn.Dropout(config.dropout)
 
     def forward(
-        self, hidden: Tensor, mask: Tensor, heads: tuple[int, ...], *, dense_masked: bool = False
+        self,
+        hidden: Tensor,
+        mask: Tensor,
+        heads: tuple[int, ...] | list[tuple[int, ...]],
+        *,
+        dense_masked: bool = False,
     ) -> Tensor:
-        """Execute selected attention heads, then the unchanged FFN for this layer."""
+        """Execute selected attention heads, then the unchanged FFN for this layer.
+
+        ``heads`` is one shared tuple, or one equal-length tuple per sample.
+        """
         attended = self.attention(hidden, mask, heads, dense_masked=dense_masked)
         hidden = self.attention_norm(hidden + self.dropout(attended))
         return self.output_norm(hidden + self.dropout(self.ffn(hidden)))

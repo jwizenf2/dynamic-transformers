@@ -114,7 +114,12 @@ def evaluate_dynamic(
     return {
         **classification_metrics(torch.cat(predicted), labels, config.model.num_classes),
         "architectures": selection_summary(config, specs),
-        "routing_forward_matmul_flops": len(tokens) * prefix_matmul_flops(config),
+        # Batched inference reuses the routing prefix for execution (D017), so the
+        # separate routing pass costs nothing extra; per-sample reruns it.
+        "routing_forward_matmul_flops": 0
+        if config.dht.execution == "batched"
+        else len(tokens) * prefix_matmul_flops(config),
+        "execution": config.dht.execution,
         "end_to_end_seconds": seconds,
         "samples_per_second": len(tokens) / seconds,
         "timing_scope": "routing + per-sample policy + task forward + transfers + predictions",
@@ -219,14 +224,27 @@ class DHTTrainer:
                 self.epoch += 1
             synchronize(self.device)
             started = time.perf_counter()
-            route = self.controller.route(
-                self.model, self.tokens[self.cursor : self.cursor + 1].to(self.device), self.cursor
-            )
+            chunk = min(self.config.dht.routing_batch_size, len(self.tokens) - self.cursor)
+            if chunk == 1:
+                routes = [
+                    self.controller.route(
+                        self.model,
+                        self.tokens[self.cursor : self.cursor + 1].to(self.device),
+                        self.cursor,
+                    )
+                ]
+            else:  # D017: one no-grad prefix pass routes the whole chunk.
+                routes = self.controller.route_batch(
+                    self.model,
+                    self.tokens[self.cursor : self.cursor + chunk].to(self.device),
+                    list(range(self.cursor, self.cursor + chunk)),
+                )
             synchronize(self.device)
             self.routing_seconds += time.perf_counter() - started
-            self.queues.push(route)
-            self.cursor += 1
-            self.routed_samples += 1
+            for route in routes:
+                self.queues.push(route)
+            self.cursor += chunk
+            self.routed_samples += chunk
 
     def step(self) -> dict:
         """One queue release -> sample-specific forwards -> mean task loss -> updates.
@@ -240,12 +258,20 @@ class DHTTrainer:
         self.optimizer.zero_grad(set_to_none=True)
         synchronize(self.device)
         started = time.perf_counter()
-        executions = [
-            self.controller.execute(
-                self.model, self.tokens[item.sample_id : item.sample_id + 1].to(self.device), item
+        if self.config.dht.execution == "batched":
+            ids = [item.sample_id for item in batch]
+            executions = self.controller.execute_batch(
+                self.model, self.tokens[ids].to(self.device), batch
             )
-            for item in batch
-        ]
+        else:
+            executions = [
+                self.controller.execute(
+                    self.model,
+                    self.tokens[item.sample_id : item.sample_id + 1].to(self.device),
+                    item,
+                )
+                for item in batch
+            ]
         logits = torch.cat([execution.logits for execution in executions])
         targets = self.labels[[item.sample_id for item in batch]].to(self.device)
         individual_losses = F.cross_entropy(logits, targets, reduction="none")

@@ -1,5 +1,36 @@
 # Reading and extending the DHT implementation
 
+## New: batched execution (D017) and integrated search on real data (D016)
+
+Two execution layouts implement the SAME algorithm. Read the per-sample reference
+first (`DHTController.route` → `execute` → `update`), then its batched twin:
+
+1. `SelectableAttention._per_sample_forward`: one head tuple per sample, per-sample
+   weight gathers stacked into `[batch, K·head_dim, hidden]`, one `torch.bmm`.
+2. `DHTController.route_batch`: one no-grad prefix for a routing chunk.
+3. `DHTController.execute_batch`: fresh prefix once per batch, then per group:
+   classify samples whose depth is reached, pool contexts after one CPU transfer
+   (`FeatureBank.aggregate_many`), pick counts/heads per sample (TS parameters
+   pre-drawn in sample-major order), split rows by head count, run the c layers
+   once per partition, rejoin. `rows` maps hidden rows to original positions.
+4. `LogisticThompsonSampling.update(..., vectorized=True)` →
+   `fit_logistic_map_many`: all selected heads' independent MAP fits in one solve.
+5. `predict` (batched) passes the routing prefix into `execute_batch` because at
+   frozen inference the rerun is identical; training always reruns it.
+
+Enable with `[dht] execution = "batched"` (and optionally `routing_batch_size`).
+Add `context_pooling = "device"` (D018) to pool bandit contexts on the GPU with
+`pooled_features_batch` and score UCB arms per batch with `LinearUCB.select_many`;
+bandit statistics stay float64 on the CPU.
+`tests/integration/test_batched_dht.py` is the equivalence contract; read it to see
+what "same algorithm" means precisely. `scripts/benchmark_training.py` measures
+end-to-end training throughput; `bench` numbers live in the reproduction report.
+
+`DHTController.explain` returns the frozen decision trace (route UCB scores per
+arm, per-group count scores, TS head probabilities) through the per-sample code.
+`scripts/export_predictions.py` writes per-sample JSONL used by `notebooks/`.
+Integrated search on AG News: `configs/experiment/ag_news_fdht_full.toml` (D016).
+
 ## New: the long-run protocol
 
 `training/calibration.py` selects training-only row IDs with a private RNG. The new

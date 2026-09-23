@@ -1,5 +1,24 @@
 # Experiment log
 
+## 2026-09-22 — F-DHT full run and batched-execution benchmarks
+
+F-DHT (D016) seed 7, three epochs, 342,000 exposures: validation macro F1 .93757/.94523/
+.94010, selected epoch 2, one test evaluation .94093 (task FLOPs .432x, mean depth 5.35).
+Per-sample exports of fixed/T-DHT/F-DHT reproduce each recorded test F1 exactly. D017
+benchmarks on idle MPS: see `../../reports/reproduction/ag_news_fdht_and_batched_execution.md`;
+curated record `../../experiments/02_related_work/ag_news_fdht_batched_2026-09-22.json`.
+
+
+## 2026-09-09 — Full AG News fixed/T-DHT seed-7 reproduction
+
+Both matched three-epoch runs completed all 342,000 exposures. Fixed validation/test
+macro F1: .94801/.94903. T-DHT: .94383/.93995, selected-path train/test matmul
+ratios .39781/.38576; test task+routing ratio .63576. Matched MPS throughput:
+174.06 fixed / 68.13 T-DHT samples/s. Test was evaluated once per validation-selected
+checkpoint. T-DHT resumed from clean step 8,000 after D015's numerical stopping fix;
+the failed attempt is retained. Report: `../../reports/reproduction/ag_news_full_seed7.md`;
+curated record: `../../experiments/02_related_work/ag_news_full_seed7_2026-09-09.json`.
+
 ## 2026-09-08 — Targeted long-run readiness (D013–D014)
 
 Matched two-epoch readiness runs: 1,024 AG News training records, 512 held-out

@@ -65,6 +65,28 @@ class LinearUCB:
         # A tiny negative quadratic form can arise from floating-point roundoff.
         return mean + self.exploration * variance.clamp_min(0).sqrt()
 
+    def select_many(self, features: Tensor, *, explore: bool = True) -> list[int]:
+        """scores()+argmax for N samples at once: features [N, num_arms, feature_dim].
+
+        One solve per arm with N right-hand sides replaces N separate solves (D018).
+        Same float64 formulas; only the solver's batching differs, so results agree
+        with select() to rounding, and ties (first arm) are resolved identically.
+        """
+        w = torch.as_tensor(features).detach().to(device="cpu", dtype=torch.float64)
+        if w.ndim != 3 or w.shape[1:] != (self.num_arms, self.feature_dim):
+            raise ValueError("expected features of shape [N, num_arms, feature_dim]")
+        if not torch.isfinite(w).all():
+            raise ValueError("features must be finite")
+        theta = torch.linalg.solve(self.A, self.b.unsqueeze(-1)).squeeze(-1)
+        scores = (w * theta).sum(-1)
+        if explore and self.exploration:
+            right = w.permute(1, 2, 0)  # [arms, p, N]
+            variance = (right * torch.linalg.solve(self.A, right)).sum(1).T  # [N, arms]
+            if torch.any(variance < -1e-10):
+                raise FloatingPointError("UCB covariance lost positive definiteness")
+            scores = scores + self.exploration * variance.clamp_min(0).sqrt()
+        return scores.argmax(-1).tolist()
+
     def select(self, features: Tensor, *, explore: bool = True) -> int:
         """Choose an arm without updating any statistics."""
         return int(self.scores(features, explore=explore).argmax())

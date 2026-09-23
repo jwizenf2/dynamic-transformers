@@ -36,6 +36,18 @@ class _UniqueIndexSelect(torch.autograd.Function):
         return restored, None, None
 
 
+def unique_index_select(value: Tensor, dim: int, indices: Sequence[int]) -> Tensor:
+    """Public deterministic gather for UNIQUE indices (e.g. selecting batch rows).
+
+    Batched DHT uses it to split a batch into head-count partitions and to restore
+    the original sample order; its backward assigns rather than accumulates (D012).
+    """
+    if len(set(indices)) != len(indices):
+        raise ValueError("unique_index_select requires unique indices")
+    index = torch.tensor(list(indices), dtype=torch.long, device=value.device)
+    return _UniqueIndexSelect.apply(value, dim, index)
+
+
 class SelectableAttention(nn.Module):
     """Slice projection rows/columns before matmul; dense masking is a reference."""
 
@@ -56,7 +68,7 @@ class SelectableAttention(nn.Module):
         self,
         hidden: Tensor,
         attention_mask: Tensor,
-        head_indices: Sequence[int] | None = None,
+        head_indices: Sequence[int] | Sequence[Sequence[int]] | None = None,
         *,
         dense_masked: bool = False,
     ) -> Tensor:
@@ -66,7 +78,21 @@ class SelectableAttention(nn.Module):
         The dense_masked=True path computes every head then zeroes inactive outputs;
         it is a semantic reference and must never be counted as physical savings.
         Output projection columns follow the same original head IDs as Q/K/V rows.
+
+        ``head_indices`` may also be a list with ONE head tuple PER SAMPLE (all of
+        equal length). Different samples then keep different heads inside one
+        batched matmul (see _per_sample_forward). This is the batched-DHT path.
         """
+        if head_indices is not None and len(head_indices) and not isinstance(head_indices[0], int):
+            per_sample = [tuple(heads) for heads in head_indices]
+            if len(per_sample) != hidden.shape[0]:
+                raise ValueError("per-sample head lists must match the batch size")
+            if len(set(per_sample)) == 1:
+                head_indices = per_sample[0]  # Shared subset: ordinary sliced path.
+            elif dense_masked:
+                raise ValueError("dense_masked reference supports one shared head subset")
+            else:
+                return self._per_sample_forward(hidden, attention_mask, per_sample)
         selected = tuple(range(self.num_heads)) if head_indices is None else tuple(head_indices)
         if (
             not selected
@@ -119,3 +145,55 @@ class SelectableAttention(nn.Module):
             else _UniqueIndexSelect.apply(self.output.weight, 1, columns)
         )
         return F.linear(joined, output_weight, self.output.bias)
+
+    def _per_sample_forward(
+        self, hidden: Tensor, attention_mask: Tensor, per_sample: list[tuple[int, ...]]
+    ) -> Tensor:
+        """Batched attention where sample b keeps only its own K heads.
+
+        Each sample's Q/K/V projection ROWS and output projection COLUMNS are
+        gathered with the unique-index gather (deterministic backward, D012) and
+        stacked to weights of shape [batch, K·head_dim, hidden]. One torch.bmm then
+        projects every sample with its own slice, so matmul work stays proportional
+        to K (physical skipping, not masking) while the whole batch is one kernel.
+        Autograd sums the per-sample dense weight gradients, i.e. no duplicate-index
+        scatter is ever needed. Mathematically identical to running each sample
+        alone through forward(sample, heads=per_sample[b]).
+        """
+        count = len(per_sample[0])
+        for selected in per_sample:
+            if (
+                len(selected) != count
+                or len(set(selected)) != count
+                or any(type(h) is not int or not 0 <= h < self.num_heads for h in selected)
+            ):
+                raise ValueError("per-sample heads must be unique, in range and equally many")
+        if attention_mask.dtype != torch.bool or attention_mask.shape != hidden.shape[:2]:
+            raise ValueError("attention_mask must be boolean [batch, sequence]")
+        batch, length, _ = hidden.shape
+        columns = [
+            torch.tensor(
+                [h * self.head_dim + j for h in selected for j in range(self.head_dim)],
+                dtype=torch.long,
+                device=hidden.device,
+            )
+            for selected in per_sample
+        ]
+
+        def project(projection: nn.Linear) -> Tensor:
+            weight = torch.stack(
+                [_UniqueIndexSelect.apply(projection.weight, 0, c) for c in columns]
+            )  # [batch, K·head_dim, hidden]
+            bias = torch.stack([_UniqueIndexSelect.apply(projection.bias, 0, c) for c in columns])
+            result = torch.bmm(hidden, weight.transpose(1, 2)) + bias[:, None, :]
+            return result.view(batch, length, count, self.head_dim).transpose(1, 2)
+
+        query, key, value = (project(layer) for layer in (self.query, self.key, self.value))
+        scores = (query @ key.transpose(-2, -1)) / math.sqrt(self.head_dim)
+        scores = scores.masked_fill(~attention_mask[:, None, None, :], -torch.inf)
+        heads = self.dropout(scores.softmax(dim=-1)) @ value
+        joined = heads.transpose(1, 2).reshape(batch, length, -1)
+        output_weight = torch.stack(
+            [_UniqueIndexSelect.apply(self.output.weight, 1, c) for c in columns]
+        )  # [batch, hidden, K·head_dim]
+        return torch.bmm(joined, output_weight.transpose(1, 2)) + self.output.bias

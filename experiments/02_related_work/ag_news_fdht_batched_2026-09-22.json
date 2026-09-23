@@ -1,0 +1,164 @@
+{
+  "status": "completed",
+  "date": "2026-09-22",
+  "seed": 7,
+  "dataset": {
+    "prepared": "datasets/ag_news_wordpiece_v1",
+    "manifest_sha256": "3aeed9048c40a8a2d2b6ffac168bdc7f1000c0d3a108f8fd72e54ef91fe3adaf"
+  },
+  "public_test_evaluations_per_selected_checkpoint": 1,
+  "fdht": {
+    "decision": "D016",
+    "config": "configs/experiment/ag_news_fdht_full.toml",
+    "config_sha256": "015db3090f2f06d3376f5b1532ce641f4912629b142c441a58b23d717839431c",
+    "uv_lock_sha256": "05b80f26d558f7e9227027ab1f44d3bcdeebb8aebba1d7ae8d72577734d3e190",
+    "run_directory": "artifacts/runs/ag-news-fdht-full-seed7",
+    "base_git_commit_dirty_tree": "536d767c59bd32df436f723ad3cf872bf5349dbc",
+    "best_checkpoint_sha256": "0044f186a46b769d69ef7f071a2bb0ed4ae19e5e8d54a1ebaccdb01c8f0df0f4",
+    "execution": "per_sample",
+    "trained_samples": 342000,
+    "completed_steps": 42754,
+    "training_step_seconds": 13392.44,
+    "validation_macro_f1_by_epoch": [
+      0.93757,
+      0.94523,
+      0.9401
+    ],
+    "selected_epoch": 2,
+    "test_macro_f1": 0.9409326962010559,
+    "test_accuracy": 0.940921052631579,
+    "test_relative_task_forward_matmul_flops": 0.43198050822996925,
+    "test_average_total_depth": 5.345131578947369,
+    "test_depth_counts": {
+      "3": 2335,
+      "6": 4760,
+      "9": 334,
+      "12": 171
+    },
+    "test_group_head_count_counts": {
+      "8": 2998,
+      "10": 985,
+      "12": 1958
+    },
+    "clipped_rewards_full_run": 57579
+  },
+  "comparison": {
+    "fixed_test_macro_f1": 0.9490335290404949,
+    "tree_test_macro_f1": 0.9399541766070085,
+    "tree_test_relative_task_flops": 0.385764897417917,
+    "prediction_agreement_tree_vs_fdht": 0.9767,
+    "same_depth_tree_vs_fdht": 0.508,
+    "fdht_right_tree_wrong": 86,
+    "tree_right_fdht_wrong": 79
+  },
+  "paper_ag_news": {
+    "12-VaBERT": 0.944,
+    "T-DHT": 0.945,
+    "F-DHT": 0.943,
+    "inference_flops": {
+      "T-DHT": 0.81,
+      "F-DHT": 0.35
+    }
+  },
+  "batched_execution": {
+    "decision": "D017",
+    "device": "Apple M2 Max MPS, idle, sequential",
+    "inference_samples_per_second": {
+      "fixed": {
+        "8": 181.1,
+        "32": 263.0
+      },
+      "tree_per_sample": {
+        "8": 69.2,
+        "32": 67.7
+      },
+      "tree_batched": {
+        "8": 159.2,
+        "32": 236.6
+      },
+      "fdht_per_sample": {
+        "8": 62.8,
+        "32": 52.1
+      },
+      "fdht_batched": {
+        "8": 133.0,
+        "32": 221.6
+      },
+      "identical_architectures": true,
+      "max_logit_difference": 0.0
+    },
+    "training_samples_per_second_batch8": {
+      "tree_config": {
+        "fixed": 47.4,
+        "per_sample": 28.8,
+        "batched": 73.4
+      },
+      "fdht_config": {
+        "fixed": 48.2,
+        "per_sample": 21.5,
+        "batched": 42.2
+      }
+    },
+    "benchmark_sha256": {
+      "inference_benchmark.json": "db0ec9e98ca7f162fd0b69b7f1dc9243de2a142eb36109920dbfcfaf64c99bbc",
+      "training_benchmark_tree.json": "cd47343f735ffaab4acd39f05e473fa308b3127070e2b611e855ce23511519c7",
+      "training_benchmark_fdht.json": "56bb2c0d9797c40ba5d69a65f047ce1591221c30f8af5c99db2c70ab2c61aea7"
+    }
+  },
+  "exports_sha256": {
+    "ag-news-fixed-full-seed7.test.jsonl": "2f69da2f8bb76629cbda9089250f01720733d6ae95dc2978aa696c66f03d3c06",
+    "ag-news-tree-full-seed7-resume-d015.test.jsonl": "5dcfcf7ee8406a130cb70922242d2317cca24279526c739248f2947bde837c3a",
+    "ag-news-fdht-full-seed7.test.jsonl": "f949151ebd167422b7ea3d48ca40dbc3b59d7d1bf8636fd5f1b4ec5286626454"
+  },
+  "additional_datasets_downloaded_for_eda": {
+    "source": "https://s3.amazonaws.com/fast-ai-nlp/ (Zhang et al. 2015 CSVs)",
+    "dbpedia_csv.tgz": "42db5221ddedddb673a4cabcc5f3a7d869714c878bcfe4ba94b29d14aa38e417",
+    "yelp_review_polarity_csv.tgz": "528f22e286cad085948acbc3bea7e58188416546b0e364d0ae4ca0ce666abe35",
+    "yelp_review_full_csv.tgz": "56006b0a17a370f1e366504b1f2c3e3754e4a3dda17d3e718a885c552869a559"
+  },
+  "verification": {
+    "pytest": "130 passed",
+    "ruff": "format and lint clean"
+  },
+  "device_context_pooling": {
+    "decision": "D018",
+    "inference_samples_per_second_batch32": {
+      "fixed": 264.5,
+      "tree_batched": 241.6,
+      "tree_device": 297.0,
+      "fdht_batched": 230.5,
+      "fdht_device": 293.0
+    },
+    "training_samples_per_second_batch8": {
+      "tree_config": {
+        "fixed": 50.3,
+        "per_sample": 29.8,
+        "batched": 75.4,
+        "device": 80.4
+      },
+      "fdht_config": {
+        "fixed": 48.8,
+        "per_sample": 21.6,
+        "batched": 42.3,
+        "device": 46.9
+      }
+    },
+    "validation_agreement_6000": {
+      "tree": {
+        "architectures": 1.0,
+        "predictions": 1.0
+      },
+      "fdht": {
+        "architectures": 1.0,
+        "predictions": 1.0
+      }
+    },
+    "note": "supersedes batched_execution benchmark numbers from the earlier session; session-to-session variation ~10%",
+    "sha256": {
+      "inference_benchmark.json": "8b7dd3cc2647765010dec59baca6f69a59c8a02f5de6456ff87626ed8062b711",
+      "training_benchmark_tree.json": "49b3932f0a0a730c7d25f31d4f03239117d878ae7aeab0bf51162ff12d8a9bf0",
+      "training_benchmark_fdht.json": "3d7eb15f7d3abeec5a256113322e0a474c5413ee5f60e8a808f58622325e3150",
+      "device_pooling_validation_agreement.json": "b5e2c95d4633c14274e8db359f3c3a80f34498a5ffcf252741003028f6b73187"
+    }
+  }
+}

@@ -167,3 +167,30 @@ def test_multi_layer_groups_keep_heads_and_integrated_count(mode):
     assert all(len(heads) == 2 for heads in spec.head_indices.values())
     assert spec.heads_for(0, 4) == (0, 1, 2, 3)
     torch.testing.assert_close(execution.logits, model(tokens[:1], architecture=spec))
+
+
+@pytest.mark.parametrize("mode", ["tree", "integrated"])
+def test_explain_trace_matches_frozen_prediction(tmp_path, mode):
+    """explain() must describe the SAME frozen decision predict() executes."""
+    config = configuration(mode)
+    train(config, tmp_path / "run")
+    state = read_checkpoint(tmp_path / "run/checkpoint.pt")
+    model = TransformerClassifier(config.model)
+    model.load_state_dict(state["model"])
+    controller = restore_controller(config, state)
+    tokens, _ = synthetic_split(config, "validation")
+    rng_before = controller.ts.generator.get_state()
+    logits, specs = controller.predict(model, tokens)
+    for index, sample in enumerate(tokens):
+        sample_logits, trace = controller.explain(model, sample[None])
+        torch.testing.assert_close(sample_logits[0], logits[index])
+        assert trace["mode"] == mode
+        assert trace["total_depth"] == specs[index].total_depth
+        scores = trace["route_scores"]
+        assert trace["route_arm"] == max(range(len(scores)), key=scores.__getitem__)
+        for group in trace["groups"]:
+            heads = specs[index].heads_for(group["start_layer"], config.model.num_heads)
+            assert tuple(group["selected_heads"]) == heads
+            assert len(heads) == group["head_count"]
+            assert (group["count_scores"] is None) == (mode == "integrated")
+    assert torch.equal(controller.ts.generator.get_state(), rng_before)

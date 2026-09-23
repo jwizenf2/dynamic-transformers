@@ -230,6 +230,23 @@ no routing update, no detached activation reuse for the task. Explicit b=c=3
 CPU/MPS regressions verify calls, task gradients and actual prefix weight changes.
 Routing dropout-off remains our documented choice, not a recovered paper setting.
 
+## D015 — Scale-aware logistic MAP convergence for long runs (2026-09-09)
+
+**Numerical reliability fix, not a paper-method change:** the first full T-DHT run
+stopped during epoch 1 after optimizer step 8,721 because one online logistic MAP
+fit exhausted 30 Newton iterations with absolute gradient `1.0217e-6`, narrowly
+above the existing `10 * 1e-7` acceptance threshold. The latest clean atomic
+checkpoint was step 8,000; the failed directory is retained as provenance.
+
+Absolute gradient is scale-dependent as accumulated diagonal precision grows. At
+the final candidate, also solve the local Hessian system and accept convergence
+when the maximum Newton parameter update divided by `1 + max(abs(theta))` is at
+most the configured tolerance. The objective, MAP candidate, stored diagonal
+Laplace precision, head feedback, action policy, and configured iteration budget
+are unchanged. A focused high-precision regression test covers the stopping rule;
+nonstationary fits continue to raise. Resume the main run from the clean checkpoint
+into a new directory rather than mutating or disguising the failed attempt.
+
 ## D009 — Earlier synthetic diagnostic (2026-09-07)
 
 The user's request to run/monitor/compare authorized a bounded
@@ -240,6 +257,69 @@ AG News reproduction protocol. No hyperparameters were tuned on test outcomes.
 Audit observation hooks leave core math/RNG/action choices unchanged; their training
 timing overhead is excluded from speed claims. Benchmark trained checkpoints
 separately, sequentially, with the normal uninstrumented CLI.
+
+## D016 — Full-data F-DHT (integrated search) as the matched third arm (2026-09-22)
+
+Approved by the user on 2026-09-22 ("Full F-DHT, 3 epochs"). `ag_news_fdht_full.toml`
+differs from `ag_news_tree_full.toml` only in name, `mode = "integrated"` and the
+explicit UCB_cp pair list transcribed from §6.1 p.446 (3L12H; 6/9/12 × 8/10/12 heads).
+Integrated search itself (§4.2.2 p.443: one UCB_cp choice of (L,H) at S1, prefix rerun,
+per-group TS with the fixed H; rewards r_cp and TS feedback from r_cp) was already
+implemented under D007/D008. This run is its first real-data verification. Same seed,
+data, calibration, optimizer and literal feedback; per-sample execution, so its
+training time is comparable with the T-DHT run. S-DHT/P-DHT remain unrun.
+
+## D017 — Batched DHT execution for real wall-clock savings (2026-09-22)
+
+**Engineering change requested by the user, not a research-algorithm change.** The
+original readable path routes, executes and back-propagates ONE sample at a time,
+so fewer FLOPs never became less wall-clock time (T-DHT trained 1.58× and inferred
+2.55× slower than fixed BERT; see the full-run report). `[dht] execution = "batched"`
+runs the same algorithm laid out for parallel hardware:
+
+- `SelectableAttention` accepts one head tuple per sample (equal count). Each sample's
+  Q/K/V rows and output columns are gathered with the D012 unique-index gather and
+  stacked; one `torch.bmm` projects all samples. Matmul work stays proportional to
+  the kept heads (physical skipping), gradients need no duplicate-index scatter.
+- `route_batch` routes a chunk with ONE no-grad prefix pass; `execute_batch` reruns
+  the prefix once per batch (training) and runs each c-layer group once per head-count
+  partition (≤3), classifying samples as their depth is reached (mixed depths OK).
+- Bandit contexts are pooled after ONE device→CPU transfer per group per batch.
+- TS parameters are pre-drawn in the per-sample path's sample-major order, so the
+  random stream, and therefore every exploring choice, is identical.
+- TS posterior updates fit all selected heads in one vectorized Newton solve
+  (`fit_logistic_map_many`): independent per-head problems, same objective, same
+  Armijo/D015 stopping rules; tested against the looped solver (≤1e-10).
+- Frozen inference reuses the routing prefix output for execution (eval + no-grad
+  make the rerun identical); training still reruns it with gradients (D008).
+
+`routing_batch_size` (default 1) optionally routes ahead in chunks using the same
+not-yet-updated UCB state. Queues may then briefly exceed capacity; FIFO release is
+unchanged. This is slightly staler routing context, as §5 already permits for queued
+samples, and is the only semantic difference; it is recorded in each run config.
+
+Defaults stay `per_sample`/1 so every existing checkpoint and completed run keeps its
+recorded semantics; new configs opt in. Float64 tests pin the batched path to the
+per-sample reference: identical route arms/contexts, count arms, head subsets, TS RNG
+state, and logits/gradients/6-step trajectories within 1e-9 (summation order only).
+
+## D018 — Device-side context pooling (2026-09-22)
+
+User request: "move everything on the GPU". Profiling batched MPS inference showed
+~23% of time in copying hidden states to the CPU and pooling them in float64; UCB
+scoring was ~5% (per-sample solves); TS selection negligible. `[dht] context_pooling
+= "device"` (requires `execution = "batched"`) pools contexts on the model's device
+with one prefix sum per batch (`pooled_features_batch`, exact adaptive-pooling bins
+per sample length) and transfers only the pooled `[batch, features]` rows; UCB arms
+for a whole batch are scored with one multi-right-hand-side solve (`select_many`).
+
+Deliberately NOT moved: UCB/TS statistics, posterior updates and Newton fits stay on
+the CPU in float64. MPS has no float64, the UCB matrices accumulate 10^5 updates
+(poor float32 conditioning), and these operations are microseconds per batch, so
+moving them would add numerical risk without measurable speed. Device pooling runs
+in float32, so it is NOT guaranteed bit-identical; it is opt-in and default remains
+`cpu_float64`. Measured on the full 6,000-sample validation set for both trained
+checkpoints: 100% identical architectures and predictions, identical macro F1.
 
 ## Still open
 

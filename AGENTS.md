@@ -48,10 +48,17 @@ For the epoch-based main runs, also read `docs/reproduction/long_runs.md` (D013)
   not duplicate weights. Arbitrary interruption recovers the last atomic checkpoint.
 - Main T-DHT feedback remains paper_literal. The improvement readiness configuration
   is an explicitly separate diagnostic, not a replacement chosen after seeing scores.
+- Latest: `reports/reproduction/ag_news_fdht_and_batched_execution.md`; 130 tests pass.
+  D018 device pooling is float32 and opt-in; keep float64 CPU pooling as the exact default.
 - Readiness: `reports/reproduction/long_run_readiness.md`; 110 tests passed with
   MPS. No full-data long runs launched yet. CPU replay is exact; MPS restoration
   is exact before computation but continued training is NOT bitwise identical.
   Preserve this qualification and failed strict check (D014); do not hide drift.
+- D017 batched execution (`[dht] execution = "batched"`) must stay decision- and
+  RNG-identical to the per-sample reference; `test_batched_dht.py` is the contract.
+  Defaults remain per-sample so completed runs keep their recorded semantics.
+- Analysis notebooks live in `notebooks/` (`uv sync --locked --extra nlp --extra analysis`);
+  they read exports from `scripts/export_predictions.py`, never train.
 - `docs/reproduction/two_pass_prefix.md` and `test_prefix_passes.py` verify both
   real prefix passes. Routing uses no_grad; task execution re-embeds/recomputes
   the same trainable prefix. eval() alone does not disable gradients.

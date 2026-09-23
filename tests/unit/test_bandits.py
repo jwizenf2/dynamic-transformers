@@ -104,6 +104,30 @@ def test_logistic_map_reduces_objective_and_uses_both_labels():
     assert estimates[0].sum() < 0 < estimates[1].sum()
 
 
+def test_logistic_map_accepts_numerically_stationary_high_precision_solution():
+    """A tiny relative Newton update is convergence even if |gradient| has a floor.
+
+    Long online runs can build large diagonal precision. At that scale, floating-point
+    cancellation may leave an absolute gradient just above the strict threshold while
+    the next Newton step is far below the requested parameter tolerance (D015).
+    """
+    prior = torch.tensor([0.75, -0.5], dtype=torch.float64)
+    precision = torch.tensor([1e12, 1e12], dtype=torch.float64)
+    features = torch.tensor([[1e6, -1e6]], dtype=torch.float64)
+    labels = torch.tensor([1.0], dtype=torch.float64)
+    theta, diagnostics = fit_logistic_map(
+        features,
+        labels,
+        prior,
+        precision,
+        max_iterations=1,
+        tolerance=1e-7,
+    )
+    assert diagnostics["converged"]
+    assert diagnostics["relative_newton_step_max"] <= 1e-7
+    assert torch.isfinite(theta).all()
+
+
 def test_ts_selected_only_precision_and_rng_roundtrip():
     ts = LogisticThompsonSampling(3, 2, seed=5)
     features = torch.tensor([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]], dtype=torch.float64)
@@ -147,3 +171,38 @@ def test_ts_gaussian_moments_and_logistic_learning():
 def test_ts_top_k_validation(count):
     with pytest.raises(ValueError):
         LogisticThompsonSampling(3, 2).select(torch.ones(3, 2), count)
+
+
+@pytest.mark.parametrize("label", [0, 1])
+def test_vectorized_logistic_map_matches_looped_per_head_fits(label):
+    """D017: fitting K independent heads together must equal K separate fits."""
+    from dht.bandits.logistic_ts import fit_logistic_map_many
+
+    generator = torch.Generator().manual_seed(3)
+    features = torch.randn(7, 5, generator=generator, dtype=torch.float64) * 3
+    prior = torch.randn(7, 5, generator=generator, dtype=torch.float64)
+    precision = torch.rand(7, 5, generator=generator, dtype=torch.float64) * 4 + 0.1
+    many, infos = fit_logistic_map_many(features, label, prior, precision)
+    for head in range(7):
+        single, info = fit_logistic_map(
+            features[head : head + 1],
+            torch.tensor([float(label)], dtype=torch.float64),
+            prior[head],
+            precision[head],
+        )
+        torch.testing.assert_close(many[head], single, rtol=0, atol=1e-10)
+        assert infos[head]["converged"] and info["converged"]
+
+
+def test_ts_vectorized_update_matches_looped_update():
+    looped = LogisticThompsonSampling(6, 4, seed=1)
+    vectorized = LogisticThompsonSampling(6, 4, seed=1)
+    generator = torch.Generator().manual_seed(9)
+    for step in range(8):
+        features = torch.randn(6, 4, generator=generator, dtype=torch.float64)
+        selected = tuple(sorted(torch.randperm(6, generator=generator)[:4].tolist()))
+        looped.update(selected, features, step % 2)
+        vectorized.update(selected, features, step % 2, vectorized=True)
+    torch.testing.assert_close(looped.mean, vectorized.mean, rtol=0, atol=1e-10)
+    torch.testing.assert_close(looped.precision, vectorized.precision, rtol=0, atol=1e-10)
+    assert torch.equal(looped.counts, vectorized.counts)

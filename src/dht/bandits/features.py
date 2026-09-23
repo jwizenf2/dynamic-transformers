@@ -53,6 +53,44 @@ def pooled_features(
     )
 
 
+def pooled_features_batch(
+    hidden: Tensor, mask: Tensor, sequence_bins: tuple[int, ...], embedding_bins: tuple[int, ...]
+) -> Tensor:
+    """pooled_features() for a whole batch, ON THE MODEL'S DEVICE (D018).
+
+    hidden [batch,sequence,width], mask [batch,sequence] with padding only at the end
+    (the tokenizer pads right). Reproduces adaptive average pooling over each sample's
+    valid tokens: sequence bin i covers [floor(i·n/s), ceil((i+1)·n/s)), computed from
+    one prefix sum so every sample's own length is respected in parallel. Embedding
+    bins then average equal contiguous chunks. Output [batch, Σs·Σe] in hidden's dtype.
+
+    Runs in the device dtype (float32 on MPS, which has no float64), so values match
+    the float64 CPU path to ~1e-6 relative, not bit-for-bit. Only this small result
+    crosses to the CPU; the bandit math afterwards stays float64.
+    """
+    if hidden.ndim != 3 or mask.shape != hidden.shape[:2] or mask.dtype != torch.bool:
+        raise ValueError("batched pooling needs [batch,sequence,width] and a boolean mask")
+    lengths = mask.sum(1)
+    positions = torch.arange(mask.shape[1], device=mask.device)
+    if (lengths < 1).any() or not torch.equal(mask, positions[None] < lengths[:, None]):
+        raise ValueError("batched pooling requires right padding and one valid token per row")
+    values = hidden.detach()
+    batch, _, width = values.shape
+    prefix = torch.cat([values.new_zeros(batch, 1, width), values.cumsum(1)], dim=1)
+    pieces = []
+    for s in sequence_bins:
+        index = torch.arange(s, device=mask.device)
+        start = (index[None] * lengths[:, None]) // s
+        end = -((-(index[None] + 1) * lengths[:, None]) // s)
+        upper = prefix.gather(1, end[..., None].expand(-1, -1, width))
+        lower = prefix.gather(1, start[..., None].expand(-1, -1, width))
+        segments = (upper - lower) / (end - start)[..., None].to(values.dtype)
+        for e in embedding_bins:
+            pooled = F.adaptive_avg_pool1d(segments.reshape(batch * s, 1, width), e)
+            pieces.append(pooled.reshape(batch, s * e))
+    return torch.cat(pieces, dim=1)
+
+
 @dataclass
 class FrozenStandardizer:
     """Train-calibrated mean/std; constant coordinates use scale one, never zero."""
@@ -243,6 +281,62 @@ class FeatureBank:
             marker = F.one_hot(torch.tensor(group), len(self.groups)).double()
             result = torch.cat([result, marker.expand(len(arms), -1)], dim=1)
         return result.clone()
+
+    def aggregate_many(
+        self, hidden: Tensor, mask: Tensor, kind: str, group: int = 0
+    ) -> list[Tensor]:
+        """Per-sample aggregate() for a batch; pooling location set by context_pooling."""
+        if self.options.context_pooling == "device":
+            return self._aggregate_many_device(hidden, mask, kind, group)
+        return self._aggregate_many_cpu(hidden, mask, kind, group)
+
+    def _aggregate_many_device(
+        self, hidden: Tensor, mask: Tensor, kind: str, group: int
+    ) -> list[Tensor]:
+        """D018: pool on the device, move only [batch,features] to the CPU, then float64.
+
+        The standardizer, arm descriptors and group markers are identical to aggregate().
+        """
+        family = "depth" if kind in ("depth", "pair") else kind
+        bins = {
+            "depth": (self.options.sequence_bins, self.options.depth_embedding_bins),
+            "head": (self.options.sequence_bins, self.options.head_embedding_bins),
+            "ts": (self.options.ts_sequence_bins, self.options.ts_embedding_bins),
+        }[family]
+        pooled = pooled_features_batch(hidden, mask, *bins).cpu().double()
+        if not torch.isfinite(pooled).all():
+            raise ValueError("context contains nonfinite activations")
+        contexts = self.normalizers[family].transform(pooled)
+        arms = {
+            "depth": getattr(self, "depth_arms", None),
+            "pair": getattr(self, "pair_arms", None),
+            "head": self.head_arms[group] if kind == "head" else None,
+            "ts": self.ts_arms[group] if kind == "ts" else None,
+        }[kind]
+        results = []
+        for context in contexts:
+            result = torch.cat([context.expand(len(arms), -1), arms], dim=1)
+            if kind == "head":
+                marker = F.one_hot(torch.tensor(group), len(self.groups)).double()
+                result = torch.cat([result, marker.expand(len(arms), -1)], dim=1)
+            results.append(result)
+        return results
+
+    def _aggregate_many_cpu(
+        self, hidden: Tensor, mask: Tensor, kind: str, group: int
+    ) -> list[Tensor]:
+        """Per-sample aggregate() for a [batch,sequence,hidden] tensor.
+
+        Batched DHT transfers the whole batch to the CPU ONCE (original dtype, D011)
+        and then pools each sample there. Per-sample calls would force one
+        device synchronization per sample per decision. Values are bit-identical
+        to calling aggregate() on each sample separately.
+        """
+        host_hidden, host_mask = hidden.detach().cpu(), mask.cpu()
+        return [
+            self.aggregate(host_hidden[row : row + 1], host_mask[row : row + 1], kind, group)
+            for row in range(len(host_hidden))
+        ]
 
     def state_dict(self) -> dict:
         """Arm descriptors and frozen moments belong to the policy checkpoint."""

@@ -30,6 +30,10 @@ convention does not resolve the source inconsistency. See ../code_walkthrough.md
 | AG News preprocessing/initialization | §6.1 pp.445–446 incomplete | ag_news.py; models/pretrained.py | Pinned CSV/WordPiece/BERT-base, held-out validation, explicit pilot; D010 |
 | Published S/F spaces | §6.1 p.446 | configurable pairs; references/paper_settings.json | Mechanism supported; published-scale experiments unrun |
 | P-DHT | §6.1 p.446 | Reference list only | Freeze semantics deferred |
+| F-DHT full run | §4.2.2 p.443; §6.1 p.446 | configs/experiment/ag_news_fdht_full.toml | Published pair list; matched to T-DHT; D016 |
+| Batched execution | Not in paper (engineering) | attention._per_sample_forward; controller.route_batch/execute_batch; fit_logistic_map_many | Same decisions/RNG as per-sample path; opt-in; D017 |
+| Device context pooling | Not in paper (engineering) | features.pooled_features_batch; LinearUCB.select_many | float32 pooling, float64 bandits; 6,000/6,000 identical decisions; D018 |
+| Decision traces | Analysis aid | controller.explain; scripts/export_predictions.py | Frozen, no RNG/updates; tested against predict |
 
 Mathematical checks: tests/unit/test_bandits.py. Feature/reward/queue checks:
 tests/unit/test_features_rewards.py. Exact resume, frozen inference, heterogeneous

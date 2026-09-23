@@ -6,6 +6,7 @@ and selects each group's heads using its current intermediate representation.
 The training loop owns queues and optimizer steps; this class owns bandit state.
 """
 
+from collections import defaultdict
 from dataclasses import dataclass
 
 import torch
@@ -16,6 +17,7 @@ from dht.bandits.linear_ucb import LinearUCB
 from dht.bandits.logistic_ts import LogisticThompsonSampling
 from dht.config import ExperimentConfig
 from dht.models.architecture import ArchitectureSpec
+from dht.models.attention import unique_index_select
 from dht.models.transformer import TransformerClassifier
 from dht.policies.rewards import RewardHistory
 
@@ -96,7 +98,13 @@ class DHTController:
 
     @torch.no_grad()
     def route(
-        self, model: TransformerClassifier, tokens: Tensor, sample_id: int, *, explore: bool = True
+        self,
+        model: TransformerClassifier,
+        tokens: Tensor,
+        sample_id: int,
+        *,
+        explore: bool = True,
+        trace: dict | None = None,
     ) -> RouteDecision:
         """Stage 1: full-head prefix without dropout/task gradients, then route UCB.
 
@@ -108,6 +116,9 @@ class DHTController:
         during this pass; these are the SAME trainable prefix parameters used by
         execute(), not a frozen copy. @no_grad prevents building the task graph;
         eval() separately disables dropout (our D008 choice, not a paper detail).
+
+        ``trace`` (optional, read-only) receives the per-arm UCB scores that led
+        to the choice. It never changes a decision or consumes RNG; see explain().
         """
         if len(tokens) != 1:
             raise ValueError("routing expects one sample")
@@ -117,6 +128,10 @@ class DHTController:
             hidden, mask = model.prefix(tokens)
             kind = "depth" if self.options.mode == "tree" else "pair"
             w = self.features.aggregate(hidden, mask, kind)
+            if trace is not None:
+                trace["route_kind"] = kind
+                trace["route_actions"] = list(self.depths if kind == "depth" else self.pairs)
+                trace["route_scores"] = self.route_ucb.scores(w, explore=explore).tolist()
             arm = self.route_ucb.select(w, explore=explore)
             depth, count = (self.depths[arm], None) if kind == "depth" else self.pairs[arm]
             return RouteDecision(sample_id, depth, arm, w[arm].clone(), count)
@@ -130,6 +145,7 @@ class DHTController:
         route: RouteDecision,
         *,
         explore: bool = True,
+        trace: dict | None = None,
     ) -> Execution:
         """Stage 2: rerun prefix, choose/execute each group, classify at selected depth.
 
@@ -145,6 +161,10 @@ class DHTController:
         prefix graph, then optimizer.step() updates weights. No update happens
         halfway through the forward pass. Queue delay can make routing context
         older than these weights; retain it only for the original UCB observation.
+
+        ``trace`` (optional) records each group's count-UCB scores (tree only) and
+        per-head TS probabilities. With explore=False these are exactly the
+        posterior-mean quantities that determined the selection.
         """
         hidden, mask = model.prefix(tokens)
         head_indices = {}
@@ -161,6 +181,20 @@ class DHTController:
             else:
                 count = route.head_count  # The integrated count stays fixed over groups.
             w_ts = self.features.aggregate(hidden, mask, "ts", group_index)
+            if trace is not None and not explore:
+                # Posterior-mean head probabilities; exploring TS would consume RNG.
+                trace.setdefault("groups", []).append(
+                    {
+                        "start_layer": start,
+                        "count_scores": (
+                            self.head_ucb.scores(w_count, explore=False).tolist()
+                            if count_arm is not None
+                            else None
+                        ),
+                        "head_count": count,
+                        "head_probabilities": self.ts.probabilities(w_ts).tolist(),
+                    }
+                )
             selected = self.ts.select(w_ts, count, explore=explore)
             decisions.append(
                 GroupDecision(group_index, start, count_arm, count_features, selected, w_ts)
@@ -214,8 +248,180 @@ class DHTController:
                     event.head_indices,
                     event.ts_features,
                     self.rewards.binary_feedback(relevant, self.options.feedback_rule),
+                    vectorized=self.options.execution == "batched",
                 )
         return rewards
+
+    # ------------------------------------------------------------------ batched path
+    # route_batch()/execute_batch() are the SAME algorithm as route()/execute(), laid
+    # out for parallel hardware (decision D017). Per-sample decisions depend only on
+    # that sample's own hidden state, so batching changes no decision logic:
+    #   * one prefix pass for the whole batch instead of one per sample;
+    #   * one GPU->CPU context transfer per group per batch (aggregate_many);
+    #   * each c-layer group runs once per HEAD-COUNT partition (≤3 here), with every
+    #     sample keeping its own head identities inside one batched matmul;
+    #   * TS parameters are pre-drawn in per-sample (sample-major) order, so the
+    #     random stream and therefore exploring choices match execute() exactly.
+    # Only floating-point summation order can differ (batched kernels).
+
+    def _select_many(self, ucb: LinearUCB, contexts: list[Tensor], explore: bool) -> list[int]:
+        """Per-sample UCB choices; D018 device mode scores the batch in one solve."""
+        if self.options.context_pooling == "device":
+            return ucb.select_many(torch.stack(contexts), explore=explore)
+        return [ucb.select(w, explore=explore) for w in contexts]
+
+    @torch.no_grad()
+    def route_batch(
+        self,
+        model: TransformerClassifier,
+        tokens: Tensor,
+        sample_ids: list[int],
+        *,
+        explore: bool = True,
+        keep_prefix: dict | None = None,
+    ) -> list[RouteDecision]:
+        """Stage 1 for many samples: ONE no-grad prefix pass, then per-sample UCB.
+
+        Identical to calling route() per sample: the UCB is not updated between
+        these selections, exactly as it is not updated while queues fill.
+        ``keep_prefix`` (inference only) receives the no-grad prefix output so
+        execute_batch() can reuse it instead of recomputing the same three layers.
+        """
+        if len(tokens) != len(sample_ids):
+            raise ValueError("one sample ID is required per routed sample")
+        previous_mode = model.training
+        model.eval()
+        try:
+            hidden, mask = model.prefix(tokens)
+            if keep_prefix is not None:
+                keep_prefix.update(hidden=hidden, mask=mask)
+            kind = "depth" if self.options.mode == "tree" else "pair"
+            decisions = []
+            contexts = self.features.aggregate_many(hidden, mask, kind)
+            arms = self._select_many(self.route_ucb, contexts, explore)
+            for sample_id, w, arm in zip(sample_ids, contexts, arms, strict=True):
+                depth, count = (self.depths[arm], None) if kind == "depth" else self.pairs[arm]
+                decisions.append(RouteDecision(sample_id, depth, arm, w[arm].clone(), count))
+            return decisions
+        finally:
+            model.train(previous_mode)
+
+    def execute_batch(
+        self,
+        model: TransformerClassifier,
+        tokens: Tensor,
+        routes: list[RouteDecision],
+        *,
+        explore: bool = True,
+        prefix: dict | None = None,
+    ) -> list[Execution]:
+        """Stage 2 for a batch (mixed depths allowed): one fresh prefix, group by group.
+
+        ``rows`` tracks which original batch position each current hidden row holds.
+        Samples whose selected depth is reached are classified and leave the batch;
+        the rest are split by head count, run through the group's c layers, and
+        rejoined. Returned executions are in the ORIGINAL order, each holding its
+        own logits row; gradients flow exactly as in per-sample execute().
+
+        ``prefix`` may carry route_batch()'s prefix output ONLY for frozen
+        inference (eval mode, no grad), where it equals a rerun exactly. Training
+        must always rerun the prefix with gradients (Algorithm 2 line 7).
+        """
+        if prefix is not None and (model.training or torch.is_grad_enabled()):
+            raise ValueError("prefix reuse is only valid for no-grad eval-mode inference")
+        if len(tokens) != len(routes) or not routes:
+            raise ValueError("one route decision is required per executed sample")
+        groups = self.features.groups
+        draws = [
+            [
+                self.ts.sample_parameters() if explore else None
+                for start in groups
+                if start < route.total_depth
+            ]
+            for route in routes
+        ]
+        hidden, mask = (prefix["hidden"], prefix["mask"]) if prefix else model.prefix(tokens)
+        rows = list(range(len(routes)))
+        decisions: list[list[GroupDecision]] = [[] for _ in routes]
+        head_indices: list[dict[int, tuple[int, ...]]] = [{} for _ in routes]
+        pieces, positions = [], []
+
+        def keep(indices: list[int]) -> None:
+            nonlocal hidden, mask, rows
+            if not indices:
+                rows = []  # Every remaining sample exited; nothing left to execute.
+            elif indices != list(range(len(rows))):
+                hidden = unique_index_select(hidden, 0, indices)
+                mask = mask[torch.tensor(indices, dtype=torch.long, device=mask.device)]
+                rows = [rows[i] for i in indices]
+
+        for group_index, start in enumerate(groups):
+            exiting = [i for i, r in enumerate(rows) if routes[r].total_depth <= start]
+            if exiting:
+                pieces.append(model.classify(unique_index_select(hidden, 0, exiting)))
+                positions.extend(rows[i] for i in exiting)
+                keep([i for i, r in enumerate(rows) if routes[r].total_depth > start])
+            if not rows:
+                break
+            w_ts = self.features.aggregate_many(hidden, mask, "ts", group_index)
+            w_count = (
+                self.features.aggregate_many(hidden, mask, "head", group_index)
+                if self.options.mode == "tree"
+                else None
+            )
+            chosen = []
+            count_arms = (
+                self._select_many(self.head_ucb, w_count, explore) if w_count is not None else None
+            )
+            for i, r in enumerate(rows):
+                count_arm, count_features = None, None
+                if w_count is not None:
+                    count_arm = count_arms[i]
+                    count = self.counts[count_arm]
+                    count_features = w_count[i][count_arm].clone()
+                else:
+                    count = routes[r].head_count
+                selected = self.ts.select(
+                    w_ts[i], count, explore=explore, parameters=draws[r][group_index]
+                )
+                decisions[r].append(
+                    GroupDecision(group_index, start, count_arm, count_features, selected, w_ts[i])
+                )
+                chosen.append(selected)
+            partitions = defaultdict(list)
+            for i, selected in enumerate(chosen):
+                partitions[len(selected)].append(i)
+            order = [i for count in sorted(partitions) for i in partitions[count]]
+            keep(order)  # Contiguous head-count partitions (no-op if already ordered).
+            chosen = [chosen[i] for i in order]
+            outputs, offset = [], 0
+            for count in sorted(partitions):
+                size = len(partitions[count])
+                part_rows = list(range(offset, offset + size))
+                part = hidden if size == len(rows) else unique_index_select(hidden, 0, part_rows)
+                part_mask = mask[offset : offset + size]
+                heads = chosen[offset : offset + size]
+                for layer_index in range(start, start + self.config.model.group_size):
+                    part = model.layers[layer_index](part, part_mask, heads)
+                    for row, selected in zip(rows[offset : offset + size], heads, strict=True):
+                        head_indices[row][layer_index] = selected
+                outputs.append(part)
+                offset += size
+            hidden = outputs[0] if len(outputs) == 1 else torch.cat(outputs)
+        if rows:
+            pieces.append(model.classify(hidden))
+            positions.extend(rows)
+        logits = torch.cat(pieces) if len(pieces) > 1 else pieces[0]
+        inverse = sorted(range(len(positions)), key=positions.__getitem__)
+        logits = unique_index_select(logits, 0, inverse)
+        executions = []
+        for index, route in enumerate(routes):
+            architecture = ArchitectureSpec(route.total_depth, head_indices[index])
+            architecture.validate(self.config.model)
+            executions.append(
+                Execution(logits[index : index + 1], architecture, route, decisions[index])
+            )
+        return executions
 
     @torch.no_grad()
     def predict(
@@ -229,6 +435,18 @@ class DHTController:
         old_mode = model.training
         model.eval()
         try:
+            if self.options.execution == "batched":
+                # One prefix pass serves routing AND execution at inference (D017):
+                # with dropout off and no gradients the rerun would be identical.
+                shared: dict = {}
+                routes = self.route_batch(
+                    model, tokens, list(range(len(tokens))), explore=False, keep_prefix=shared
+                )
+                executions = self.execute_batch(model, tokens, routes, explore=False, prefix=shared)
+                return (
+                    torch.cat([e.logits for e in executions]),
+                    [e.architecture for e in executions],
+                )
             outputs, specs = [], []
             for index, sample in enumerate(tokens):
                 route = self.route(model, sample[None], index, explore=False)
@@ -236,6 +454,31 @@ class DHTController:
                 outputs.append(execution.logits)
                 specs.append(execution.architecture)
             return torch.cat(outputs), specs
+        finally:
+            model.train(old_mode)
+
+    @torch.no_grad()
+    def explain(self, model: TransformerClassifier, tokens: Tensor) -> tuple[Tensor, dict]:
+        """Frozen single-sample decision trace for analysis notebooks.
+
+        Runs the same route()/execute() code as predict() with explore=False and
+        returns logits plus the scores behind every choice: route UCB means per
+        arm (depth arms for tree, (depth,count) pairs for integrated), per-group
+        count-UCB means (tree only) and TS posterior-mean head probabilities.
+        Nothing is updated and no RNG is consumed, so it is safe after training.
+        """
+        old_mode = model.training
+        model.eval()
+        try:
+            trace: dict = {"mode": self.options.mode}
+            route = self.route(model, tokens, 0, explore=False, trace=trace)
+            execution = self.execute(model, tokens, route, explore=False, trace=trace)
+            trace["total_depth"] = route.total_depth
+            trace["route_arm"] = route.route_arm
+            trace.setdefault("groups", [])
+            for record, group in zip(trace["groups"], execution.groups, strict=True):
+                record["selected_heads"] = list(group.head_indices)
+            return execution.logits, trace
         finally:
             model.train(old_mode)
 

@@ -83,6 +83,24 @@ class DHTConfig(Config):
     reward_scale: Annotated[float, Field(gt=0)] = 1.0
     reward_cap: Annotated[float, Field(gt=0)] | None = 100.0
     feedback_rule: Literal["paper_literal", "improvement"] = "paper_literal"
+    # D017 engineering choices (no change to the research algorithm's decisions):
+    # "batched" runs prefix/groups for a whole batch with per-sample head slices;
+    # "per_sample" is the original readable reference path used by earlier runs.
+    execution: Literal["per_sample", "batched"] = "per_sample"
+    # Samples routed per no-grad prefix pass while queues fill. 1 reproduces the
+    # original one-at-a-time routing; larger values route ahead with the SAME
+    # (not yet updated) UCB state, i.e. slightly staler contexts, as §5 permits.
+    routing_batch_size: PositiveInt = 1
+    # D018: "device" pools bandit contexts on the model's device (float32 on MPS) and
+    # scores UCB arms for a whole batch at once. Faster, but contexts are no longer
+    # bit-identical to "cpu_float64", so rare near-tie decisions can differ.
+    context_pooling: Literal["cpu_float64", "device"] = "cpu_float64"
+
+    @model_validator(mode="after")
+    def pooling_mode(self) -> Self:
+        if self.context_pooling == "device" and self.execution != "batched":
+            raise ValueError('context_pooling="device" requires execution="batched"')
+        return self
 
     def actions(self, model: ModelConfig) -> tuple[tuple[int, ...], tuple[int, ...], tuple]:
         """Resolve total depths, counts and pairs in stable, checkpointed order."""
