@@ -8,10 +8,14 @@ Invariants (checked):
 * Group 0 always runs. mlx-lm builds the DeltaNet mask from layer 0's cache and the attention
   mask from layer 3's cache (``ssm_idx`` / ``fa_idx``); skipping either would desynchronise the
   masks. Group 0 also produces the router features (plan: "Router input").
-* A skipped layer is replaced by an identity module, so its residual branch, attention and
-  feed-forward block are not executed and its weights are not read. Its cache entry stays empty;
-  the architecture must be fixed for the whole request (prefill and every decode step), which is
-  the plan's "route once per request" rule.
+* Skipped layers are REMOVED from ``layers`` while the context is active, so their attention,
+  feed-forward block and residual branch are not executed, their weights are not read, and
+  ``make_cache`` builds no cache for them. (An earlier identity stand-in left empty caches that
+  mlx-lm's ``BatchGenerator`` later failed to read on the lab, job 2d0c58b9.) Because group 0
+  always runs, list positions 0 and ``fa_idx`` still hold the original layers 0 and 3, so the
+  mask indices stay valid. The architecture must be fixed for the whole request (prefill and
+  every decode step): the plan's "route once per request" rule.
+* Layout helpers and costs always refer to ORIGINAL layer indices, also inside the context.
 
 Architectures are given as the set of skipped LAYER indices, so both whole-group skipping and
 the DeltaNet-vs-attention variants (sub-question 2) use one mechanism.
@@ -21,21 +25,12 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
-from typing import Any
 
-import mlx.core as mx
 import mlx.nn as nn
 
-
-class SkippedLayer(nn.Module):
-    """Identity stand-in that keeps ``is_linear`` so mlx-lm picks the same mask type."""
-
-    def __init__(self, is_linear: bool):
-        super().__init__()
-        self.is_linear = is_linear
-
-    def __call__(self, x: mx.array, mask: Any = None, cache: Any = None) -> mx.array:
-        return x
+# id(text model) -> its original layer list while ``skip_layers`` is active. Kept outside the
+# module because mlx registers list attributes of a Module as child modules (parameters).
+_ACTIVE: dict[int, list[nn.Module]] = {}
 
 
 def text_model(model: nn.Module) -> nn.Module:
@@ -44,12 +39,18 @@ def text_model(model: nn.Module) -> nn.Module:
     return inner.model
 
 
+def all_layers(model: nn.Module) -> list[nn.Module]:
+    """Original decoder layers, even while ``skip_layers`` is active."""
+    tm = text_model(model)
+    return _ACTIVE.get(id(tm)) or list(tm.layers)
+
+
 def interval(model: nn.Module) -> int:
     return text_model(model).fa_idx + 1
 
 
 def num_groups(model: nn.Module) -> int:
-    layers = len(text_model(model).layers)
+    layers = len(all_layers(model))
     if layers % interval(model):
         raise ValueError("layer count is not a multiple of the full-attention interval")
     return layers // interval(model)
@@ -75,8 +76,7 @@ def deltanet_layers(model: nn.Module, groups: Iterable[int]) -> set[int]:
 
 def validate_skips(model: nn.Module, skipped: Iterable[int]) -> frozenset[int]:
     skipped = frozenset(skipped)
-    tm = text_model(model)
-    if any(not 0 <= i < len(tm.layers) for i in skipped):
+    if any(not 0 <= i < len(all_layers(model)) for i in skipped):
         raise ValueError("skipped layer index out of range")
     if skipped & group_layers(model, [0]):
         raise ValueError("group 0 must run (mask caches and router features come from it)")
@@ -85,28 +85,26 @@ def validate_skips(model: nn.Module, skipped: Iterable[int]) -> frozenset[int]:
 
 @contextmanager
 def skip_layers(model: nn.Module, skipped: Iterable[int]) -> Iterator[frozenset[int]]:
-    """Temporarily replace ``skipped`` layers with identities; always restores the originals."""
+    """Temporarily remove ``skipped`` layers; always restores the originals. Not reentrant."""
     skipped = validate_skips(model, skipped)
     tm = text_model(model)
+    if id(tm) in _ACTIVE:
+        raise RuntimeError("skip_layers is already active on this model")
     original = list(tm.layers)
+    _ACTIVE[id(tm)] = original
     try:
-        tm.layers = [
-            SkippedLayer(layer.is_linear) if i in skipped else layer
-            for i, layer in enumerate(original)
-        ]
+        tm.layers = [layer for i, layer in enumerate(original) if i not in skipped]
         yield skipped
     finally:
         tm.layers = original
+        del _ACTIVE[id(tm)]
 
 
 def layer_parameter_counts(model: nn.Module) -> list[int]:
     """Weights per decoder layer: a per-token matmul-FLOP proxy (2 FLOPs per weight)."""
     from mlx.utils import tree_flatten
 
-    return [
-        sum(v.size for _, v in tree_flatten(layer.parameters()))
-        for layer in text_model(model).layers
-    ]
+    return [sum(v.size for _, v in tree_flatten(layer.parameters())) for layer in all_layers(model)]
 
 
 def relative_cost(model: nn.Module, skipped: Iterable[int]) -> float:

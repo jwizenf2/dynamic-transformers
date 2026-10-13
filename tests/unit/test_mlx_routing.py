@@ -98,3 +98,42 @@ def test_relative_cost(model):
     assert one_group == pytest.approx(2 / 3)
     attention_only = mlx_routing.relative_cost(model, mlx_routing.attention_layers(model, [1]))
     assert one_group < attention_only < 1
+
+
+def greedy_tokens(model, prompt, steps):
+    """Unbatched greedy reference with a fresh cache."""
+    cache = model.make_cache()
+    logits = model(mx.array([prompt]), cache=cache)[:, -1]
+    out = []
+    for _ in range(steps):
+        token = mx.argmax(logits, axis=-1)
+        out.append(token.item())
+        logits = model(token[:, None], cache=cache)[:, -1]
+    return out
+
+
+@pytest.mark.parametrize("skipped", [set(), {4, 5, 6, 7}, {7, 11}, {8, 9, 10}])
+def test_batch_generator_runs_under_skipping(model, skipped):
+    """Regression for lab job 2d0c58b9: BatchGenerator read empty caches of skipped layers."""
+    from mlx_lm.generate import BatchGenerator
+
+    prompts = [[1, 5, 9, 2, 7, 3], [4, 4, 8], [11, 3, 6, 2]]
+    with mlx_routing.skip_layers(model, skipped):
+        assert mlx_routing.num_groups(model) == 3  # helpers keep original indexing
+        gen = BatchGenerator(model)
+        uids = gen.insert(prompts, [5] * len(prompts))
+        tokens = {uid: [] for uid in uids}
+        while responses := gen.next_generated():
+            for r in responses:
+                tokens[r.uid].append(r.token)
+        gen.close()
+        expected = [greedy_tokens(model, p, 5) for p in prompts]
+    assert [tokens[u] for u in uids] == expected
+
+
+def test_skip_layers_is_not_reentrant(model):
+    with mlx_routing.skip_layers(model, {4}):
+        with pytest.raises(RuntimeError, match="already active"):
+            with mlx_routing.skip_layers(model, {5}):
+                pass
+    assert len(mlx_routing.text_model(model).layers) == 12

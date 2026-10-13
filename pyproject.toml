@@ -14,7 +14,7 @@ dependencies = [
     "pydantic>=2.10,<3",
     # Tool-calling routing (MLX inference for Qwen3.5/3.8 hybrid models). Base dependencies, not
     # an extra, because the ai-lab job runner syncs only the default dependency set.
-    "mlx-lm>=0.31.3,<0.32; sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "mlx-lm>=0.32.0,<0.33; sys_platform == 'darwin' and platform_machine == 'arm64'",
     "huggingface-hub>=1.0,<2.1",
 ]
 
