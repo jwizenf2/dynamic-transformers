@@ -321,6 +321,27 @@ in float32, so it is NOT guaranteed bit-identical; it is opt-in and default rema
 `cpu_float64`. Measured on the full 6,000-sample validation set for both trained
 checkpoints: 100% identical architectures and predictions, identical macro F1.
 
+## D019 — Tool-calling routing on hybrid Qwen models (2026-10-13)
+
+Direction endorsed by the professor (2026-09-23); models changed on 2026-10-13 when the Mac
+Studio became available. Plan and thesis: `docs/research/plan_tool_calling_routing.md`.
+
+- Models: Qwen3.5-0.8B/4B/9B/27B and Qwen3.8-27B (same `qwen3_5` architecture; Qwen3.8 has
+  no small open sizes). Frozen; thinking disabled. MLX inference (mlx-lm >= 0.32.0).
+- Action unit: a group of 4 layers (3 DeltaNet + 1 full attention). Group 0 always runs
+  (router features; mlx-lm mask caches). Query-head trimming dropped. Skipped layers are
+  removed from the executed list, not masked.
+- Grading: independent reimplementation of BFCL's single-turn AST rules. Deliberate
+  difference: parallel calls accept any perfect matching (BFCL matches greedily). xLAM
+  answers are converted to BFCL allowed-value lists (typed from the schema; parameters are
+  required unless typed "optional" or given a default). Both are interpretations.
+- Data: xLAM seeded split (validation for selection/headroom); BFCL v3 single-turn is the
+  final test, evaluated once per selected router. Known BFCL answer-key errors (e.g.
+  simple_363's function name) are left as-is, matching the official benchmark.
+- Lab probe scripts use argparse flags instead of typed TOML configs; settings and pinned
+  revisions are written to each run's `summary.json`. TOML configs will be added when
+  router training (a reusable experiment) starts.
+
 ## Still open
 
 The source inconsistencies remain unresolved even where we adopted a convention.

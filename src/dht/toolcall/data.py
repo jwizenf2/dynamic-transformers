@@ -6,8 +6,9 @@ Both datasets are read from the local Hugging Face cache; downloading is an expl
 Splits (plan, "Datasets"): xLAM is shuffled with a fixed seed and cut into disjoint train and
 validation ids; BFCL categories are only ever returned whole and are reserved for the final test.
 xLAM ground truth is converted to BFCL's allowed-values format: each argument the reference
-answer gives allows exactly that value; an optional parameter the answer omits may be omitted
-or set to its declared default. This is our interpretation (xLAM ships single reference calls).
+answer gives allows exactly that value (typed from the schema, nested dicts wrapped as BFCL
+does); an optional parameter the answer omits may be omitted or set to its declared default.
+This is our interpretation (xLAM ships single reference calls).
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from dht.toolcall.parser import convert_value
 from dht.toolcall.schema import xlam_to_bfcl_function
 
 BFCL_SINGLE_TURN = ("simple", "multiple", "parallel", "parallel_multiple", "irrelevance")
@@ -64,16 +66,46 @@ def load_bfcl(root: Path, category: str) -> list[Example]:
     return examples
 
 
+def _typed(value: Any, bfcl_type: str | None) -> Any:
+    """Give a reference value the type the parser would give the same text from the model.
+
+    xLAM sometimes stores numbers/defaults as strings (``"default": "10"`` for an int). The
+    model's ``<parameter=limit>10`` is parsed to ``10`` from the schema, so the reference must be
+    converted the same way or a correct call would be graded wrong.
+    """
+    if isinstance(value, str) and bfcl_type not in (None, "string", "any"):
+        return convert_value(value, bfcl_type)
+    return value
+
+
+def _allowed_format(value: Any) -> Any:
+    """Raw nested value -> BFCL allowed-values format: dict values become one-option lists.
+
+    BFCL writes nested dicts as ``{key: [alternatives...]}`` while list values stay raw lists
+    (compared element-wise). xLAM gives raw values, so dicts (also inside lists) are wrapped.
+    """
+    if isinstance(value, dict):
+        return {k: [_allowed_format(v)] for k, v in value.items()}
+    if isinstance(value, list):
+        return [_allowed_format(v) for v in value]
+    return value
+
+
 def _xlam_ground_truth(answers: list[dict], functions: dict[str, dict]) -> list[dict]:
     truth = []
     for answer in answers:
         name, args = answer["name"], answer.get("arguments") or {}
-        allowed: dict[str, list[Any]] = {key: [value] for key, value in args.items()}
-        props = (functions.get(name, {}).get("parameters") or {}).get("properties") or {}
-        required = set((functions.get(name, {}).get("parameters") or {}).get("required") or [])
+        params = functions.get(name, {}).get("parameters") or {}
+        props = params.get("properties") or {}
+        required = set(params.get("required") or [])
+        allowed: dict[str, list[Any]] = {
+            key: [_allowed_format(_typed(value, props.get(key, {}).get("type")))]
+            for key, value in args.items()
+        }
         for key, prop in props.items():
             if key not in allowed and key not in required:
-                allowed[key] = ["", prop["default"]] if "default" in prop else [""]
+                default = [_typed(prop["default"], prop.get("type"))] if "default" in prop else []
+                allowed[key] = ["", *default]
         truth.append({name: allowed})
     return truth
 

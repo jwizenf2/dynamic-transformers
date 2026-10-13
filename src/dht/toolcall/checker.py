@@ -66,11 +66,10 @@ def _value_matches(value: Any, allowed: Any) -> bool:
 
 def _dict_matches(value: dict, allowed: dict) -> bool:
     """Nested dict whose ground-truth values are lists of allowed alternatives."""
+    if not all(isinstance(options, list) for options in allowed.values()):
+        raise ValueError("nested ground-truth dict values must be lists of alternatives")
     for key, item in value.items():
-        if key not in allowed:
-            return False
-        options = allowed[key] if isinstance(allowed[key], list) else [allowed[key]]
-        if not any(_value_matches(item, option) for option in options):
+        if key not in allowed or not _any_match(item, allowed[key]):
             return False
     return all("" in options for key, options in allowed.items() if key not in value)
 

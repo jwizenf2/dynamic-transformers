@@ -1,5 +1,22 @@
 # Project progress
 
+## 2026-10-13 — Tool-calling routing: lab setup and Phase 0 evaluation code
+
+- New direction (plan: `docs/research/plan_tool_calling_routing.md`, D019): frozen
+  Qwen3.5/Qwen3.8 hybrid DeltaNet/attention models, per-request layer-group skipping,
+  BFCL-graded; UCT as offline teacher. Model ladder Qwen3.5-0.8B/4B/9B/27B + Qwen3.8-27B.
+- ai-lab (Mac Studio, M5 Max 128 GB) jobs run from `wizenfeld-lab/dynamic-transformers`.
+  `scripts/lab/setup_check.py` downloaded xLAM-60k (rev 26d14eb), BFCL v3 (rev 61fc060)
+  and the models with pinned revisions; MLX produced a correct Qwen tool call (0.8B).
+- `src/dht/toolcall/`: Qwen `qwen3_coder` call parser, independent BFCL-style AST checker
+  (not verified against `bfcl-eval`), BFCL/xLAM loaders with a seeded split, and physical
+  layer skipping for mlx-lm `qwen3_5` models. `scripts/lab/headroom.py` is the probe.
+- mlx-lm 0.31.3 corrupted batched generation for left-padded prompts (caught by
+  `test_mlx_routing.py`); pinned 0.32.0. The first headroom run (0.8B, "70% full") used
+  the buggy batching and is DISCARDED. No headroom result exists yet.
+- Code review fixes: xLAM nested/typed ground truth, greedy termination, pinned model
+  revisions, exact generated-token counts. 167 tests pass.
+
 ## 2026-09-22 — Dataset EDA, F-DHT (integrated search), batched execution, next topics
 
 - User-approved downloads of DBpedia / Yelp Polarity / Yelp Full (Zhang et al. CSVs,

@@ -1,5 +1,25 @@
 # Reading and extending the DHT implementation
 
+## New: tool-calling routing (D019)
+
+`src/dht/toolcall/` is separate from the DHT encoder code and has no torch dependency:
+
+1. `data.py` loads BFCL v3 categories and xLAM into `Example(messages, functions,
+   ground_truth)`; `split_ids` makes the seeded xLAM train/validation split.
+2. `schema.py` turns BFCL/xLAM descriptions into the OpenAI `tools` list for Qwen's chat
+   template (BFCL type names are kept for grading).
+3. `parser.py` reads Qwen's `<tool_call><function=...><parameter=...>` text and types
+   values from the schema; `checker.py` grades calls (`check_example` returns ok + reason).
+4. `mlx_routing.skip_layers(model, skipped)` removes layers for one architecture; helpers
+   build skip sets for whole groups, only attention layers or only DeltaNet layers;
+   `relative_cost` is the reward's cost term (weight proxy, not latency).
+5. `scripts/lab/headroom.py` ties these together on the lab: chat template with thinking
+   off, batched greedy generation, parse, grade, per-example rows + summary.
+
+Tests: `tests/unit/test_toolcall.py` (pure Python) and `tests/unit/test_mlx_routing.py`
+(tiny random qwen3_5 model; skipped-layer outputs, cached decoding and BatchGenerator
+equal unbatched greedy decoding).
+
 ## New: batched execution (D017) and integrated search on real data (D016)
 
 Two execution layouts implement the SAME algorithm. Read the per-sample reference

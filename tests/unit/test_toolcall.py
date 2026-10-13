@@ -205,3 +205,55 @@ def test_split_is_deterministic_and_disjoint():
     train, val = split_ids(ids, 10, seed=0)
     assert (train, val) == split_ids(list(reversed(ids)), 10, seed=0)
     assert len(val) == 10 and not set(train) & set(val) and len(train) + len(val) == 100
+
+
+def xlam_example(tmp_path, tools, arguments):
+    record = {
+        "id": 1,
+        "query": "q",
+        "tools": json.dumps(tools),
+        "answers": json.dumps([{"name": "f", "arguments": arguments}]),
+    }
+    path = tmp_path / "xlam.json"
+    path.write_text(json.dumps([record]))
+    (example,) = load_xlam(path)
+    return example
+
+
+def grade_example(example, **params):
+    calls = parse_tool_calls(qwen_call("f", **params), example.functions)
+    return check_example(calls, example.functions, example.ground_truth)
+
+
+def test_xlam_nested_dict_and_list_values(tmp_path):
+    """Review findings 1-2: raw nested xLAM values must be wrapped into BFCL's format."""
+    tools = [{"name": "f", "parameters": {"filters": {"type": "dict"}}}]
+    example = xlam_example(tmp_path, tools, {"filters": {"ids": [1, 2], "limit": 5}})
+    assert grade_example(example, filters={"ids": [1, 2], "limit": 5}) == (True, "ok")
+    assert grade_example(example, filters={"ids": [1, 2]}) == (False, "wrong_value")
+    assert grade_example(example, filters={"ids": [2, 1], "limit": 5}) == (False, "wrong_value")
+
+
+def test_xlam_string_defaults_and_answers_are_typed(tmp_path):
+    """Review finding 6: ``"default": "10"`` for an int must accept the parsed int 10."""
+    tools = [
+        {
+            "name": "f",
+            "parameters": {
+                "q": {"type": "str"},
+                "limit": {"type": "int, optional", "default": "10"},
+                "page": {"type": "int"},
+            },
+        }
+    ]
+    example = xlam_example(tmp_path, tools, {"q": "x", "page": "2"})
+    assert grade_example(example, q="x", page=2) == (True, "ok")
+    assert grade_example(example, q="x", page=2, limit=10) == (True, "ok")
+    assert grade_example(example, q="x", page=2, limit=11) == (False, "wrong_value")
+
+
+def test_malformed_nested_ground_truth_is_rejected_loudly():
+    fn = {"name": "f", "parameters": {"type": "dict", "properties": {"d": {"type": "dict"}}}}
+    truth = [{"f": {"d": [{"k": 5}]}}]  # nested value 5 is not a list of alternatives
+    with pytest.raises(ValueError, match="lists of alternatives"):
+        check_example(parse_tool_calls(qwen_call("f", d={"k": 5}), [fn]), [fn], truth)
