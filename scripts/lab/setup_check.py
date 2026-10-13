@@ -2,7 +2,7 @@
 
 Run on the lab (downloads allowed):
 
-    uv run --extra lab python scripts/lab/setup_check.py --models Qwen/Qwen3.5-0.8B \
+    python scripts/lab/setup_check.py --models Qwen/Qwen3.5-0.8B \
         --generate Qwen/Qwen3.5-0.8B
 
 Steps:

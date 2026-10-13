@@ -269,6 +269,8 @@ name = "dynamic-transformers"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "huggingface-hub" },
+    { name = "mlx-lm", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
     { name = "numpy" },
     { name = "pydantic" },
     { name = "torch" },
@@ -281,10 +283,6 @@ analysis = [
     { name = "nbclient" },
     { name = "nbformat" },
     { name = "pandas" },
-]
-lab = [
-    { name = "huggingface-hub" },
-    { name = "mlx-lm", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
 ]
 nlp = [
     { name = "safetensors" },
@@ -299,10 +297,10 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "huggingface-hub", marker = "extra == 'lab'", specifier = ">=1.0,<2.1" },
+    { name = "huggingface-hub", specifier = ">=1.0,<2.1" },
     { name = "ipykernel", marker = "extra == 'analysis'", specifier = ">=6.29,<8" },
     { name = "matplotlib", marker = "extra == 'analysis'", specifier = ">=3.9,<4" },
-    { name = "mlx-lm", marker = "platform_machine == 'arm64' and sys_platform == 'darwin' and extra == 'lab'", specifier = ">=0.31.3,<0.32" },
+    { name = "mlx-lm", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'", specifier = ">=0.31.3,<0.32" },
     { name = "nbclient", marker = "extra == 'analysis'", specifier = ">=0.10,<1" },
     { name = "nbformat", marker = "extra == 'analysis'", specifier = ">=5.10,<6" },
     { name = "numpy", specifier = ">=2.2,<3" },
@@ -312,7 +310,7 @@ requires-dist = [
     { name = "tokenizers", marker = "extra == 'nlp'", specifier = ">=0.21,<1" },
     { name = "torch", specifier = ">=2.6,<3" },
 ]
-provides-extras = ["nlp", "lab", "analysis"]
+provides-extras = ["nlp", "analysis"]
 
 [package.metadata.requires-dev]
 dev = [
