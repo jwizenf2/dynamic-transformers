@@ -12,6 +12,11 @@ dependencies = ["numpy>=2.2,<3", "torch>=2.6,<3", "pydantic>=2.10,<3"]
 
 [project.optional-dependencies]
 nlp = ["tokenizers>=0.21,<1", "safetensors>=0.5,<1"]
+# Tool-calling routing on the ai-lab Mac Studio (MLX inference for Qwen3.5/3.8 hybrid models).
+lab = [
+    "mlx-lm>=0.31.3,<0.32; sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "huggingface-hub>=1.0,<2.1",
+]
 analysis = [
     "ipykernel>=6.29,<8",
     "matplotlib>=3.9,<4",
