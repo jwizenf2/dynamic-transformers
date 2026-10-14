@@ -116,3 +116,43 @@ Evaluate on xLAM val, then BFCL single- and multi-turn, with measured MLX latenc
 **Gate test:** run Ouro-2.6B (probably after LoRA SFT on function calling) at R = 1, 2, 3, 4 on
 200 xLAM val examples. Keep the idea only if the best R varies by example and a per-request
 oracle beats the best fixed R at matched compute.
+
+## 7. Plan update (2026-10-14, evening)
+
+**Primary direction (unchanged):** a per-request bandit picks the loop count for Ouro.
+
+**Gate result.** Ouro-2.6B, few-shot, 200 xLAM val requests. Accuracy at 1/2/3/4 passes is
+26/61/78/82%. A per-request oracle reaches 85.5% at about 1.9 mean passes, versus 82% at a
+fixed 4. Smallest-correct passes: 52/75/36/8, with 29 unsolved. Beyond 4 passes accuracy
+falls (5: 80, 6: 79, 8: 73 on 100 val), so the action set is {1, 2, 3, 4}. Router training
+data covers 1,000 train requests (jobs 875302ad for the first 100, 0cdf6a52 for 100–999).
+
+**Next steps, in order:**
+1. Offline predictability. Train correctness predictors for each pass count on train features
+   (pass-1 states, gate, entropy and margin per pass, prompt facts). On val, plot accuracy vs.
+   mean passes against fixed counts, Ouro's gate, confidence stopping and the oracle.
+2. Bandit replay. Run LinUCB and Thompson sampling from `src/dht/bandits` on the logged
+   outcomes. Each step reveals only the chosen arm's reward.
+3. Dependency-depth axis, the main evaluation structure. Hypothesis: the passes a request
+   needs grow with its dependency depth (how many calls must happen before the last one can
+   be written), so a per-request controller saves the most on mixed workloads. Run it in
+   three stages:
+   a. Free first look: compare smallest-correct passes for single-call vs multi-call xLAM
+      requests (`n_calls` is already logged). xLAM multi-call requests are mostly parallel,
+      so this is only a partial test.
+   b. Add chained calls (NESTful, API-Bank higher levels) and measure needed passes by depth.
+      Control for prompt length and tool count. Nested output may need light Ouro LoRA SFT
+      or tailored few-shot examples (2608.18171 used LoRA SFT on Hermes FC).
+   c. BFCL multi-turn with executed simulated tools, which is where the claims are strongest.
+4. Latency. Implement early exit with best-available KV caching (2610.09013) and measure
+   MLX wall-clock, not just passes.
+
+**Supporting experiment (secondary, requested by the professor): dense vs hybrid.** Run the
+same frozen layer-removal map and oracle on dense Qwen3-4B and Qwen3-8B (Qwen3-32B and
+Granite 4.2-3B/8B optional), with attention-only vs FFN-only removal as the dense analogue
+of the layer-type split. It needs a general layer-skip module for standard decoder layers and
+a JSON `<tool_call>` parser. The closest prior work is 2609.17515 (Qwen3-4B vs Qwen3.5-4B/9B
+depth pruning on smart-home tool calling, with SFT healing; it found the hybrid more robust).
+Our frozen, per-type, per-request version would extend that comparison but is not a
+standalone contribution. Per-request skipping on dense LLMs is already covered by FlexiDepth,
+Dr.LLM, LayerRoute (2609.13682) and DiffSkip, none of which test tool calling.
