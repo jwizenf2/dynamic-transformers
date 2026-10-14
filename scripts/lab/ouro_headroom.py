@@ -198,7 +198,7 @@ def main() -> None:
     # MLX keeps freed GPU buffers in a reuse cache. Prompt lengths differ per request, so the
     # cache kept growing (~52 GB per job on 2026-10-14, causing heavy swap with two jobs).
     # Cap it, and clear it after every request below.
-    mx.set_cache_limit(args.cache_limit_gb * 1024**3)
+    mx.set_cache_limit(int(args.cache_limit_gb * 1024**3))
     snap = Path(snapshot_download(args.model, revision=OURO_REVISIONS[args.model]))
     cfg = OuroConfig.from_json(snap / "config.json")
     model = OuroForCausalLM(cfg, ut_steps=max(args.steps))
