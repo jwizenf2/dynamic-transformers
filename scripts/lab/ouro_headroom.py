@@ -37,6 +37,7 @@ import time
 from pathlib import Path
 
 import mlx.core as mx
+import numpy as np
 from huggingface_hub import snapshot_download
 from ouro_mlx.model import OuroConfig, OuroForCausalLM
 from transformers import PreTrainedTokenizerFast
@@ -126,6 +127,38 @@ def forward_with_gates(model: OuroForCausalLM, tokens: mx.array, caches) -> tupl
     return model.lm_head(h), gates
 
 
+def prefill_signals(model: OuroForCausalLM, ids: list[int], passes: int) -> dict:
+    """Router inputs, computed on the prompt only (no generation).
+
+    For each pass k = 1..passes, at the last prompt token: Ouro's exit-gate value, and the
+    entropy and top-2 log-probability margin of the next-token distribution. Also the hidden
+    state after pass 1, mean-pooled over the prompt and at the last token (the DHT-style
+    "features after the first block"). Uses a fresh cache, so it does not affect generation.
+    """
+    saved = model.ut_steps
+    model.ut_steps = passes
+    caches = model.make_cache()
+    h = model.model.embed_tokens(mx.array([ids]))
+    n_layers = model.cfg.num_hidden_layers
+    out: dict = {"gate": [], "entropy": [], "margin": []}
+    for step in range(passes):
+        for i, layer in enumerate(model.model.layers):
+            h = layer(h, "causal", caches[step * n_layers + i])
+        h = model.model.norm(h)
+        last = h[:, -1]
+        z = model.lm_head(last).astype(mx.float32)[0]
+        logp = z - mx.logsumexp(z)
+        top2 = mx.topk(logp, 2)
+        out["gate"].append(mx.sigmoid(model.model.early_exit_gate(last)).item())
+        out["entropy"].append(-(mx.exp(logp) * logp).sum().item())
+        out["margin"].append(abs((top2[1] - top2[0]).item()))
+        if step == 0:
+            out["pool1"] = np.array(h[0].astype(mx.float32).mean(axis=0), dtype=np.float16)
+            out["last1"] = np.array(last[0].astype(mx.float32), dtype=np.float16)
+    model.ut_steps = saved
+    return out
+
+
 def generate(model, tokenizer, prompt: str, max_tokens: int) -> tuple[str, int, list, float]:
     ids = tokenizer(prompt)["input_ids"]
     caches = model.make_cache()
@@ -155,6 +188,8 @@ def main() -> None:
     parser.add_argument("--max-tokens", type=int, default=160)
     parser.add_argument("--val-size", type=int, default=2000)
     parser.add_argument("--split-seed", type=int, default=0)
+    parser.add_argument("--split", choices=["val", "train"], default="val")
+    parser.add_argument("--start", type=int, default=0, help="offset into the split's id list")
     args = parser.parse_args()
     if args.n < 1 or not args.steps or min(args.steps) < 1:
         parser.error("--n and --steps must be positive")
@@ -175,23 +210,51 @@ def main() -> None:
     pool = [examples[i] for i in train_ids[:2000] if len(examples[i].ground_truth) == 1]
     pool.sort(key=lambda e: len(json.dumps(e.functions)))
     shots = random.Random(args.split_seed).sample(pool[:50], args.shots)
-    evals = [examples[i] for i in val_ids[: args.n]]
+    if args.split == "val":
+        ids = val_ids
+    else:
+        # Training requests after the first 2000, which the few-shot pool is drawn from.
+        ids = train_ids[2000:]
+    evals = [examples[i] for i in ids[args.start : args.start + args.n]]
 
-    out = Path(f"results/ouro_headroom/{args.model.split('/')[-1]}")
+    tag = f"{args.split}_{args.start}_{args.start + len(evals)}"
+    out = Path(f"results/ouro_headroom/{args.model.split('/')[-1]}/{tag}")
     out.mkdir(parents=True, exist_ok=True)
     per_r: dict[int, dict[str, bool]] = {r: {} for r in args.steps}
+    features: dict[str, list] = {
+        "id": [],
+        "pool1": [],
+        "last1": [],
+        "gate": [],
+        "entropy": [],
+        "margin": [],
+        "prompt_tokens": [],
+        "n_tools": [],
+        "n_required": [],
+        "n_calls": [],
+    }
+    start = time.perf_counter()
+    # Example-major order: every finished example has all pass counts, so a partial run
+    # (preemption, timeout) still yields complete rows.
     with open(out / "examples.jsonl", "w") as rows:
-        for r in args.steps:
-            model.ut_steps = r
-            correct = 0
-            start = time.perf_counter()
-            for e in evals:
-                text, n_tok, gates, secs = generate(
-                    model, tokenizer, build_prompt(shots, e), args.max_tokens
-                )
+        for k, e in enumerate(evals, 1):
+            prompt = build_prompt(shots, e)
+            ids_ = tokenizer(prompt)["input_ids"]
+            sig = prefill_signals(model, ids_, max(args.steps))
+            features["id"].append(e.id)
+            for key in ("pool1", "last1", "gate", "entropy", "margin"):
+                features[key].append(sig[key])
+            features["prompt_tokens"].append(len(ids_))
+            features["n_tools"].append(len(e.functions))
+            features["n_required"].append(
+                sum(len((f.get("parameters") or {}).get("required") or []) for f in e.functions)
+            )
+            features["n_calls"].append(len(e.ground_truth))
+            for r in args.steps:
+                model.ut_steps = r
+                text, n_tok, gates, secs = generate(model, tokenizer, prompt, args.max_tokens)
                 ok, why = check_example(parse_calls(text), e.functions, e.ground_truth)
                 per_r[r][e.id] = ok
-                correct += ok
                 rows.write(
                     json.dumps(
                         {
@@ -208,16 +271,22 @@ def main() -> None:
                     + "\n"
                 )
             rows.flush()
-            print(
-                json.dumps(
-                    {
-                        "steps": r,
-                        "accuracy": correct / len(evals),
-                        "seconds": round(time.perf_counter() - start, 1),
-                    }
-                ),
-                flush=True,
-            )
+            if k % 50 == 0 or k == len(evals):
+                accs = {r: round(sum(per_r[r].values()) / k, 3) for r in args.steps}
+                print(
+                    json.dumps(
+                        {
+                            "done": k,
+                            "of": len(evals),
+                            "accuracy": accs,
+                            "elapsed_s": round(time.perf_counter() - start),
+                        }
+                    ),
+                    flush=True,
+                )
+                np.savez_compressed(
+                    out / "features.npz", **{key: np.array(v) for key, v in features.items()}
+                )
 
     # Per-example oracle: smallest R that is correct (None if no R is).
     smallest = {}
@@ -231,6 +300,8 @@ def main() -> None:
     summary = {
         "model": args.model,
         "revision": OURO_REVISIONS[args.model],
+        "split": args.split,
+        "start": args.start,
         "n": len(evals),
         "accuracy_by_steps": acc,
         "best_fixed_steps": best_r,
