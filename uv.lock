@@ -272,6 +272,7 @@ dependencies = [
     { name = "huggingface-hub" },
     { name = "mlx-lm", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
     { name = "numpy" },
+    { name = "ouro-mlx", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
     { name = "pydantic" },
     { name = "torch" },
 ]
@@ -304,6 +305,7 @@ requires-dist = [
     { name = "nbclient", marker = "extra == 'analysis'", specifier = ">=0.10,<1" },
     { name = "nbformat", marker = "extra == 'analysis'", specifier = ">=5.10,<6" },
     { name = "numpy", specifier = ">=2.2,<3" },
+    { name = "ouro-mlx", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'", git = "https://github.com/GeorgiyDemo/ouro-mlx?rev=e10e753a6e34ed5b6ce167aff6ed47f0d6fb6d44" },
     { name = "pandas", marker = "extra == 'analysis'", specifier = ">=2.2,<3" },
     { name = "pydantic", specifier = ">=2.10,<3" },
     { name = "safetensors", marker = "extra == 'nlp'", specifier = ">=0.5,<1" },
@@ -1043,6 +1045,16 @@ source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c2/f3/d86c845465a2723ad7e1e5c36dcd75ddb82898b3f53be47ebd429fb2fa5d/nvidia_nvtx-13.0.85-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:4936d1d6780fbe68db454f5e72a42ff64d1fd6397df9f363ae786930fd5c1cd4", size = 148047, upload-time = "2025-09-04T08:29:01.761Z" },
     { url = "https://files.pythonhosted.org/packages/a8/64/3708a90d1ebe202ffdeb7185f878a3c84d15c2b2c31858da2ce0583e2def/nvidia_nvtx-13.0.85-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:cb7780edb6b14107373c835bf8b72e7a178bac7367e23da7acb108f973f157a6", size = 148878, upload-time = "2025-09-04T08:28:53.627Z" },
+]
+
+[[package]]
+name = "ouro-mlx"
+version = "0.1.0"
+source = { git = "https://github.com/GeorgiyDemo/ouro-mlx?rev=e10e753a6e34ed5b6ce167aff6ed47f0d6fb6d44#e10e753a6e34ed5b6ce167aff6ed47f0d6fb6d44" }
+dependencies = [
+    { name = "jinja2" },
+    { name = "mlx" },
+    { name = "transformers" },
 ]
 
 [[package]]

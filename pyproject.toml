@@ -16,6 +16,8 @@ dependencies = [
     # an extra, because the ai-lab job runner syncs only the default dependency set.
     "mlx-lm>=0.32.0,<0.33; sys_platform == 'darwin' and platform_machine == 'arm64'",
     "huggingface-hub>=1.0,<2.1",
+    # Ouro looped LM on MLX (Apache-2.0 port), pinned to a reviewed commit.
+    "ouro-mlx; sys_platform == 'darwin' and platform_machine == 'arm64'",
 ]
 
 [project.optional-dependencies]
@@ -54,3 +56,6 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.uv]
 cache-dir = ".cache/uv"
+
+[tool.uv.sources]
+ouro-mlx = { git = "https://github.com/GeorgiyDemo/ouro-mlx", rev = "e10e753a6e34ed5b6ce167aff6ed47f0d6fb6d44" }
