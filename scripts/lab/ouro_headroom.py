@@ -190,10 +190,15 @@ def main() -> None:
     parser.add_argument("--split-seed", type=int, default=0)
     parser.add_argument("--split", choices=["val", "train"], default="val")
     parser.add_argument("--start", type=int, default=0, help="offset into the split's id list")
+    parser.add_argument("--cache-limit-gb", type=float, default=2.0)
     args = parser.parse_args()
     if args.n < 1 or not args.steps or min(args.steps) < 1:
         parser.error("--n and --steps must be positive")
 
+    # MLX keeps freed GPU buffers in a reuse cache. Prompt lengths differ per request, so the
+    # cache kept growing (~52 GB per job on 2026-10-14, causing heavy swap with two jobs).
+    # Cap it, and clear it after every request below.
+    mx.set_cache_limit(args.cache_limit_gb * 1024**3)
     snap = Path(snapshot_download(args.model, revision=OURO_REVISIONS[args.model]))
     cfg = OuroConfig.from_json(snap / "config.json")
     model = OuroForCausalLM(cfg, ut_steps=max(args.steps))
@@ -271,6 +276,7 @@ def main() -> None:
                     + "\n"
                 )
             rows.flush()
+            mx.clear_cache()
             if k % 50 == 0 or k == len(evals):
                 accs = {r: round(sum(per_r[r].values()) / k, 3) for r in args.steps}
                 print(
