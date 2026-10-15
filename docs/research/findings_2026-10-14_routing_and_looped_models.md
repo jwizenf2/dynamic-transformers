@@ -234,6 +234,34 @@ compute favours 1.4B again: 1.4B at 4 passes vs 2.6B at 2 (96 layers each) is 24
 (21 vs 7 discordant), but 2.6B at 4 passes (192 layers) reaches 56. Unlike xLAM, NESTful's
 multi-step math needs the larger model's full depth.
 
+**Passes 5 and 6 on NESTful (job cc487f32, commit b4847a4, same 360 requests as f19ecb14,
+merged per request).** Ouro was trained with at most 4 passes; on xLAM accuracy fell beyond 4
+(80/79/73 at 5/6/8 on 100 val). On chained calls it does not:
+
+| Depth | n | Acc. at 1/2/3/4/5/6 passes (%) | Solved within 1–4 | Within 1–6 | 4→5 gained/lost | Mean smallest correct (1–6) |
+|---|---|---|---|---|---|---|
+| 2 | 61 | 1.6/14.8/27.9/36.1/39.3/34.4 | 28 | 31 | +5/−3 | 3.03 |
+| 3 | 60 | 0/3.3/18.3/31.7/31.7/28.3 | 20 | 30 | +9/−9 | 3.93 |
+| 4 | 60 | 0/0/8.3/20.0/25.0/20.0 | 13 | 20 | +6/−3 | 4.15 |
+| 5 | 60 | 0/0/10.0/13.3/16.7/8.3 | 12 | 20 | +7/−5 | 4.20 |
+| 6 | 60 | 0/0/1.7/6.7/15.0/11.7 | 5 | 13 | +6/−1 | 4.69 |
+| 7+ | 59 | 0/0/3.4/5.1/8.5/1.7 | 3 | 7 | +4/−2 | 4.29 |
+| all | 360 | 0.3/3.1/11.7/18.9/22.8/17.5 | 81 | 121 | +37/−23 | 3.88 |
+
+- **A 5th pass helps, mostly for deep chains.** Overall 18.9 → 22.8% (37 requests gained, 23
+  lost; sign test p ≈ 0.09). Depth 6 more than doubles (6.7 → 15.0%); depth 2 barely moves.
+  Of the 40 requests first solved at pass 5 or 6, 37 have depth ≥ 3. Pass 6 is worse than 5 at
+  every depth (12 gained, 31 lost).
+- **The per-request oracle over 1–6 passes reaches 33.6%** (vs 22.5% over 1–4 and 22.8% for the
+  best fixed count, 5). Mean smallest correct pass count rises almost monotonically with depth,
+  3.0 at depth 2 to 4.3–4.7 at depth 6–7+, and passes beyond the trained maximum are where deep
+  requests are won. The deep-request gains are small counts; the trend, not each cell, is the
+  evidence.
+- **For the router:** shallow requests (xLAM, NESTful depth 2) lose accuracy past 4 passes while
+  deep chains gain, so no fixed count is right for a mixed workload, and the action set should
+  include 5 for chained requests. This is the clearest support so far for a per-request loop
+  controller conditioned on the dependency structure of the request.
+
 **Supporting experiment (secondary, requested by the professor): dense vs hybrid.** Run the
 same frozen layer-removal map and oracle on dense Qwen3-4B and Qwen3-8B (Qwen3-32B and
 Granite 4.2-3B/8B optional), with attention-only vs FFN-only removal as the dense analogue

@@ -18,6 +18,9 @@
   refused to resume them. Partial rows analysed (findings §7); pooled 2.6B (570) keeps the
   depth effect (+0.29 SD, SE 0.15). Not resubmitted: lab automation was paused. The probe
   needs a SIGUSR1 handler / `--start` resume to survive preemption.
+- Passes 5–6 (cc487f32): 22.8% at 5 vs 18.9% at 4 (+37/−23 requests); gains concentrate at
+  depth ≥ 3 (depth 6: 6.7 → 15.0%); pass 6 is worse than 5 everywhere. Oracle over 1–6 passes
+  33.6%. Shallow requests degrade past 4 (xLAM), deep chains improve: per-request control.
 
 ## 2026-10-14 — Ouro loop-count routing: router analysis v2 and NESTful adapter
 
