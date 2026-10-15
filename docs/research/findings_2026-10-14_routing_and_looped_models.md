@@ -284,6 +284,20 @@ merged per request).** Ouro was trained with at most 4 passes; on xLAM accuracy 
   include 5 for chained requests. This is the clearest support so far for a per-request loop
   controller conditioned on the dependency structure of the request.
 
+*2.6B NESTful, all 960 requests pooled (0–360, 360–570, 570–960; job 1a84cbcd for 570–960,
+commit b4847a4; passes 1–4).* Accuracy 0.1/4.2/12.3/22.1%, oracle 26.0%. Mean smallest correct
+on solved by depth 2/3/4/5/6/7+: 3.07/3.20/3.67/3.41/3.67/3.33 (96/69/42/34/6/3 solved).
+Confound-controlled least squares on solved: depth +0.17 per SD (SE 0.105), n_calls +0.08
+(0.12), prompt +0.01 (0.04). **With all data the needed-passes effect shrinks to about 1.6 SE
+(first 360: +0.46, SE 0.19; 570: +0.29, SE 0.15).** What stays robust is that depth predicts
+failure: logistic at passes 3 and 4, depth −0.65 (0.26) and −0.67 (0.18), n_calls ≈ 0. Deeper
+chains are mostly *not solved at any pass count*, rather than solved later. Note that the
+round-robin order exhausts depths 6 and 7+ within the first 570, so 570–960 holds depths 2–5.
+
+*Pass 5 on 570–960 (390 requests, depths 2–5).* 25.6% at 4 → 26.9% at 5 (depth 2: 37.0 → 36.1;
+3: 29.6 → 31.5; 4: 16.7 → 17.6; 5: 15.2 → 19.7). Same direction as on 0–360 (deeper gains
+more, shallow flat) but smaller.
+
 ### Serving framing (2026-10-15)
 
 Plan and rationale: `docs/research/landscape_2026-10-15/README.md` §4. Per-token adaptive depth
