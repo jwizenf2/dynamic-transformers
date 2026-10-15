@@ -140,7 +140,10 @@ def decode_token_gate(model, ids, q: float, new_tokens: int) -> dict:
                     src.keys[..., off - 1 : off, :], src.values[..., off - 1 : off, :]
                 )
         tok = mx.argmax(chosen, axis=-1)[:, None]
-        mx.eval(tok, exit_at)
+        # Evaluate the filled caches now; left lazy, each step's slice-assignment copies stay
+        # alive until a later step reads them (the first run peaked at 62 vs 38 GB at b16).
+        filled = [caches[s * n_layers + i] for s in range(last + 1, 4) for i in range(n_layers)]
+        mx.eval(tok, exit_at, *[c.keys for c in filled], *[c.values for c in filled])
         lockstep.append(last + 1)
         row_exit.append(np.array(exit_at).mean())
     t2 = time.perf_counter()
