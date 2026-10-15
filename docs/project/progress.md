@@ -1,5 +1,20 @@
 # Project progress
 
+## 2026-10-14 — Ouro loop-count routing: router analysis v2 and NESTful adapter
+
+- Direction and gate results: `docs/research/findings_2026-10-14_routing_and_looped_models.md`
+  (section 7). Router analysis v2 (job 13176da7, commit 894161f, `router_analysis_v2.py`):
+  CV picked PCA 8, l2 10; query-text features did not help. Passes needed to stay within
+  1 point of fixed-4 (82%) on 200 xLAM val: gate 3.78, confidence 3.72, learned one-shot 3.22
+  (37% of the oracle saving; bootstrap median 3.27, 5–95% [2.78, 4.00]), sequential
+  threshold 3.58, sequential gain 3.65. LinUCB never reaches 81% in any of 60 seed/setting
+  runs (best 80.0% at 3.0 passes); v1's "3.35 passes" for LinUCB is withdrawn.
+- `src/dht/toolcall/nestful.py`: NESTful loader, dependency depth, executor (math subset
+  only, range-checked), NESTful answer matching, exact sequence match. The executor
+  reproduces 1,415/1,416 math-subset gold answers locally (1,416/1,416 after raising the
+  argument limit for 3**50). `scripts/lab/ouro_nestful.py` runs Ouro at 1–4 passes on a
+  depth-balanced order (~60 per depth 2..6, 7+). 184 tests pass.
+
 ## 2026-10-13 — Tool-calling routing: lab setup and Phase 0 evaluation code
 
 - New direction (plan: `docs/research/plan_tool_calling_routing.md`, D019): frozen

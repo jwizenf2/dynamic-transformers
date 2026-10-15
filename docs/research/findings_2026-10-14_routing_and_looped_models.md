@@ -147,6 +147,18 @@ data covers 1,000 train requests (jobs 875302ad for the first 100, 0cdf6a52 for 
 4. Latency. Implement early exit with best-available KV caching (2610.09013) and measure
    MLX wall-clock, not just passes.
 
+**Router analysis v2 (job 13176da7).** Passes needed to stay within 1 point of fixed-4:
+Ouro gate 3.78, confidence margin 3.72, learned one-shot 3.22 (37% of the oracle saving),
+sequential threshold 3.58, sequential gain 3.65; oracle 1.86. Query-text features and CV did
+not improve on v1. LinUCB with bandit feedback reaches 74–80% accuracy at 2.6–3.4 passes but
+never 81%, so v1's LinUCB figure is withdrawn. Bootstrap 5–95% intervals are wide (learned
+one-shot [2.78, 4.00]); 200 val requests cannot separate the methods firmly. The large gap to
+the oracle says the pass-1 features miss most of what decides the needed depth.
+
+**NESTful set-up (step 3b).** Math subset only (1,416 of 1,861; 40 pure functions), depth
+2–12 (322/492/294/175/74/59 at 2/3/4/5/6/7+). Graded by executing the predicted calls
+(NESTful win rate) plus exact match. Prompt: NESTful's 3 ICL examples, few-shot.
+
 **Supporting experiment (secondary, requested by the professor): dense vs hybrid.** Run the
 same frozen layer-removal map and oracle on dense Qwen3-4B and Qwen3-8B (Qwen3-32B and
 Granite 4.2-3B/8B optional), with attention-only vs FFN-only removal as the dense analogue
