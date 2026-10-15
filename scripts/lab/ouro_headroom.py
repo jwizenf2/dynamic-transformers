@@ -51,6 +51,8 @@ from dht.toolcall.parser import ToolCall  # noqa: E402
 
 OURO_REVISIONS = {
     "ByteDance/Ouro-2.6B": "1ed04250da1a9936042725d302e81c8fa2ab5abd",
+    # Same architecture with 24 instead of 48 layers per pass (config checked 2026-10-15).
+    "ByteDance/Ouro-1.4B": "574fa66cb8bf5abdc979642d01cf2b79b16bfab1",
 }
 INSTRUCTIONS = (
     "You are a function-calling assistant. Given the available tools and a user query, answer "
