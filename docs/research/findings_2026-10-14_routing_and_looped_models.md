@@ -242,7 +242,13 @@ and prompt length: least squares on solved, depth +0.29 per SD (SE 0.15), n_call
 (0.18); logistic at pass 3 and 4, depth −0.94 (0.36) and −0.65 (0.25), n_calls ≈ 0. The depth
 trend holds with more data but is weaker than on the first 360 (+0.46).
 
-*Ouro-1.4B NESTful, first 270 of the same order (job 37599673, partial).* Accuracy 0/1.1/3.3/
+*Ouro-1.4B NESTful, all 360 (37599673 rows 0–282 plus 247513cf for 270–360, commit b4847a4).*
+Accuracy 0/0.8/3.6/7.5%, oracle 9.4% (34 solved; smallest correct 0/3/13/18, mean 3.44). By
+depth 2/3/4/5/6/7+, pass-4 accuracy 16.4/18.3/5.0/1.7/1.7/1.7%. Matched compute on the same 360:
+1.4B at 4 passes 27 correct vs 2.6B at 2 passes 11, but 2.6B at 4 passes 68. Too few solved
+requests for the depth regression (all SEs exceed the estimates).
+
+*Earlier partial view (first 270, job 37599673).** Accuracy 0/1.1/3.3/
 8.1%, oracle 10.0%, 27 solved (smallest correct 0/3/9/15, mean 3.44). By depth 2/3/4/5/6/7+:
 pass-4 accuracy 20/20/4.4/0/2.2/2.2%. Too few solved requests for the depth regression (all
 standard errors larger than the estimates). On the 283 requests both models ran, matched
