@@ -79,6 +79,22 @@ and (c) only its 3 DeltaNet layers. Accuracy is the raw % of requests correct.
 MiniMax note: the multi-hop deficit came from lightning hybrids trained from scratch; the
 retrofit (CPT to SWA) failure was a separate experiment. They say sinks are not the cause.
 
+### Novelty check, 2026-10-15 (full texts where accessible; recheck before writing)
+
+| Claim | Status | Closest prior work |
+|---|---|---|
+| C1: needed passes per request grow with dependency depth (frozen pretrained looped LM, real tool data, controlled for calls/length) | Open in this form; direction partly covered | 2608.18171 (fine-tuned Ouro, NESTful/BFCL/API-Bank, aggregate depth curves only); 2604.07822 Loop, Think & Generalize (from scratch, KG hops: halting iterations rise with hops, deeper hops via more recurrence); 2607.20519 (from-scratch MANO: uncertainty tracks op count); Saunshi et al. 2502.17416 (theory: T CoT steps ≈ T loops, p-hop needs only ~log2 p loops) |
+| C2: Ouro's gate misses it (gate vs router vs oracle) | Partly covered | 2607.20519 (gate not Pareto-optimal on MC benchmarks, no oracle fraction); 2610.18127 (gate fires 3.2–4.1 iterations late, per token; depth use does not track MATH difficulty) |
+| C3: opposite effects past trained max (shallow hurt, deep helped) | Partly covered | Average degradation past 4 loops: Ouro §5.3, 2610.18127 §4.3, STARS 2605.26733. Deeper hops via extra recurrence only from scratch (2604.07822). Split by structure on a pretrained LM: not found |
+| C4: per-request structure-aware loop controller for tool use | Open | 2608.18171 uses Ouro's gate threshold only |
+
+Implications: frame C1 against 2610.18127 (pretrained models do not *choose* depth by
+difficulty) and 2604.07822 (from-scratch evidence); report per-request needed depth, which no
+paper does. Saunshi's hop result predicts logarithmic, not linear, growth; our curve (3.0 at
+depth 2 to ~4.7 at depth 6) is sublinear and should be fitted against both. 2608.18171 already
+fine-tunes Ouro on Hermes FC and evaluates NESTful, so our SFT step reproduces theirs and the
+novelty must come from the per-request analysis and controller.
+
 ## 5. Looped models (the chosen direction)
 
 - **What they are:** one block of layers reused R times, with R chosen at run time. Open
