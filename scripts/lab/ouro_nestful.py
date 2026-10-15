@@ -7,14 +7,16 @@ with its dependency depth, the longest chain of calls that feed into each other.
 are depth 1 (single or parallel calls); NESTful's math subset covers depth 2-12.
 
 Method (same probe as ``ouro_headroom.py``, so results are comparable):
-* Data: NESTful at a pinned GitHub commit, SHA256-checked (``fetch``). Only the math subset is
+* Data: NESTful's Hugging Face copy at a pinned revision; the executable functions and ICL
+  examples are vendored in ``third_party/nestful`` (GitHub commit fc2c412). All three files are
+  SHA256-checked (lab jobs cannot reach raw GitHub). Only the math subset is
   used (all gold calls in ``basic_functions.py``; 1,416 of 1,861 samples), because only those
   functions are executed. See ``dht.toolcall.nestful``.
 * Order: requests are grouped by gold depth (2, 3, 4, 5, 6, 7+), each group shuffled with
   ``--seed``, then interleaved round-robin. The first 360 therefore hold ~60 per depth, and a
   partial run stays balanced. ``--start`` continues the same order (e.g. router training data).
 * Prompt: Ouro-2.6B is not tool-call tuned, so it is prompted few-shot with NESTful's own three
-  ICL examples (``src/icl_examples.json``, not in the evaluation file), each shown with its
+  ICL examples (``icl_examples.json``, not in the evaluation file), each shown with its
   own tool list, in the same ``### Tools / ### Query / ### Calls`` layout as the xLAM probe.
 * Grading: the predicted sequence is executed and its final value compared with the gold
   answer (NESTful's win rate; primary). Exact sequence match is also logged.
@@ -30,7 +32,6 @@ import json
 import random
 import sys
 import time
-import urllib.request
 from collections import defaultdict
 from pathlib import Path
 
@@ -50,19 +51,18 @@ from dht.toolcall.nestful import (  # noqa: E402
     exact_match,
     execute,
     load_functions,
-    load_nestful,
+    load_nestful_parquet,
     parse_sequence,
 )
 
-NESTFUL_COMMIT = "fc2c4123e73500a56185a5fb354f05d1c8b4890c"
-NESTFUL_FILES = {
-    "data_v2/nestful_data.jsonl": (
-        "e7c9999e2eaaa2bea87776bc55e2b0913a0cf089f4b6817c7644554547df22c1"
-    ),
-    "data_v2/executable_functions/basic_functions.py": (
-        "db8048658f7ccd930c691a36dd0831a7d46dbffa2a275932f60af43792128212"
-    ),
-    "src/icl_examples.json": "fa10032a95bb1d1177f25ddbb6bc102140cac0b41e4d19ea78eecc8b249b18e7",
+NESTFUL_HF = "ibm-research/nestful"
+NESTFUL_HF_REVISION = "f1ed64619bc1babce637267673937d39c269fa07"
+NESTFUL_PARQUET = "data/train-00000-of-00001.parquet"
+VENDORED = Path(__file__).resolve().parents[2] / "third_party" / "nestful"
+SHA256 = {
+    NESTFUL_PARQUET: "84983102dc45918bfdcd976027063358e3b1fc610ae8ae8000893613a218545b",
+    "basic_functions.py": "db8048658f7ccd930c691a36dd0831a7d46dbffa2a275932f60af43792128212",
+    "icl_examples.json": "fa10032a95bb1d1177f25ddbb6bc102140cac0b41e4d19ea78eecc8b249b18e7",
 }
 INSTRUCTIONS = (
     "You are a function-calling assistant. Given the available tools and a user query, answer "
@@ -72,22 +72,10 @@ INSTRUCTIONS = (
 )
 
 
-def fetch(cache: Path) -> Path:
-    """Download the pinned NESTful files once; every file is checked against its SHA256."""
-    root = cache / NESTFUL_COMMIT
-    for rel, sha in NESTFUL_FILES.items():
-        path = root / rel
-        if not path.exists():
-            url = f"https://raw.githubusercontent.com/IBM/NESTFUL/{NESTFUL_COMMIT}/{rel}"
-            path.parent.mkdir(parents=True, exist_ok=True)
-            with urllib.request.urlopen(url, timeout=60) as r:  # noqa: S310 (pinned https URL)
-                data = r.read()
-            if hashlib.sha256(data).hexdigest() != sha:
-                raise ValueError(f"SHA256 mismatch for {rel}")
-            path.write_bytes(data)
-        elif hashlib.sha256(path.read_bytes()).hexdigest() != sha:
-            raise ValueError(f"cached {rel} does not match its SHA256")
-    return root
+def checked(path: Path, key: str) -> Path:
+    if hashlib.sha256(path.read_bytes()).hexdigest() != SHA256[key]:
+        raise ValueError(f"{path} does not match its pinned SHA256")
+    return path
 
 
 def tools_json(tools) -> str:
@@ -133,23 +121,25 @@ def main() -> None:
     parser.add_argument("--steps", type=int, nargs="+", default=[1, 2, 3, 4])
     parser.add_argument("--max-tokens", type=int, default=400)
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--cache", default=str(Path.home() / ".cache" / "dht" / "nestful"))
     parser.add_argument("--cache-limit-gb", type=float, default=2.0)
     args = parser.parse_args()
     if args.n < 1 or not args.steps or min(args.steps) < 1:
         parser.error("--n and --steps must be positive")
 
     mx.set_cache_limit(int(args.cache_limit_gb * 1024**3))  # see ouro_headroom.py
-    root = fetch(Path(args.cache))
-    functions_file = root / "data_v2/executable_functions/basic_functions.py"
+    snap_data = Path(
+        snapshot_download(NESTFUL_HF, repo_type="dataset", revision=NESTFUL_HF_REVISION)
+    )
+    functions_file = checked(VENDORED / "basic_functions.py", "basic_functions.py")
     basic = basic_function_names(functions_file)
     functions = load_functions(functions_file)
     pool = [
         e
-        for e in load_nestful(root / "data_v2/nestful_data.jsonl")
+        for e in load_nestful_parquet(checked(snap_data / NESTFUL_PARQUET, NESTFUL_PARQUET))
         if all(c["name"] in basic for c in e.calls)
     ]
-    shots = json.loads((root / "src/icl_examples.json").read_text(encoding="utf-8"))
+    shots_file = checked(VENDORED / "icl_examples.json", "icl_examples.json")
+    shots = json.loads(shots_file.read_text(encoding="utf-8"))
     evals = ordered(pool, args.seed)[args.start : args.start + args.n]
 
     snap = Path(snapshot_download(args.model, revision=OURO_REVISIONS[args.model]))
@@ -269,7 +259,7 @@ def main() -> None:
     summary = {
         "model": args.model,
         "revision": OURO_REVISIONS[args.model],
-        "nestful_commit": NESTFUL_COMMIT,
+        "nestful_hf_revision": NESTFUL_HF_REVISION,
         "math_subset_size": len(pool),
         "all": summarize([e.id for e in evals]),
         "by_depth": {key: summarize(v) for key, v in sorted(by_depth.items())},

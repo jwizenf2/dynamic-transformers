@@ -71,6 +71,33 @@ def load_nestful(path: Path) -> list[NestfulExample]:
     return out
 
 
+def load_nestful_parquet(path: Path) -> list[NestfulExample]:
+    """The Hugging Face copy (``ibm-research/nestful``): same rows, JSON fields as strings.
+
+    ``output`` and ``tools`` are JSON text. ``gold_answer`` is JSON text for numbers (all of
+    the math subset); non-JSON answers stay strings. Numeric-looking string answers in non-math
+    samples (e.g. "   30") decode as numbers here; those samples are not executed.
+    """
+    import pyarrow.parquet as pq
+
+    def decode(text: str) -> Any:
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            return text
+
+    return [
+        NestfulExample(
+            id=row["sample_id"],
+            query=row["input"],
+            tools=json.loads(row["tools"]),
+            calls=json.loads(row["output"]),
+            answer=decode(row["gold_answer"]),
+        )
+        for row in pq.read_table(path).to_pylist()
+    ]
+
+
 def basic_function_names(functions_file: Path) -> set[str]:
     return set(re.findall(r"^def (\w+)\(", functions_file.read_text(encoding="utf-8"), re.M))
 

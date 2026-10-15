@@ -1,0 +1,551 @@
+[
+    {
+        "sample_id": "ca3a8419-23fb-4e71-a0ba-cc799ad73dc2",
+        "input": "In objective test a correct ans score 4 marks and on a wrong ans 2 marks are deducted. a student score 480 marks from 150 question. how many ans were correct?",
+        "output": [
+            {
+                "name": "multiply",
+                "label": "$var_1",
+                "arguments": {
+                    "arg_0": 150,
+                    "arg_1": 2
+                }
+            },
+            {
+                "name": "add",
+                "label": "$var_2",
+                "arguments": {
+                    "arg_0": 480,
+                    "arg_1": "$var_1.result$"
+                }
+            },
+            {
+                "name": "add",
+                "label": "$var_3",
+                "arguments": {
+                    "arg_0": 4,
+                    "arg_1": 2
+                }
+            },
+            {
+                "name": "divide",
+                "label": "$var_4",
+                "arguments": {
+                    "arg_0": "$var_2.result$",
+                    "arg_1": "$var_3.result$"
+                }
+            }
+        ],
+        "tools": [
+            {
+                "name": "min_number",
+                "description": "Find the minimum value among the given numbers",
+                "parameters": {
+                    "arg_0": {
+                        "description": "A list of numbers",
+                        "type": "list of float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "Minimum value",
+                        "type": "float"
+                    }
+                }
+            },
+            {
+                "name": "speed",
+                "description": "Calculate speed given distance and time.",
+                "parameters": {
+                    "arg_0": {
+                        "description": "distance",
+                        "type": "int or float"
+                    },
+                    "arg_1": {
+                        "description": "time",
+                        "type": "int or float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "the speed",
+                        "type": "int or float"
+                    }
+                }
+            },
+            {
+                "name": "add",
+                "description": "adds two numbers",
+                "parameters": {
+                    "arg_0": {
+                        "description": "The first number",
+                        "type": "int or float"
+                    },
+                    "arg_1": {
+                        "description": "The second number",
+                        "type": "int or float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "The addition result",
+                        "type": "int or float"
+                    }
+                }
+            },
+            {
+                "name": "multiply",
+                "description": "Multiplies two numbers",
+                "parameters": {
+                    "arg_0": {
+                        "description": "The first number",
+                        "type": "int or float"
+                    },
+                    "arg_1": {
+                        "description": "The second number",
+                        "type": "int or float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "The multiplication result",
+                        "type": "int or float"
+                    }
+                }
+            },
+            {
+                "name": "remainder",
+                "description": "Calculate the remainder of a divided by b",
+                "parameters": {
+                    "arg_0": {
+                        "description": "first number",
+                        "type": "int or float"
+                    },
+                    "arg_1": {
+                        "description": "second number",
+                        "type": "int or float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "the remainder",
+                        "type": "int or float"
+                    }
+                }
+            },
+            {
+                "name": "lcm",
+                "description": "Calculate the least common multiple of two numbers",
+                "parameters": {
+                    "arg_0": {
+                        "description": "first number",
+                        "type": "int or float"
+                    },
+                    "arg_1": {
+                        "description": "second number",
+                        "type": "int or float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "the least common multiple",
+                        "type": "int or float"
+                    }
+                }
+            },
+            {
+                "name": "volume_cylinder",
+                "description": "Calculate the volume of a cylinder",
+                "parameters": {
+                    "arg_0": {
+                        "description": "Radius of the base of the cylinder",
+                        "type": "float"
+                    },
+                    "arg_1": {
+                        "description": "Height of the cylinder",
+                        "type": "float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "Volume of the cylinder",
+                        "type": "float"
+                    }
+                }
+            },
+            {
+                "name": "divide",
+                "description": "divides two numbers",
+                "parameters": {
+                    "arg_0": {
+                        "description": "The first number",
+                        "type": "int or float"
+                    },
+                    "arg_1": {
+                        "description": "The second number",
+                        "type": "int or float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "The division result",
+                        "type": "int or float"
+                    }
+                }
+            }
+        ],
+        "gold_answer": 130.0
+    },
+    {
+        "sample_id": "08f01cce-bbc3-49c0-9e2a-b437de5444aa",
+        "input": "A student traveled 10 percent of the distance of the trip alone, continued another 30 miles with a friend, and then finished the last half of the trip alone. How many miles long was the trip?",
+        "output": [
+            {
+                "name": "inverse",
+                "label": "$var_1",
+                "arguments": {
+                    "arg_0": 10
+                }
+            },
+            {
+                "name": "subtract",
+                "label": "$var_2",
+                "arguments": {
+                    "arg_0": 1,
+                    "arg_1": "$var_1.result$"
+                }
+            },
+            {
+                "name": "divide",
+                "label": "$var_3",
+                "arguments": {
+                    "arg_0": 1,
+                    "arg_1": 2
+                }
+            },
+            {
+                "name": "subtract",
+                "label": "$var_4",
+                "arguments": {
+                    "arg_0": "$var_2.result$",
+                    "arg_1": "$var_3.result$"
+                }
+            },
+            {
+                "name": "divide",
+                "label": "$var_5",
+                "arguments": {
+                    "arg_0": 30,
+                    "arg_1": "$var_4.result$"
+                }
+            }
+        ],
+        "tools": [
+            {
+                "name": "inverse",
+                "description": "Return the inverse (reciprocal) of a number",
+                "parameters": {
+                    "arg_0": {
+                        "description": "The number to inverse",
+                        "type": "int or float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "The inverse result",
+                        "type": "int or float"
+                    }
+                }
+            },
+            {
+                "name": "multiply",
+                "description": "Multiplies two numbers",
+                "parameters": {
+                    "arg_0": {
+                        "description": "The first number",
+                        "type": "int or float"
+                    },
+                    "arg_1": {
+                        "description": "The second number",
+                        "type": "int or float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "The multiplication result",
+                        "type": "int or float"
+                    }
+                }
+            },
+            {
+                "name": "surface_sphere",
+                "description": "Calculate the surface area of a sphere",
+                "parameters": {
+                    "arg_0": {
+                        "description": "Radius of the sphere",
+                        "type": "float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "Surface area of the sphere",
+                        "type": "float"
+                    }
+                }
+            },
+            {
+                "name": "square_edge_by_perimeter",
+                "description": "Calculate the edge length of a square given its perimeter",
+                "parameters": {
+                    "arg_0": {
+                        "description": "Perimeter of the square",
+                        "type": "float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "Edge length of the square",
+                        "type": "float"
+                    }
+                }
+            },
+            {
+                "name": "divide",
+                "description": "divides two numbers",
+                "parameters": {
+                    "arg_0": {
+                        "description": "The first number",
+                        "type": "int or float"
+                    },
+                    "arg_1": {
+                        "description": "The second number",
+                        "type": "int or float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "The division result",
+                        "type": "int or float"
+                    }
+                }
+            },
+            {
+                "name": "speed",
+                "description": "Calculate speed given distance and time.",
+                "parameters": {
+                    "arg_0": {
+                        "description": "distance",
+                        "type": "int or float"
+                    },
+                    "arg_1": {
+                        "description": "time",
+                        "type": "int or float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "the speed",
+                        "type": "int or float"
+                    }
+                }
+            },
+            {
+                "name": "subtract",
+                "description": "subtract two numbers",
+                "parameters": {
+                    "arg_0": {
+                        "description": "The first number",
+                        "type": "int or float"
+                    },
+                    "arg_1": {
+                        "description": "The second number",
+                        "type": "int or float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "The subtraction result",
+                        "type": "int or float"
+                    }
+                }
+            },
+            {
+                "name": "square_edge_by_area",
+                "description": "Calculate the edge length of a square given its area",
+                "parameters": {
+                    "arg_0": {
+                        "description": "Area of the square",
+                        "type": "float"
+                    }
+                },
+                "output_parameters": {
+                    "result": {
+                        "description": "Edge length of the square",
+                        "type": "float"
+                    }
+                }
+            }
+        ],
+        "gold_answer": 75.0
+    },
+    {
+        "sample_id": "738365f4-8f90-41b6-8b1c-5da4a8655f25",
+        "input": "Given a string \"Hello world! How are you?\", extract non-whitespace substrings and count the words from the resulting substrings.",
+        "output": [
+            {
+                "name": "non_whitespace_substrings",
+                "arguments": {
+                    "input_str": "Hello world! How are you?"
+                },
+                "label": "$var1"
+            },
+            {
+                "name": "count_words_from_sentences",
+                "arguments": {
+                    "sentences": "$var1.output_0$"
+                },
+                "label": "$var2"
+            }
+        ],
+        "tools": [
+            {
+                "description": "Computes the Spearman's rank correlation coefficient between two arrays.",
+                "name": "compute_spearman_correlation",
+                "output_parameters": {
+                    "output_0": {
+                        "description": "A single float value representing the correlation coefficient.",
+                        "type": "number"
+                    }
+                },
+                "parameters": {
+                    "array1": {
+                        "description": "A 1-dimensional NumPy array.",
+                        "type": "object"
+                    },
+                    "array2": {
+                        "description": "A 1-dimensional NumPy array of equal length to array1.",
+                        "type": "object"
+                    }
+                }
+            },
+            {
+                "description": "Calculates the MD5 hash and size of a file.",
+                "name": "md5_and_size",
+                "output_parameters": {
+                    "output_0": {
+                        "description": "A dictionary containing the MD5 hash and size of the file.",
+                        "type": "object"
+                    }
+                },
+                "parameters": {
+                    "filename": {
+                        "description": "The name of the file to calculate the hash and size for.",
+                        "type": "string"
+                    }
+                }
+            },
+            {
+                "description": "Calculates the magnitude of the transfer function of a proportional-only controller.",
+                "name": "proportional_controller",
+                "output_parameters": {
+                    "output_0": {
+                        "description": "The magnitude of the transfer function at the given frequency and damping, which is proportional to the controller gain.",
+                        "type": "number"
+                    }
+                },
+                "parameters": {
+                    "kp": {
+                        "description": "The proportional gain constant.",
+                        "type": "number"
+                    },
+                    "omega": {
+                        "description": "The frequency where the controller is evaluated.",
+                        "type": "number"
+                    },
+                    "zeta": {
+                        "description": "The damping ratio, a non-negative real number.",
+                        "type": "number"
+                    }
+                }
+            },
+            {
+                "description": "Removes characters from a string that match a given regular expression pattern.",
+                "name": "remove_characters_by_regex",
+                "output_parameters": {
+                    "output_0": {
+                        "description": "",
+                        "type": "string"
+                    }
+                },
+                "parameters": {
+                    "regex": {
+                        "description": "The regular expression pattern.",
+                        "type": "string"
+                    },
+                    "string": {
+                        "description": "The input string.",
+                        "type": "string"
+                    }
+                }
+            },
+            {
+                "description": "Returns a list of non-empty substrings that do not contain any whitespace characters.",
+                "name": "non_whitespace_substrings",
+                "output_parameters": {
+                    "output_0": {
+                        "description": "",
+                        "type": "array"
+                    }
+                },
+                "parameters": {
+                    "input_str": {
+                        "description": "A string containing multiple words separated by whitespace characters.",
+                        "type": "string"
+                    }
+                }
+            },
+            {
+                "description": "Counts the words in a list of sentences.",
+                "name": "count_words_from_sentences",
+                "output_parameters": {
+                    "output_0": {
+                        "description": "A dictionary of words and their corresponding counts.",
+                        "type": "object"
+                    }
+                },
+                "parameters": {
+                    "sentences": {
+                        "description": "A list of sentences.",
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array"
+                    }
+                }
+            },
+            {
+                "description": "Reads and modifies a JSON file.",
+                "name": "read_and_modify_json",
+                "output_parameters": {
+                    "output_0": {
+                        "description": "A list of `frame` objects. The `frame` object is a dictionary with keys\n    `id`, `timestamp`, and `data`. The `data` value is a dictionary with keys\n    `x` and `y`. The function modifies the `timestamp` value of each `frame`\n    object by adding 100 to it.",
+                        "type": "array"
+                    }
+                },
+                "parameters": {
+                    "json_file": {
+                        "description": "The name of the JSON file.",
+                        "type": "string"
+                    }
+                }
+            }
+        ],
+        "gold_answer": {
+            "Hello": 1,
+            "world!": 1,
+            "How": 1,
+            "are": 1,
+            "you?": 1
+        }
+    }
+]

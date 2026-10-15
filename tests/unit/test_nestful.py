@@ -204,3 +204,26 @@ def test_load_nestful_and_function_names(tmp_path):
     fpath = tmp_path / "f.py"
     fpath.write_text(FUNCTIONS)
     assert basic_function_names(fpath) == {"add", "multiply", "divide", "power", "log", "factorial"}
+
+
+def test_load_nestful_parquet_decodes_json_fields(tmp_path):
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    from dht.toolcall.nestful import load_nestful_parquet
+
+    rows = [
+        {
+            "sample_id": "a",
+            "input": "q",
+            "output": json.dumps(CHAIN),
+            "tools": json.dumps(TOOLS),
+            "gold_answer": "40.0",
+        },
+        {"sample_id": "b", "input": "r", "output": "[]", "tools": "[]", "gold_answer": "abc"},
+    ]
+    path = tmp_path / "d.parquet"
+    pq.write_table(pa.Table.from_pylist(rows), path)
+    a, b = load_nestful_parquet(path)
+    assert (a.calls, a.tools, a.answer) == (CHAIN, TOOLS, 40.0)
+    assert b.answer == "abc"  # non-JSON answers stay strings
