@@ -284,6 +284,40 @@ merged per request).** Ouro was trained with at most 4 passes; on xLAM accuracy 
   include 5 for chained requests. This is the clearest support so far for a per-request loop
   controller conditioned on the dependency structure of the request.
 
+### Serving framing (2026-10-15)
+
+Plan and rationale: `docs/research/landscape_2026-10-15/README.md` §4. Per-token adaptive depth
+saves loops on paper; the question is whether that survives batched serving, where a
+per-request depth keeps batches uniform.
+
+**Ouro's real per-token gate on xLAM val (job 32cd8d78, commit e7fc2f3, 200 requests, full KV,
+`scripts/lab/ouro_token_gate.py`).**
+
+| Policy | Accuracy (%) | Mean passes per token |
+|---|---|---|
+| Fixed 3 / fixed 4 | 78 / 82 | 3 / 4 |
+| Gate q = 1.0 (consistency check) | 82.0 | 4.00 |
+| Gate q = 0.8 | 82.0 | 4.00 |
+| Gate q = 0.6 | 81.5 | 3.11 |
+| Gate q = 0.4 | 77.5 | 2.36 |
+| Our per-request router (one-shot, pass-1 features) | 80.0 / 78.0 / 73.0 | 3.56 / 2.94 / 2.36 |
+
+- q = 1.0 reproduces fixed-4 (82%), so the implementation matches the 4-pass runs.
+- **The real gate beats our router on paper.** Within 1 point of fixed-4 at 3.11 passes (≈42%
+  of the oracle saving, vs ≈37% for the router), and 77.5 vs 73.0% at 2.36 passes. The earlier
+  "gate captures 10%" came from reading the gate once at the prompt end; it was the wrong
+  baseline. **C2 as previously stated is withdrawn.**
+- **But the gate does not adapt per request.** Per-request mean exit is nearly constant (SD 0.08
+  at q = 0.6, 0.13 at q = 0.4) and identical for 1-, 2- and 3-call requests (3.11/3.12/3.11 at
+  q = 0.6). Its saving comes from token-to-token variation inside every request: at q = 0.6,
+  88% of a request's tokens exit at pass 3 and the rest at 4. This matches 2610.09013's
+  observation that Ouro's exits are homogeneous across inputs.
+- **Consequence for serving:** in a lockstep batch, almost every decode step contains some
+  token that wants pass 4, so the gate's nominal saving should mostly vanish as the batch
+  grows. A per-request depth gives up some accuracy (fixed 3: 78% vs gate 81.5% at ~3.1
+  passes) but keeps its saving under batching. The serving benchmark (job 3ff76c7d) measures
+  this directly.
+
 **Supporting experiment (secondary, requested by the professor): dense vs hybrid.** Run the
 same frozen layer-removal map and oracle on dense Qwen3-4B and Qwen3-8B (Qwen3-32B and
 Granite 4.2-3B/8B optional), with attention-only vs FFN-only removal as the dense analogue

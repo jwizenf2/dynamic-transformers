@@ -2,6 +2,12 @@
 
 ## 2026-10-15 — NESTful dependency-depth result (Ouro-2.6B)
 
+- Serving framing (afternoon): real per-token gate on xLAM (32cd8d78) gives 81.5% at 3.11
+  passes and 77.5% at 2.36, beating our per-request router on paper; C2 withdrawn. Its
+  per-request mean exit is nearly constant (SD 0.08) and independent of call count, so its
+  saving is token-level and should not survive lockstep batching; serving bench 3ff76c7d
+  queued. Landscape survey: `docs/research/landscape_2026-10-15/`.
+
 - Job f19ecb14 (commit a595031): 360 depth-balanced NESTful math requests at 1–4 passes.
   Accuracy 0.3/3.1/11.7/18.9%, oracle 22.5%. Mean smallest correct passes on solved requests
   rises with depth: 2.82 (depth 2), 3.30 (3), 3.62 (4), 3.5–3.8 (5–6), vs 2.00 on xLAM (depth
