@@ -194,6 +194,25 @@ most failures are wrong arithmetic plans ("wrong answer", 243/360 at pass 4).
   LoRA SFT of Ouro on function calling (as in 2608.18171) is the obvious next step to lift
   it, and passes above 4 may matter for deep chains (being tested).
 
+**Ouro-1.4B on xLAM val (job ccc11c05, commit a5d90d0, same probe and 200 requests).**
+Ouro-1.4B has the same layer shape as 2.6B (hidden 2048, same FFN) but 24 instead of 48 layers
+per pass, so 1.4B at 2k passes costs the same compute per token as 2.6B at k passes.
+
+| Model | 1 / 2 / 3 / 4 passes (%) | Oracle (%) | Smallest correct 1/2/3/4 | Mean on solved (passes / layers) |
+|---|---|---|---|---|
+| 1.4B | 18 / 43.5 / 58 / 66 | 70.5 | 36/62/28/15 | 2.16 / 52 |
+| 2.6B | 26 / 61 / 78 / 82 | 85.5 | 52/75/36/8 | 2.00 / 96 |
+
+- **At matched compute the smaller, more-looped model is as good or better.** 1.4B at 2 passes
+  vs 2.6B at 1 (48 layers each): 43.5 vs 26%; per request 48 solved only by 1.4B, 13 only by
+  2.6B (sign test p < 1e-5). 1.4B at 4 vs 2.6B at 2 (96 layers): 66 vs 61%; 23 vs 13
+  discordant (p ≈ 0.13, not significant). 2.6B's extra layers pay off only beyond 96 layers.
+- **Per-request choice across both models:** 88% of requests are solved by some (model,
+  passes) pair; the cheapest correct option averages 67 layers on solved requests, against 96
+  for the 2.6B oracle alone. Only 5 requests are solved by 1.4B and never by 2.6B. A router over
+  (model, passes) is a natural extension of the action set, but model routing is crowded
+  prior work (section 4), so it stays secondary to loop-count routing.
+
 **Supporting experiment (secondary, requested by the professor): dense vs hybrid.** Run the
 same frozen layer-removal map and oracle on dense Qwen3-4B and Qwen3-8B (Qwen3-32B and
 Granite 4.2-3B/8B optional), with attention-only vs FFN-only removal as the dense analogue

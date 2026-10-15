@@ -12,6 +12,8 @@
   examples vendored in `third_party/nestful` (Apache-2.0). `scripts/lab/depth_analysis.py`
   added. Queued: 2.6B NESTful 360–960 (8cd5243f), Ouro-1.4B xLAM val (ccc11c05) and NESTful
   (37599673), 2.6B NESTful at 5–6 passes (cc487f32).
+- Ouro-1.4B xLAM val (ccc11c05): 18/43.5/58/66%, oracle 70.5%. At matched compute (1.4B at
+  2k passes = 2.6B at k) 1.4B wins: 43.5 vs 26% (48 layers), 66 vs 61% (96 layers, n.s.).
 
 ## 2026-10-14 — Ouro loop-count routing: router analysis v2 and NESTful adapter
 
