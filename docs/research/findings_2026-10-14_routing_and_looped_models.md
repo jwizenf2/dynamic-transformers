@@ -332,6 +332,40 @@ per-request depth keeps batches uniform.
   passes) but keeps its saving under batching. The serving benchmark (job 3ff76c7d) measures
   this directly.
 
+**Per-token gate on NESTful (job 8989781a, 360 requests).** q = 0.5: 19.2% at 3.12 passes per
+token vs fixed-4 18.9% (q = 0.8 and 1.0 reproduce 18.9%). Mean exit by depth 2/3/4/5/6/7+:
+3.114/3.118/3.129/3.120/3.121/3.121. **The gate's depth is the same for every dependency depth**,
+while accuracy falls from 37.7% (depth 2) to 5.1% (7+). This is the defensible form of C2: the
+gate saves ~22% of passes at no accuracy cost, but does not allocate by structure.
+
+**Serving benchmark (job 3ff76c7d, commit e7eb17e; Ouro-2.6B, NESTful prompts cropped to 1,024
+tokens, 64 forced decode tokens, 3 repeats; decode tokens/s, mean of repeats).** Caveat: the
+lab started it while two other jobs were running, so absolute numbers are noisy (b16 gate
+repeats range 23–39 tok/s); a clean rerun on an idle GPU is needed before quoting numbers.
+
+| Batch | Fixed 1 | Fixed 2 | Fixed 3 | Fixed 4 | Gate q=0.5 | Gate passes run (lockstep) / wanted (row mean) |
+|---|---|---|---|---|---|---|
+| 1 | 22.0 | 11.0 | 7.5 | 5.4 | 6.4 | 3.22 / 3.22 |
+| 4 | 63.2 | 35.5 | 22.1 | 17.2 | 16.8 | 3.57 / 3.23 |
+| 8 | 100.8 | 52.0 | 36.9 | 27.3 | 27.1 | 3.78 / 3.22 |
+| 16 | 153.1 | 76.8 | 53.6 | 35.8 | 23.0 (last repeat 39.4) | 3.88 / 3.21 |
+
+- **Kill test passed for the mechanism.** The gate's rows want 3.2 passes at every batch size,
+  but the lockstep batch runs 3.22 → 3.57 → 3.78 → 3.88 passes as the batch grows from 1 to 16.
+  Its throughput gain over fixed-4 is +18% at batch 1 and none at batch 4–16. Per-request depth
+  keeps its full saving at every batch size (fixed 3 vs fixed 4: +38% at b1, +50% at b16).
+- The gate with best-available KV filling also used much more memory (61.7 vs 38.0 GB at b16).
+  That is partly our implementation (cache growth by concatenation), not necessarily inherent.
+- **Router mixes (xLAM accuracies, throughput from b16 timings, requests grouped by depth):**
+  router at 78.0% (mix 1/52/105/42 over passes 1–4) → 52.4 tok/s; router at 73.0% (9/110/81/0)
+  → 66.6 tok/s; fixed-3 at 78.0% → 53.6; fixed-4 at 82% → 35.8; gate at 81.5% → ≈ fixed-4.
+- **The problem this exposes:** at 78% the router is no better than fixed-3. It beats mixtures of
+  fixed depths only at low budgets (73.0% at 2.36 passes vs ~67% interpolated). So in serving,
+  "pick one depth for everything" is nearly as good as our router, and the gate's accuracy
+  advantage (81.5% at 3.11 passes) does not survive batching. The open target is a per-request
+  policy that reaches gate-level accuracy at fixed-3 cost; the per-request oracle (85.5% at 1.86
+  passes) shows the room exists, but our pass-1 features do not find it.
+
 **Supporting experiment (secondary, requested by the professor): dense vs hybrid.** Run the
 same frozen layer-removal map and oracle on dense Qwen3-4B and Qwen3-8B (Qwen3-32B and
 Granite 4.2-3B/8B optional), with attention-only vs FFN-only removal as the dense analogue

@@ -7,6 +7,11 @@
   per-request mean exit is nearly constant (SD 0.08) and independent of call count, so its
   saving is token-level and should not survive lockstep batching; serving bench 3ff76c7d
   queued. Landscape survey: `docs/research/landscape_2026-10-15/`.
+- Evening: serving bench (3ff76c7d) shows per-token gate savings vanish in lockstep batches
+  (passes run 3.22 → 3.88 from b1 to b16; no throughput gain at b ≥ 4) while per-request depth
+  keeps its saving. But the router at 78% equals fixed-3; it only beats fixed mixtures at low
+  budgets. NESTful gate (8989781a): 19.2% at 3.12 passes, identical depth for every dependency
+  depth. Bench ran alongside other jobs: rerun on an idle GPU before quoting numbers.
 
 - Job f19ecb14 (commit a595031): 360 depth-balanced NESTful math requests at 1–4 passes.
   Accuracy 0.3/3.1/11.7/18.9%, oracle 22.5%. Mean smallest correct passes on solved requests
