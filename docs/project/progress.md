@@ -1,5 +1,18 @@
 # Project progress
 
+## 2026-10-15 — NESTful dependency-depth result (Ouro-2.6B)
+
+- Job f19ecb14 (commit a595031): 360 depth-balanced NESTful math requests at 1–4 passes.
+  Accuracy 0.3/3.1/11.7/18.9%, oracle 22.5%. Mean smallest correct passes on solved requests
+  rises with depth: 2.82 (depth 2), 3.30 (3), 3.62 (4), 3.5–3.8 (5–6), vs 2.00 on xLAM (depth
+  1). Depth keeps its effect when n_calls and prompt length are controlled (+0.46 per SD,
+  SE 0.19); caveats (collinearity 0.79, survivorship, low accuracy) in the findings doc §7.
+- Data source fix: lab jobs reach Hugging Face but not raw GitHub, so NESTful now loads from
+  the pinned HF parquet (math subset verified identical) with `basic_functions.py` and the ICL
+  examples vendored in `third_party/nestful` (Apache-2.0). `scripts/lab/depth_analysis.py`
+  added. Queued: 2.6B NESTful 360–960 (8cd5243f), Ouro-1.4B xLAM val (ccc11c05) and NESTful
+  (37599673), 2.6B NESTful at 5–6 passes (cc487f32).
+
 ## 2026-10-14 — Ouro loop-count routing: router analysis v2 and NESTful adapter
 
 - Direction and gate results: `docs/research/findings_2026-10-14_routing_and_looped_models.md`

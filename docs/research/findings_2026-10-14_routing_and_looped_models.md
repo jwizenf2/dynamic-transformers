@@ -159,6 +159,41 @@ the oracle says the pass-1 features miss most of what decides the needed depth.
 2–12 (322/492/294/175/74/59 at 2/3/4/5/6/7+). Graded by executing the predicted calls
 (NESTful win rate) plus exact match. Prompt: NESTful's 3 ICL examples, few-shot.
 
+**NESTful depth result (job f19ecb14, commit a595031, Ouro-2.6B, 360 requests, ~60 per
+depth; analysis `scripts/lab/depth_analysis.py`).** Accuracy at 1/2/3/4 passes is
+0.3/3.1/11.7/18.9%; oracle 22.5%; exact sequence match 0/1.1/1.1/4.7%. Much lower than xLAM
+(26/61/78/82) because the untuned base model must also do multi-step math. Failures: at pass 1
+almost all outputs contain no parsable call (321/360); from pass 2 on the format is right and
+most failures are wrong arithmetic plans ("wrong answer", 243/360 at pass 4).
+
+| Depth | n | Acc. at 1/2/3/4 passes (%) | Oracle (%) | Solved | Smallest correct 1/2/3/4 | Mean smallest correct |
+|---|---|---|---|---|---|---|
+| 1 (xLAM, ref.) | 200 | 26/61/78/82 | 85.5 | 171 | 52/75/36/8 | 2.00 |
+| 2 | 61 | 1.6/14.8/27.9/36.1 | 45.9 | 28 | 1/9/12/6 | 2.82 |
+| 3 | 60 | 0/3.3/18.3/31.7 | 33.3 | 20 | 0/2/10/8 | 3.30 |
+| 4 | 60 | 0/0/8.3/20.0 | 21.7 | 13 | 0/0/5/8 | 3.62 |
+| 5 | 60 | 0/0/10.0/13.3 | 20.0 | 12 | 0/0/6/6 | 3.50 |
+| 6 | 60 | 0/0/1.7/6.7 | 8.3 | 5 | 0/0/1/4 | 3.80 |
+| 7+ | 59 | 0/0/3.4/5.1 | 5.1 | 3 | 0/0/2/1 | 3.33 |
+
+- **Needed passes rise with depth.** Depth 1 (xLAM) 2.00 (1.74 single-call, 2.26 two-call), depth 2 2.82, depth 3 3.30, depth
+  4–6 about 3.5–3.8. On solved requests, least squares of smallest-correct passes on
+  standardized depth, n_calls and log prompt length gives depth +0.46 per SD (SE 0.19),
+  n_calls −0.11 (0.23), prompt length −0.07 (0.08). Logistic regressions of correctness at
+  passes 3 and 4 give depth −1.03 (0.42) and −0.80 (0.32) with n_calls near 0. So depth, not
+  the number of calls or prompt length, carries the effect, within the limits below.
+- **Caveats.** Depth and n_calls correlate at 0.79, so their split is uncertain. Only 81 of
+  360 requests are solved at any pass count, and solved deep requests are the easy ones, so
+  the smallest-correct means are biased low at depth ≥ 4 and capped at 4 passes. Depth 7+ has
+  3 solved requests. NESTful is math, xLAM is not, so the depth-1 vs depth-2 jump also
+  contains a domain change; the within-NESTful trend (depth 2 → 4) does not.
+- **What it means for the router.** On this set the oracle needs 3.25 passes on solved
+  requests, versus 2.00 on xLAM, so a per-request controller has most to gain on mixed
+  workloads (single calls and chains together), as hypothesized. Within NESTful alone the room
+  is small (fixed 4 gets 18.9 of the oracle's 22.5). Accuracy this low limits the claims;
+  LoRA SFT of Ouro on function calling (as in 2608.18171) is the obvious next step to lift
+  it, and passes above 4 may matter for deep chains (being tested).
+
 **Supporting experiment (secondary, requested by the professor): dense vs hybrid.** Run the
 same frozen layer-removal map and oracle on dense Qwen3-4B and Qwen3-8B (Qwen3-32B and
 Granite 4.2-3B/8B optional), with attention-only vs FFN-only removal as the dense analogue
