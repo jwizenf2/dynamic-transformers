@@ -213,6 +213,27 @@ per pass, so 1.4B at 2k passes costs the same compute per token as 2.6B at k pas
   (model, passes) is a natural extension of the action set, but model routing is crowded
   prior work (section 4), so it stays secondary to loop-count routing.
 
+**Overnight partial runs (2026-10-15).** At 05:41 the lab's memory broker preempted jobs
+8cd5243f and 37599673 (SIGUSR1); the probe has no yield handler, and the lab then refused to
+resume them ("code changed after it was approved"). Their saved rows are analysed below; the
+remaining ranges (2.6B 570–960, 1.4B 270–360) were not resubmitted because lab automation was
+paused at the time.
+
+*2.6B NESTful pooled, 0–360 plus 360–570 (570 requests; 360–960 is meant as router training
+data).* Accuracy 0.2/3.3/11.4/19.6%, oracle 23.7%. Mean smallest correct on solved by depth
+2/3/4/5/6/7+: 3.04/3.18/3.71/3.52/3.67/3.33 (51/33/21/21/6/3 solved). Controlling for n_calls
+and prompt length: least squares on solved, depth +0.29 per SD (SE 0.15), n_calls −0.02
+(0.18); logistic at pass 3 and 4, depth −0.94 (0.36) and −0.65 (0.25), n_calls ≈ 0. The depth
+trend holds with more data but is weaker than on the first 360 (+0.46).
+
+*Ouro-1.4B NESTful, first 270 of the same order (job 37599673, partial).* Accuracy 0/1.1/3.3/
+8.1%, oracle 10.0%, 27 solved (smallest correct 0/3/9/15, mean 3.44). By depth 2/3/4/5/6/7+:
+pass-4 accuracy 20/20/4.4/0/2.2/2.2%. Too few solved requests for the depth regression (all
+standard errors larger than the estimates). On the 283 requests both models ran, matched
+compute favours 1.4B again: 1.4B at 4 passes vs 2.6B at 2 (96 layers each) is 24 vs 10 correct
+(21 vs 7 discordant), but 2.6B at 4 passes (192 layers) reaches 56. Unlike xLAM, NESTful's
+multi-step math needs the larger model's full depth.
+
 **Supporting experiment (secondary, requested by the professor): dense vs hybrid.** Run the
 same frozen layer-removal map and oracle on dense Qwen3-4B and Qwen3-8B (Qwen3-32B and
 Granite 4.2-3B/8B optional), with attention-only vs FFN-only removal as the dense analogue

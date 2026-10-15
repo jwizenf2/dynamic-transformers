@@ -14,6 +14,10 @@
   (37599673), 2.6B NESTful at 5–6 passes (cc487f32).
 - Ouro-1.4B xLAM val (ccc11c05): 18/43.5/58/66%, oracle 70.5%. At matched compute (1.4B at
   2k passes = 2.6B at k) 1.4B wins: 43.5 vs 26% (48 layers), 66 vs 61% (96 layers, n.s.).
+- 05:41: memory-broker preemption killed 8cd5243f (218/600) and 37599673 (283/360); the lab
+  refused to resume them. Partial rows analysed (findings §7); pooled 2.6B (570) keeps the
+  depth effect (+0.29 SD, SE 0.15). Not resubmitted: lab automation was paused. The probe
+  needs a SIGUSR1 handler / `--start` resume to survive preemption.
 
 ## 2026-10-14 — Ouro loop-count routing: router analysis v2 and NESTful adapter
 
