@@ -15,6 +15,15 @@
 - Clean rerun (d3b2bc00, alone, memory leak fixed): gate speedup over fixed-4 ×1.20 / 1.06 /
   1.03 / 1.01 at batch 1/4/8/16; per-request fixed-3 ×1.33 at every batch.
 
+## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
+
+- Router v3 on xLAM val: 82.0% at 3.67 effective passes, 81.0% at 3.27, 80.5% at 3.19 (fixed-3
+  78% at 3.0); ≈×1.22 batched speedup at ~81% vs ×1.01–1.06 for the per-token gate. Beats
+  matched-histogram random by ~6 points. Approximate labels; real hybrid run pending.
+- `scripts/lab/ouro_lora_sft.py` (MLX LoRA SFT: 2608.18171 recipe and depth-aware loss) and
+  `scripts/lab/ouro_sft_eval.py` (Hermes-format eval at fixed depth). Code review and an
+  end-to-end smoke test before the full runs.
+
 - Job f19ecb14 (commit a595031): 360 depth-balanced NESTful math requests at 1–4 passes.
   Accuracy 0.3/3.1/11.7/18.9%, oracle 22.5%. Mean smallest correct passes on solved requests
   rises with depth: 2.82 (depth 2), 3.30 (3), 3.62 (4), 3.5–3.8 (5–6), vs 2.00 on xLAM (depth

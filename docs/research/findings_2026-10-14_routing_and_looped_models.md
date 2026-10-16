@@ -371,6 +371,34 @@ Peak memory is now the same for the gate and fixed-4 (38.5 vs 38.0 GB at batch 1
   policy that reaches gate-level accuracy at fixed-3 cost; the per-request oracle (85.5% at 1.86
   passes) shows the room exists, but our pass-1 features do not find it.
 
+**Router v3: pass-1 features + early-decoding probe (xLAM; jobs 7e3ab9ed/ae7822ca, commit
+f9c9663; `scripts/lab/router_analysis_v3.py`).** Probe = first K = 8 answer tokens at 4 passes
+(gate, entropy, margin, agreement with pass 4, state change per pass). Policy: probe, then run the
+rest of the request at the chosen R. Effective passes include the probe (mean answer length 56.8
+tokens). Labels are plain R-pass correctness, an approximation to the real hybrid generation.
+Serving speedup ≈ 4 / effective passes (throughput scales as 1/passes, measured above).
+
+| Policy | Accuracy (%) | Effective passes | ≈ batched speedup vs fixed-4 |
+|---|---|---|---|
+| Fixed 4 / fixed 3 | 82.0 / 78.0 | 4 / 3 | ×1.00 / ×1.33 |
+| Per-token gate q = 0.6 | 81.5 | 3.11 nominal (3.88 run at b16) | ×1.01–1.06 at b ≥ 4 |
+| Router v2 (pass-1 only) | 81.5 / 78.0 | 3.82 / 2.94 | ×1.05 / ×1.36 |
+| **Router v3** | **82.0** | 3.67 | ×1.09 |
+| **Router v3** | **81.0** | 3.27 | ×1.22 |
+| **Router v3** | **80.5** | 3.19 | ×1.25 |
+| **Router v3** | **78.0** | 2.77 | ×1.44 |
+
+- The probe helps a lot: v3 matches fixed-4 (82.0%) at R̄ 3.60, is within 1 point at 3.10
+  (3.27 with probe cost), and beats fixed-3 by 2.5 points at the same R̄ (80.5 vs 78.0).
+- Matched-histogram random baseline: v3 80.5% vs random 74.1% (95th pct 76.5) at that point;
+  the gap is large everywhere on the curve.
+- **In batched serving, v3 at ≈81% accuracy gives ≈×1.22, where the per-token gate at 81.5%
+  gives ×1.01–1.06.** This is the first result where the per-request method beats both
+  baselines on the measured trade-off. Caveats: 200 val requests (1 point = 2 requests);
+  approximate labels (probe tokens come from 4 passes); speedups are derived from the measured
+  per-pass throughput, not yet measured for the policy itself. Next: run the real
+  probe-then-commit generation on val and in the serving benchmark.
+
 **Supporting experiment (secondary, requested by the professor): dense vs hybrid.** Run the
 same frozen layer-removal map and oracle on dense Qwen3-4B and Qwen3-8B (Qwen3-32B and
 Granite 4.2-3B/8B optional), with attention-only vs FFN-only removal as the dense analogue
