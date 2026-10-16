@@ -33,7 +33,12 @@ AdamW weight decay 0; loss averaged per sequence, then over the 4 sequences of a
 token-weighted); the trailing newline after ``<|im_end|>`` is also a target. Note that HF's own
 ``modeling_ouro.py`` loss uses CE of Σ_t p_t·logits_t; we follow the paper's Σ_t p_t·CE_t.
 Resume: ``--resume`` continues from ``state/`` (adapters, optimizer state, data order and
-position, saved atomically every ``--save-every`` steps).
+position, saved atomically every ``--save-every`` steps). On SIGUSR1 (the lab broker asking the
+job to yield, with 60 s to checkpoint) the step in progress finishes, ``state/`` is saved and the
+process re-raises SIGUSR1, so the lab still records "preempted"; resubmitting the same command
+with ``--resume`` continues from that exact step. Logging: validation CE at step 0 and every
+``--eval-every`` steps; train loss also as a moving average over the last 50 steps, because a
+single step is only 4 conversations and swings a lot.
 Framework: MLX on the ouro-mlx port (the official HF modeling code does not load with
 transformers 5.x), with per-layer gradient checkpointing.
 """
@@ -43,9 +48,12 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import random
+import signal
 import sys
 import time
+from collections import deque
 from pathlib import Path
 
 import mlx.core as mx
@@ -347,10 +355,25 @@ def main() -> None:
         for name in ("adapters.safetensors", "optimizer.safetensors", "progress.json"):
             (tmp / name).replace(state_dir / name)
 
+    yield_requested = False
+
+    def on_yield(signum, frame) -> None:
+        nonlocal yield_requested
+        yield_requested = True
+        print(json.dumps({"yield_requested": True}), flush=True)
+
+    signal.signal(signal.SIGUSR1, on_yield)
+
     log = open(out / "log.jsonl", "a")
+    if start == 1:
+        rec0 = {"step": 0, "val_ce_by_loop": evaluate()}
+        log.write(json.dumps(rec0) + "\n")
+        log.flush()
+        print(json.dumps(rec0), flush=True)
     model.train()
     t0 = time.perf_counter()
     tokens0 = tokens
+    recent_loss, recent_loops = deque(maxlen=50), deque(maxlen=50)
     for step in range(start, total + 1):
         acc_grads, acc_loss, acc_loops = None, 0.0, np.zeros(4)
         for _ in range(args.grad_accum):
@@ -370,23 +393,33 @@ def main() -> None:
         mx.eval(model.trainable_parameters(), opt.state)
         del acc_grads
         mx.clear_cache()
+        recent_loss.append(acc_loss / args.grad_accum)
+        recent_loops.append(acc_loops / args.grad_accum)
         rec = {
             "step": step,
             "loss": round(acc_loss / args.grad_accum, 4),
             "ce_by_loop": (acc_loops / args.grad_accum).round(4).tolist(),
+            "loss_avg50": round(float(np.mean(recent_loss)), 4),
+            "ce_by_loop_avg50": np.mean(recent_loops, 0).round(4).tolist(),
             "lr": lr_used,
             "tok_per_s": round((tokens - tokens0) / (time.perf_counter() - t0), 1),
             "peak_gb": round(mx.get_peak_memory() / 1e9, 2),
         }
-        if step % args.eval_every == 0 or step == total:
+        # Skip validation when asked to yield: the 60 s grace period is for saving.
+        if (step % args.eval_every == 0 or step == total) and not yield_requested:
             rec["val_ce_by_loop"] = evaluate()
             mx.save_safetensors(
                 str(out / "adapters.safetensors"), dict(tree_flatten(model.trainable_parameters()))
             )
-        if step % args.save_every == 0 or step == total:
+        if step % args.save_every == 0 or step == total or yield_requested:
             save_state(step)
         log.write(json.dumps(rec) + "\n")
         log.flush()
+        if yield_requested and step < total:
+            print(json.dumps({"yielded_at_step": step}), flush=True)
+            log.close()
+            signal.signal(signal.SIGUSR1, signal.SIG_DFL)
+            os.kill(os.getpid(), signal.SIGUSR1)
         print(f"::progress {step}/{total} steps", flush=True)
         if step % 10 == 0 or "val_ce_by_loop" in rec:
             print(json.dumps(rec), flush=True)

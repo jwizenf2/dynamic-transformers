@@ -27,6 +27,18 @@
   96 GB in its first step and was cancelled by the user (swap). Causes: no MLX cache limit in
   the trainer, and full-vocabulary fp32 logits for 4 loops at 4,096 tokens. Fix (cache cap,
   chunked/checkpointed loss) and a measured memory request before any full run.
+- E2E smoke 6150424d (commit a02ac5c, 18 min, exit 0). (1) Depth loss at max length 4,096:
+  peak 44.4 GB (lab peak 42.9 GB), 372–376 tok/s, ~14.5 s per optimizer step; 3,188 steps
+  ≈ 13 h per full run plus validation. (2) Ouro loss, LR 2e-4, 60 steps, max length 2,048:
+  peak 27.8 GB; per-loop train CE swings with the 4-conversation batch (loop 4: 0.18, 0.70,
+  0.46, 0.21, 0.36, 0.47 at steps 10–60, the rise at the end with LR ≈ 0 is batch noise);
+  val CE at step 60 by loop 0.289/0.213/0.207/0.208 (20 conversations, no step-0 value).
+  (3) Merged weights load (strict); Hermes `<tool_call>` outputs appear (base Ouro produced
+  none). BFCL, 5 per category, mean over categories by depth 1–4: 0.60/0.95/0.90/0.85.
+  NESTful, 6 requests: 0/0/0/1. Pipeline check only, not results (n tiny, 60 steps).
+- Trainer follow-ups (after the smoke): validation CE at step 0, 50-step moving averages of
+  train loss, and SIGUSR1 yield handling (finish step, save `state/`, re-raise so the lab
+  records a preemption; `--resume` continues from that step). Not yet exercised on the lab.
 
 - Job f19ecb14 (commit a595031): 360 depth-balanced NESTful math requests at 1–4 passes.
   Accuracy 0.3/3.1/11.7/18.9%, oracle 22.5%. Mean smallest correct passes on solved requests
