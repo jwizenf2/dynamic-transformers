@@ -4,6 +4,12 @@
         --task bfcl --n 0
     python scripts/lab/ouro_sft_eval.py --task xlam --n 200          # base weights
     python scripts/lab/ouro_sft_eval.py --weights ... --task nestful --n 360
+    python scripts/lab/ouro_sft_eval.py --adapters results/ouro_sft/<name>/adapters.safetensors \
+        --task bfcl                                                   # exact, unmerged
+
+``--adapters`` rebuilds the trained model exactly: base bf16 weights, LoRA modules with the run's
+rank/alpha (from its config.json) and the trained A/B (and, for the Ouro loss, the fp32 gate).
+``--weights`` loads the merged export, where W + ΔW is rounded to bf16 once.
 
 Prompt (the format the SFT data uses, NousResearch hermes-function-calling-v1): a system message
 "You are a function calling AI model. ... <tools> [OpenAI-style tool JSON] </tools>" plus the
@@ -39,6 +45,7 @@ from transformers import PreTrainedTokenizerFast
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ouro_headroom as xh  # noqa: E402
 import ouro_nestful as nf  # noqa: E402
+from ouro_lora_sft import add_lora  # noqa: E402
 
 from dht.toolcall.checker import check_example  # noqa: E402
 from dht.toolcall.data import load_bfcl, load_xlam, split_ids  # noqa: E402
@@ -163,6 +170,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--model", default="ByteDance/Ouro-2.6B")
     parser.add_argument("--weights", default=None, help="merged safetensors (default: base)")
+    parser.add_argument("--adapters", default=None, help="trainer adapters.safetensors (exact)")
     parser.add_argument("--task", choices=["bfcl", "xlam", "nestful"], required=True)
     parser.add_argument("--n", type=int, default=0, help="per category for bfcl; 0 = all")
     parser.add_argument("--steps", type=int, nargs="+", default=[1, 2, 3, 4])
@@ -174,13 +182,24 @@ def main() -> None:
     mx.set_cache_limit(int(args.cache_limit_gb * 1024**3))
     snap = Path(snapshot_download(args.model, revision=xh.OURO_REVISIONS[args.model]))
     model = OuroForCausalLM(OuroConfig.from_json(snap / "config.json"), ut_steps=4)
+    if args.weights and args.adapters:
+        raise SystemExit("give --weights or --adapters, not both")
     model.load_weights(args.weights or str(snap / "model.safetensors"), strict=True)
+    if args.adapters:
+        run = json.loads((Path(args.adapters).parent / "config.json").read_text())
+        add_lora(model, run["rank"], run["alpha"], 0.0)
+        adapters = mx.load(args.adapters)
+        expected = sum(1 for k in adapters if "lora_" in k)
+        if expected != 7 * 2 * model.cfg.num_hidden_layers:
+            raise SystemExit(f"{args.adapters}: {expected} LoRA tensors, expected 7·2·layers")
+        model.load_weights(list(adapters.items()), strict=False)
     mx.eval(model.parameters())
     model.eval()
     tokenizer = PreTrainedTokenizerFast(tokenizer_file=str(snap / "tokenizer.json"))
     stop_ids = {0, tokenizer.convert_tokens_to_ids("<|im_end|>")}
 
-    tag = args.tag or (Path(args.weights).parent.name if args.weights else "base")
+    trained = args.adapters or args.weights
+    tag = args.tag or (Path(trained).parent.name if trained else "base")
     out = Path(f"results/ouro_sft_eval/{tag}/{args.task}")
     out.mkdir(parents=True, exist_ok=True)
     work = list(items(args, tokenizer))
@@ -218,6 +237,7 @@ def main() -> None:
     cats = sorted({c for c, _ in correct})
     summary = {
         "weights": args.weights or "base",
+        "adapters": args.adapters,
         "task": args.task,
         "by_category": {
             c: {r: round(sum(correct[(c, r)]) / len(correct[(c, r)]), 4) for r in args.steps}
