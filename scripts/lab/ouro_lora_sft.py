@@ -200,7 +200,10 @@ def loss_fn(model, ids, mask, args):
     per_loop = (ce * w[..., None]).sum((0, 1)) / denom
     if args.loss == "ouro":
         p = exit_pdf(gates)
-        token = (p * ce).sum(-1) + args.beta * (p * mx.log(p + 1e-9)).sum(-1)
+        # β·KL(p ‖ U) = β·(Σ p log p + log T); the constant only makes the logged loss match
+        # the paper's formula (≥ 0), gradients are unchanged.
+        kl_uniform = (p * mx.log(p + 1e-9)).sum(-1) + math.log(p.shape[-1])
+        token = (p * ce).sum(-1) + args.beta * kl_uniform
         loss = (token * w).sum() / denom
     else:
         loss = per_loop.mean()

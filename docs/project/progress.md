@@ -38,7 +38,19 @@
   NESTful, 6 requests: 0/0/0/1. Pipeline check only, not results (n tiny, 60 steps).
 - Trainer follow-ups (after the smoke): validation CE at step 0, 50-step moving averages of
   train loss, and SIGUSR1 yield handling (finish step, save `state/`, re-raise so the lab
-  records a preemption; `--resume` continues from that step). Not yet exercised on the lab.
+  records a preemption; `--resume` continues from that step).
+- `scripts/lab/sft_queue.py` runs a whole plan as one lab job (the lab runs at most two jobs and
+  has no dependencies): train Ouro loss, train depth loss, each model's eval in the background
+  while the next trains; stages skip when their outputs exist. `ouro_sft_eval.py --adapters`
+  evaluates the unmerged trained model exactly. Logged Ouro loss now includes β·log 4 so it
+  equals Σ p·CE + β·KL(p‖U) (gradients unchanged; earlier logs are lower by 0.139).
+- Preemption test a0614797 (commit d5ff9a1): the driver yielded itself twice (steps 29, 59);
+  each time the lab recorded "preempted", restarted the job in the same folder a minute later,
+  and the trainer resumed at the saved step with the LR schedule continuing; then trained to
+  step 60 and the `--adapters` eval ran (BFCL 2 per category, depths 2 and 4). The 05:41
+  "code changed after it was approved" refusal did not recur.
+- Full queue submitted (plan `full`): ouro-full, then depth-full, 2 epochs each at max length
+  4,096; eval per model: BFCL non-live (all 1,000), xLAM val 200, NESTful 120, depths 1–4.
 
 - Job f19ecb14 (commit a595031): 360 depth-balanced NESTful math requests at 1–4 passes.
   Accuracy 0.3/3.1/11.7/18.9%, oracle 22.5%. Mean smallest correct passes on solved requests
