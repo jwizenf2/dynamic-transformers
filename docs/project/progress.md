@@ -12,6 +12,8 @@
   keeps its saving. But the router at 78% equals fixed-3; it only beats fixed mixtures at low
   budgets. NESTful gate (8989781a): 19.2% at 3.12 passes, identical depth for every dependency
   depth. Bench ran alongside other jobs: rerun on an idle GPU before quoting numbers.
+- Clean rerun (d3b2bc00, alone, memory leak fixed): gate speedup over fixed-4 ×1.20 / 1.06 /
+  1.03 / 1.01 at batch 1/4/8/16; per-request fixed-3 ×1.33 at every batch.
 
 - Job f19ecb14 (commit a595031): 360 depth-balanced NESTful math requests at 1–4 passes.
   Accuracy 0.3/3.1/11.7/18.9%, oracle 22.5%. Mean smallest correct passes on solved requests

@@ -338,27 +338,32 @@ token vs fixed-4 18.9% (q = 0.8 and 1.0 reproduce 18.9%). Mean exit by depth 2/3
 while accuracy falls from 37.7% (depth 2) to 5.1% (7+). This is the defensible form of C2: the
 gate saves ~22% of passes at no accuracy cost, but does not allocate by structure.
 
-**Serving benchmark (job 3ff76c7d, commit e7eb17e; Ouro-2.6B, NESTful prompts cropped to 1,024
-tokens, 64 forced decode tokens, 3 repeats; decode tokens/s, mean of repeats).** Caveat: the
-lab started it while two other jobs were running, so absolute numbers are noisy (b16 gate
-repeats range 23–39 tok/s); a clean rerun on an idle GPU is needed before quoting numbers.
+**Serving benchmark, clean rerun (job d3b2bc00, commit f9c9663; ran alone on the GPU; Ouro-2.6B,
+NESTful prompts cropped to 1,024 tokens, 64 forced decode tokens, 4 repeats, warm-up repeat
+dropped; decode tokens/s, mean ± SD over 3 repeats).** The first run (3ff76c7d) shared the GPU
+with two jobs and is superseded; it also had a lazy-evaluation memory leak in the gate's KV fill
+(62 vs 38 GB), fixed in 8756ea4.
 
-| Batch | Fixed 1 | Fixed 2 | Fixed 3 | Fixed 4 | Gate q=0.5 | Gate passes run (lockstep) / wanted (row mean) |
-|---|---|---|---|---|---|---|
-| 1 | 22.0 | 11.0 | 7.5 | 5.4 | 6.4 | 3.22 / 3.22 |
-| 4 | 63.2 | 35.5 | 22.1 | 17.2 | 16.8 | 3.57 / 3.23 |
-| 8 | 100.8 | 52.0 | 36.9 | 27.3 | 27.1 | 3.78 / 3.22 |
-| 16 | 153.1 | 76.8 | 53.6 | 35.8 | 23.0 (last repeat 39.4) | 3.88 / 3.21 |
+| Batch | Fixed 1 | Fixed 2 | Fixed 3 | Fixed 4 | Gate q=0.5 | Gate q=0.8 | Gate passes run / wanted | Gate vs fixed 4 | Fixed 3 vs fixed 4 |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 80.5 | 40.9 | 27.4 | 20.6 | 24.7 ± 0.3 | 19.9 | 3.19 / 3.19 | ×1.20 | ×1.33 |
+| 4 | 259.2 | 130.6 | 87.6 | 66.0 | 70.2 ± 1.6 | 64.0 | 3.60 / 3.24 | ×1.06 | ×1.33 |
+| 8 | 408.4 | 206.2 | 137.8 | 103.6 | 106.8 ± 1.1 | 100.9 | 3.76 / 3.21 | ×1.03 | ×1.33 |
+| 16 | 433.9 | 217.9 | 145.6 | 109.5 | 110.6 ± 0.4 | 107.9 | 3.88 / 3.20 | ×1.01 | ×1.33 |
 
-- **Kill test passed for the mechanism.** The gate's rows want 3.2 passes at every batch size,
-  but the lockstep batch runs 3.22 → 3.57 → 3.78 → 3.88 passes as the batch grows from 1 to 16.
-  Its throughput gain over fixed-4 is +18% at batch 1 and none at batch 4–16. Per-request depth
-  keeps its full saving at every batch size (fixed 3 vs fixed 4: +38% at b1, +50% at b16).
-- The gate with best-available KV filling also used much more memory (61.7 vs 38.0 GB at b16).
-  That is partly our implementation (cache growth by concatenation), not necessarily inherent.
-- **Router mixes (xLAM accuracies, throughput from b16 timings, requests grouped by depth):**
-  router at 78.0% (mix 1/52/105/42 over passes 1–4) → 52.4 tok/s; router at 73.0% (9/110/81/0)
-  → 66.6 tok/s; fixed-3 at 78.0% → 53.6; fixed-4 at 82% → 35.8; gate at 81.5% → ≈ fixed-4.
+Peak memory is now the same for the gate and fixed-4 (38.5 vs 38.0 GB at batch 16).
+
+- **Kill test passed.** The gate's rows want 3.2 passes at every batch size, but the lockstep
+  batch runs 3.19 → 3.60 → 3.76 → 3.88 passes; its speedup over fixed-4 falls from ×1.20 at
+  batch 1 to ×1.01 at batch 16. Per-request depth keeps an exact ×1.33 (fixed 3) at every
+  batch size, because throughput is inversely proportional to passes (fixed 1–4 scale as
+  4 : 2 : 1.33 : 1 within 1%).
+- Throughput nearly saturates between batch 8 and 16 on this machine (memory bandwidth), so
+  larger batches were not tested.
+- **Router mixes (xLAM accuracies; clean b16 timings; requests grouped by depth):** router at
+  78.0% (mix 1/52/105/42 over passes 1–4) → 148.6 tok/s (×1.36 vs fixed-4); router at 73.0%
+  (9/110/81/0) → 184.9 (×1.69); fixed-3 at 78% → 145.6 (×1.33); fixed-4 at 82% → 109.5; gate
+  at 81.5% → 110.6 (×1.01).
 - **The problem this exposes:** at 78% the router is no better than fixed-3. It beats mixtures of
   fixed depths only at low budgets (73.0% at 2.36 passes vs ~67% interpolated). So in serving,
   "pick one depth for everything" is nearly as good as our router, and the gate's accuracy
