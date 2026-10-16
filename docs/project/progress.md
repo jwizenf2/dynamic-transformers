@@ -23,6 +23,10 @@
 - `scripts/lab/ouro_lora_sft.py` (MLX LoRA SFT: 2608.18171 recipe and depth-aware loss) and
   `scripts/lab/ouro_sft_eval.py` (Hermes-format eval at fixed depth). Code review and an
   end-to-end smoke test before the full runs.
+- SFT timing run d72d8aa6 (max length 4096: n_train 6,378, n_val 708, 16 dropped) peaked at
+  96 GB in its first step and was cancelled by the user (swap). Causes: no MLX cache limit in
+  the trainer, and full-vocabulary fp32 logits for 4 loops at 4,096 tokens. Fix (cache cap,
+  chunked/checkpointed loss) and a measured memory request before any full run.
 
 - Job f19ecb14 (commit a595031): 360 depth-balanced NESTful math requests at 1–4 passes.
   Accuracy 0.3/3.1/11.7/18.9%, oracle 22.5%. Mean smallest correct passes on solved requests
