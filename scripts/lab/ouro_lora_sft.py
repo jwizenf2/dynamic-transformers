@@ -28,7 +28,12 @@ Choices 2608.18171 leaves unspecified, recorded here: Hermes files func-calling.
 func-calling-singleturn.json is its first-turn prefix, so it is not added) and
 glaive-function-calling-5k.json (JSON-mode files excluded); conversations over 4,096 tokens are
 dropped; loss on assistant turns only (content plus ``<|im_end|>``); LoRA on q/k/v/o and
-gate/up/down projections of every layer (shared across loops), alpha 64, dropout 0.05; seed 0.
+gate/up/down projections of every layer (shared across loops), alpha 64, no dropout; seed 0;
+AdamW weight decay 0; loss averaged per sequence, then over the 4 sequences of a step (not
+token-weighted); the trailing newline after ``<|im_end|>`` is also a target. Note that HF's own
+``modeling_ouro.py`` loss uses CE of Σ_t p_t·logits_t; we follow the paper's Σ_t p_t·CE_t.
+Resume: ``--resume`` continues from ``state/`` (adapters, optimizer state, data order and
+position, saved atomically every ``--save-every`` steps).
 Framework: MLX on the ouro-mlx port (the official HF modeling code does not load with
 transformers 5.x), with per-layer gradient checkpointing.
 """
@@ -48,7 +53,7 @@ import mlx.nn as nn
 import mlx.optimizers as optim
 import numpy as np
 from huggingface_hub import hf_hub_download, snapshot_download
-from mlx.utils import tree_flatten, tree_map
+from mlx.utils import tree_flatten, tree_map, tree_unflatten
 from ouro_mlx.model import OuroConfig, OuroDecoderLayer, OuroForCausalLM
 from transformers import PreTrainedTokenizerFast
 
@@ -143,6 +148,31 @@ def exit_pdf(gates: list[mx.array]) -> mx.array:
     return mx.stack(pdf, -1)
 
 
+CE_CHUNK = 1024  # tokens per vocabulary-projection chunk
+
+
+def token_ce(model, h: mx.array, targets: mx.array) -> mx.array:
+    """[1, L] cross-entropy of lm_head(h), in checkpointed sequence chunks.
+
+    The full-vocabulary fp32 logits (L x 49,152 per loop) dominated memory at L = 4,096; each
+    chunk's logits are recomputed in the backward pass instead of kept (lm_head is frozen).
+    """
+
+    def chunk(tc):
+        # Targets are closed over: mx.checkpoint differentiates every positional argument.
+        return mx.checkpoint(
+            lambda hc: nn.losses.cross_entropy(
+                model.lm_head(hc).astype(mx.float32), tc, reduction="none"
+            )
+        )
+
+    parts = [
+        chunk(targets[:, i : i + CE_CHUNK])(h[:, i : i + CE_CHUNK])
+        for i in range(0, h.shape[1], CE_CHUNK)
+    ]
+    return mx.concatenate(parts, 1)
+
+
 def loss_fn(model, ids, mask, args):
     """Returns (loss, per-loop masked CE [T]) for one sequence ([1, L] ids and mask)."""
     inputs, targets = ids[:, :-1], ids[:, 1:]
@@ -154,10 +184,10 @@ def loss_fn(model, ids, mask, args):
         for layer in model.model.layers:
             h = layer(h, "causal", None)
         h = model.model.norm(h)
-        logits = model.lm_head(h).astype(mx.float32)
-        ces.append(nn.losses.cross_entropy(logits, targets, reduction="none"))  # [1, L]
-        gates.append(model.model.early_exit_gate(h)[..., 0].astype(mx.float32))
-        logits_list.append(logits)
+        ces.append(token_ce(model, h, targets))  # [1, L]
+        gates.append(model.model.early_exit_gate(h.astype(mx.float32))[..., 0])
+        if args.loss == "depth" and args.distill > 0:  # full logits only when distilling
+            logits_list.append(model.lm_head(h).astype(mx.float32))
     ce = mx.stack(ces, -1)  # [1, L, T]
     per_loop = (ce * w[..., None]).sum((0, 1)) / denom
     if args.loss == "ouro":
@@ -185,8 +215,9 @@ def export_merged(model: OuroForCausalLM, snap: Path, path: Path) -> None:
                 weights[f"model.layers.{i}.{block}.{name}.weight"] = getattr(
                     getattr(layer, block), name
                 ).merged_weight()
-    weights["model.early_exit_gate.weight"] = model.model.early_exit_gate.weight
-    weights["model.early_exit_gate.bias"] = model.model.early_exit_gate.bias
+    dtype = weights["model.early_exit_gate.weight"].dtype  # gate trains in fp32 (see main)
+    weights["model.early_exit_gate.weight"] = model.model.early_exit_gate.weight.astype(dtype)
+    weights["model.early_exit_gate.bias"] = model.model.early_exit_gate.bias.astype(dtype)
     mx.save_safetensors(str(path), weights)
 
 
@@ -199,7 +230,9 @@ def main() -> None:
     parser.add_argument("--distill", type=float, default=0.0)
     parser.add_argument("--rank", type=int, default=32)
     parser.add_argument("--alpha", type=float, default=64.0)
-    parser.add_argument("--dropout", type=float, default=0.05)
+    # 0: with per-layer checkpointing a dropout mask is redrawn in the backward pass, which
+    # makes gradients inconsistent (code review 2026-10-16); 2608.18171 gives no dropout.
+    parser.add_argument("--dropout", type=float, default=0.0)
     parser.add_argument("--lr", type=float, default=2e-5)
     parser.add_argument("--epochs", type=float, default=2.0)
     parser.add_argument("--grad-accum", type=int, default=4)
@@ -208,8 +241,16 @@ def main() -> None:
     parser.add_argument("--eval-every", type=int, default=200)
     parser.add_argument("--eval-n", type=int, default=100)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--save-every", type=int, default=50, help="resume checkpoint period")
+    parser.add_argument("--resume", action="store_true", help="continue from state/ in --name")
+    parser.add_argument("--cache-limit-gb", type=float, default=4.0)
     args = parser.parse_args()
+    if args.dropout > 0:
+        raise SystemExit("--dropout > 0 is incompatible with gradient checkpointing here")
 
+    # MLX keeps freed buffers in a reuse cache that otherwise grows toward all free memory
+    # (the first timing run hit 96 GB); cap it and clear it every optimizer step.
+    mx.set_cache_limit(int(args.cache_limit_gb * 1024**3))
     mx.random.seed(args.seed)
     snap = Path(snapshot_download(args.model, revision=OURO_REVISIONS[args.model]))
     model = OuroForCausalLM(OuroConfig.from_json(snap / "config.json"), ut_steps=4)
@@ -218,7 +259,12 @@ def main() -> None:
     model.freeze()
     add_lora(model, args.rank, args.alpha, args.dropout)
     if args.loss == "ouro":
-        model.model.early_exit_gate.unfreeze()
+        # bf16 AdamW updates at LR 2e-5 are below half an ulp of the gate's weights, so the
+        # gate would never move; keep it in fp32 while training (exported back as bf16).
+        gate = model.model.early_exit_gate
+        gate.weight = gate.weight.astype(mx.float32)
+        gate.bias = gate.bias.astype(mx.float32)
+        gate.unfreeze()
     checkpoint_layers()
     mx.eval(model.parameters())
     n_train_params = sum(v.size for _, v in tree_flatten(model.trainable_parameters()))
@@ -264,13 +310,48 @@ def main() -> None:
         model.train()
         return (sums / min(args.eval_n, len(val))).round(4).tolist()
 
+    state_dir = out / "state"
+    order = list(range(len(train)))
+    rng = random.Random(args.seed + 1)
+    cursor, tokens, start = len(order), 0, 1
+    if args.resume and (state_dir / "progress.json").exists():
+        prog = json.loads((state_dir / "progress.json").read_text())
+        model.load_weights(str(state_dir / "adapters.safetensors"), strict=False)
+        opt.init(model.trainable_parameters())
+        opt.state = tree_unflatten(list(mx.load(str(state_dir / "optimizer.safetensors")).items()))
+        order, cursor, tokens = prog["order"], prog["cursor"], prog["tokens"]
+        rng.setstate(tuple(tuple(x) if isinstance(x, list) else x for x in prog["rng"]))
+        start = prog["step"] + 1
+        print(json.dumps({"resumed_from_step": prog["step"]}), flush=True)
+
+    def save_state(step: int) -> None:
+        """Adapters, optimizer state and data position, written atomically (tmp + rename)."""
+        state_dir.mkdir(exist_ok=True)
+        tmp = state_dir / "tmp"
+        tmp.mkdir(exist_ok=True)
+        mx.save_safetensors(
+            str(tmp / "adapters.safetensors"), dict(tree_flatten(model.trainable_parameters()))
+        )
+        mx.save_safetensors(str(tmp / "optimizer.safetensors"), dict(tree_flatten(opt.state)))
+        (tmp / "progress.json").write_text(
+            json.dumps(
+                {
+                    "step": step,
+                    "order": order,
+                    "cursor": cursor,
+                    "tokens": tokens,
+                    "rng": rng.getstate(),
+                }
+            )
+        )
+        for name in ("adapters.safetensors", "optimizer.safetensors", "progress.json"):
+            (tmp / name).replace(state_dir / name)
+
     log = open(out / "log.jsonl", "a")
     model.train()
     t0 = time.perf_counter()
-    order = list(range(len(train)))
-    rng = random.Random(args.seed + 1)
-    cursor, tokens = len(order), 0
-    for step in range(1, total + 1):
+    tokens0 = tokens
+    for step in range(start, total + 1):
         acc_grads, acc_loss, acc_loops = None, 0.0, np.zeros(4)
         for _ in range(args.grad_accum):
             if cursor >= len(order):
@@ -284,14 +365,17 @@ def main() -> None:
             mx.eval(loss, per_loop, acc_grads)
             acc_loss += loss.item()
             acc_loops += np.array(per_loop)
+        lr_used = float(schedule(opt.state["step"]) if "step" in opt.state else schedule(0))
         opt.update(model, tree_map(lambda g: g / args.grad_accum, acc_grads))
         mx.eval(model.trainable_parameters(), opt.state)
+        del acc_grads
+        mx.clear_cache()
         rec = {
             "step": step,
             "loss": round(acc_loss / args.grad_accum, 4),
             "ce_by_loop": (acc_loops / args.grad_accum).round(4).tolist(),
-            "lr": float(schedule(step)),
-            "tok_per_s": round(tokens / (time.perf_counter() - t0), 1),
+            "lr": lr_used,
+            "tok_per_s": round((tokens - tokens0) / (time.perf_counter() - t0), 1),
             "peak_gb": round(mx.get_peak_memory() / 1e9, 2),
         }
         if step % args.eval_every == 0 or step == total:
@@ -299,6 +383,8 @@ def main() -> None:
             mx.save_safetensors(
                 str(out / "adapters.safetensors"), dict(tree_flatten(model.trainable_parameters()))
             )
+        if step % args.save_every == 0 or step == total:
+            save_state(step)
         log.write(json.dumps(rec) + "\n")
         log.flush()
         print(f"::progress {step}/{total} steps", flush=True)
