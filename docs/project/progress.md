@@ -51,6 +51,8 @@
   "code changed after it was approved" refusal did not recur.
 - Full queue submitted (plan `full`): ouro-full, then depth-full, 2 epochs each at max length
   4,096; eval per model: BFCL non-live (all 1,000), xLAM val 200, NESTful 120, depths 1–4.
+- Plan for the paper paths (serving router vs RL over loops on chains vs both), training seeds
+  and questions for the professor: `docs/research/plan_2026-10-17_paper_paths.md`.
 
 - Job f19ecb14 (commit a595031): 360 depth-balanced NESTful math requests at 1–4 passes.
   Accuracy 0.3/3.1/11.7/18.9%, oracle 22.5%. Mean smallest correct passes on solved requests
