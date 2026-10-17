@@ -53,6 +53,14 @@
   4,096; eval per model: BFCL non-live (all 1,000), xLAM val 200, NESTful 120, depths 1–4.
 - Plan for the paper paths (serving router vs RL over loops on chains vs both), training seeds
   and questions for the professor: `docs/research/plan_2026-10-17_paper_paths.md`.
+- Lab behaviour found 2026-10-17 (job dd6a839b, cancelled): submitting a new commit into an
+  existing project replaces the folder, deleting its `results/` (the pretest model was gone,
+  so the eval-resume test started a full training run instead). The lab's own auto-resume
+  after a preemption keeps the folder. Rule: new commits go to new project folders, and
+  results are copied out before any manual resubmit. Eval resume (`load_done`) is tested
+  locally only.
+- Seed runs (plan `seeds`: ouro-s1, depth-s1, ouro-s2, depth-s2; `--split-seed 0` keeps the
+  ouro-full/depth-full split; BFCL eval only) queued to start ~1 h after job 03ce6df5 ends.
 
 - Job f19ecb14 (commit a595031): 360 depth-balanced NESTful math requests at 1–4 passes.
   Accuracy 0.3/3.1/11.7/18.9%, oracle 22.5%. Mean smallest correct passes on solved requests

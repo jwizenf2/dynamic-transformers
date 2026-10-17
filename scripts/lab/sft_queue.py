@@ -60,11 +60,6 @@ PLANS = {
         ],
         "eval": [("bfcl", ["--n", "2", "--steps", "2", "4"])],
     },
-    # Eval resume test on the already trained pretest model (training stage is skipped).
-    "pretest-eval": {
-        "train": [("pretest", "ouro", [])],
-        "eval": [("xlam", ["--n", "8", "--steps", "1", "2"])],
-    },
     # Training seeds for the loss comparison: same recipe and the same train/val split
     # (--split-seed 0, as in ouro-full/depth-full); the seed changes LoRA init and data order.
     # BFCL only, because xLAM/NESTful made the full evals slow.
