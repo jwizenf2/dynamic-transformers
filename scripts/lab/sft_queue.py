@@ -2,6 +2,7 @@
 
     python scripts/lab/sft_queue.py --plan full
     python scripts/lab/sft_queue.py --plan pretest --self-yield-after 240   # preemption test
+    python scripts/lab/sft_queue.py --plan seeds        # training seeds 1 and 2 for both losses
 
 The lab runs at most two jobs side by side and has no job dependencies, so the whole queue
 (train with the Ouro loss, train with the depth loss, evaluate each) is one job:
@@ -13,8 +14,9 @@ The lab runs at most two jobs side by side and has no job dependencies, so the w
 * The evaluation of a finished model runs in the background while the next model trains
   (about 10 GB next to the trainer's 44 GB), so the GPU never waits on it.
 * SIGUSR1 (the lab broker asking the job to yield) is forwarded to every running stage: the
-  trainer saves ``state/`` at the end of its current step and exits, evals just stop (they redo
-  their task on the next attempt). Then this driver re-raises SIGUSR1 so the lab records a stop.
+  trainer saves ``state/`` at the end of its current step and exits, evals just stop (on the
+  next attempt they keep the rows already graded and continue). Then this driver re-raises
+  SIGUSR1 so the lab records a stop.
 * ``--self-yield-after S`` sends that SIGUSR1 to the driver after S seconds (for the test).
 """
 
@@ -57,6 +59,23 @@ PLANS = {
             ),
         ],
         "eval": [("bfcl", ["--n", "2", "--steps", "2", "4"])],
+    },
+    # Eval resume test on the already trained pretest model (training stage is skipped).
+    "pretest-eval": {
+        "train": [("pretest", "ouro", [])],
+        "eval": [("xlam", ["--n", "8", "--steps", "1", "2"])],
+    },
+    # Training seeds for the loss comparison: same recipe and the same train/val split
+    # (--split-seed 0, as in ouro-full/depth-full); the seed changes LoRA init and data order.
+    # BFCL only, because xLAM/NESTful made the full evals slow.
+    "seeds": {
+        "train": [
+            ("ouro-s1", "ouro", ["--seed", "1"]),
+            ("depth-s1", "depth", ["--seed", "1"]),
+            ("ouro-s2", "ouro", ["--seed", "2"]),
+            ("depth-s2", "depth", ["--seed", "2"]),
+        ],
+        "eval": [("bfcl", ["--n", "0"])],
     },
 }
 

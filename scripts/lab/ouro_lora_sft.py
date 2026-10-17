@@ -251,7 +251,10 @@ def main() -> None:
     parser.add_argument("--max-steps", type=int, default=None, help="optimizer steps (timing)")
     parser.add_argument("--eval-every", type=int, default=200)
     parser.add_argument("--eval-n", type=int, default=100)
-    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--seed", type=int, default=0, help="LoRA init and data order")
+    # Kept separate so training seeds compare on the same train/val split (seed 0 runs used
+    # split seed 0, so their split is unchanged).
+    parser.add_argument("--split-seed", type=int, default=0, help="train/val split")
     parser.add_argument("--save-every", type=int, default=50, help="resume checkpoint period")
     parser.add_argument("--resume", action="store_true", help="continue from state/ in --name")
     parser.add_argument("--cache-limit-gb", type=float, default=4.0)
@@ -281,7 +284,7 @@ def main() -> None:
     n_train_params = sum(v.size for _, v in tree_flatten(model.trainable_parameters()))
 
     data, dropped = conversations(tokenizer, args.max_len)
-    random.Random(args.seed).shuffle(data)
+    random.Random(args.split_seed).shuffle(data)
     n_val = len(data) // 10
     val, train = data[:n_val], data[n_val:]
     steps_per_epoch = len(train) // args.grad_accum

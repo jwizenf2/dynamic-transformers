@@ -166,6 +166,34 @@ def items(args, tokenizer):
             yield "nestful", e.id, chat(tokenizer, system, e.query), grade
 
 
+def load_done(path: Path, correct: dict) -> set[tuple[str, int]]:
+    """(id, steps) pairs already graded in ``path``; adds their results to ``correct``.
+
+    A partly written last line (process killed mid-write) is dropped and the file truncated
+    to the last complete row, so appending continues from a clean line boundary.
+    """
+    if not path.exists():
+        return set()
+    done, good, size = set(), 0, 0
+    with open(path, "rb") as f:
+        for line in f:
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                break
+            if not line.endswith(b"\n"):
+                break
+            size += len(line)
+            good += 1
+            key = (str(row["id"]), int(row["steps"]))
+            if key not in done:
+                done.add(key)
+                correct[(row["cat"], key[1])].append(bool(row["correct"]))
+    with open(path, "r+b") as f:
+        f.truncate(size)
+    return done
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--model", default="ByteDance/Ouro-2.6B")
@@ -204,10 +232,17 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     work = list(items(args, tokenizer))
     correct: dict[tuple[str, int], list[bool]] = defaultdict(list)
+    # Resume: rows already in examples.jsonl (from an attempt stopped by a preemption) are
+    # kept and their (id, steps) pairs skipped, so a restart does not redo finished requests.
+    done = load_done(out / "examples.jsonl", correct)
+    if done:
+        print(json.dumps({"resumed_rows": len(done)}), flush=True)
     t0 = time.perf_counter()
-    with open(out / "examples.jsonl", "w") as rows:
+    with open(out / "examples.jsonl", "a") as rows:
         for k, (cat, ex_id, ids, grade) in enumerate(work, 1):
             for r in args.steps:
+                if (str(ex_id), r) in done:
+                    continue
                 text = tokenizer.decode(generate(model, ids, r, args.max_tokens, stop_ids))
                 calls = parse_hermes(text)
                 ok = grade(calls)
