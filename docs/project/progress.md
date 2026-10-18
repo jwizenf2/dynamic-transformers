@@ -53,6 +53,15 @@
   `adapters.safetensors` exact for `--adapters`, `config.json`, `log.jsonl`). Local copies of
   adapters, logs and eval rows: `results/ouro_sft_full/` (not committed). Lab cleanup deleted
   resume state and the e2e/pretest leftovers (24.7 → 10.5 GB).
+- Analysis of the eval rows (paired over the same requests, 2,000 bootstrap resamples):
+  depth-aware minus Ouro loss at d1 BFCL +0.059 [+0.038, +0.080], xLAM +0.090 [+0.050,
+  +0.135]; d2–d4 BFCL −0.004/−0.010/−0.004, all CIs include 0 (d3 [−0.021, +0.001]). Depth-aware
+  is more monotonic in depth: BFCL d3→d4 lost/gained 3/9 requests vs 14/14; right at a lower
+  depth but wrong at d4 2.3% vs 3.0% (xLAM 1.5% vs 4.0%). BFCL errors are wrong arguments, not
+  missing calls (no call ≤1.2% at d1, ≤0.3% at d2–d4). NESTful: 0/120 d4 outputs (Ouro loss)
+  use `"label"`, the model writes all calls in one turn with self-computed intermediate values;
+  multi-turn evaluation is added to the plan before nested SFT data. Training-seed variance
+  is not in these intervals.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 

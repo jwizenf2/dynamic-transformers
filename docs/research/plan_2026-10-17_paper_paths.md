@@ -68,6 +68,13 @@ Order is by information per GPU hour. Gates say when a path stops.
   as a workshop-level result or a section of C.
 
 ### 2. Path B: chains
+0. First (cheap, no retraining): multi-turn NESTful eval. Finding 2026-10-18: the fine-tuned
+   models never emit `"label"` (0/120 at d4, Ouro loss) and write all calls in one turn,
+   hard-coding intermediate values they compute themselves; only 31/120 outputs contain a
+   `$var_N.result$` reference. Hermes SFT teaches the multi-turn protocol (call →
+   `<tool_response>` → next call), so the single-turn label convention is a format mismatch.
+   Evaluate chains by executing each turn's calls and feeding results back; this is also the
+   loop the per-call depth policy needs. Re-decide whether nested SFT data is needed after it.
 1. Nested-call training data: survey candidates (NesTools, Seal-Tools, ToolACE, others; check
    licence, real dependent calls, overlap with NESTful) and/or synthetic chains with
    templates and functions disjoint from NESTful. NESTful stays test-only.
