@@ -166,6 +166,27 @@ def items(args, tokenizer):
             yield "nestful", e.id, chat(tokenizer, system, e.query), grade
 
 
+def load_model(model_id: str, weights: str | None, adapters: str | None):
+    """Base Ouro, merged ``weights``, or base + exact LoRA ``adapters``; (model, tokenizer)."""
+    snap = Path(snapshot_download(model_id, revision=xh.OURO_REVISIONS[model_id]))
+    model = OuroForCausalLM(OuroConfig.from_json(snap / "config.json"), ut_steps=4)
+    if weights and adapters:
+        raise SystemExit("give --weights or --adapters, not both")
+    model.load_weights(weights or str(snap / "model.safetensors"), strict=True)
+    if adapters:
+        run = json.loads((Path(adapters).parent / "config.json").read_text())
+        add_lora(model, run["rank"], run["alpha"], 0.0)
+        tensors = mx.load(adapters)
+        expected = sum(1 for k in tensors if "lora_" in k)
+        if expected != 7 * 2 * model.cfg.num_hidden_layers:
+            raise SystemExit(f"{adapters}: {expected} LoRA tensors, expected 7·2·layers")
+        model.load_weights(list(tensors.items()), strict=False)
+    mx.eval(model.parameters())
+    model.eval()
+    tokenizer = PreTrainedTokenizerFast(tokenizer_file=str(snap / "tokenizer.json"))
+    return model, tokenizer
+
+
 def load_done(path: Path, correct: dict) -> set[tuple[str, int]]:
     """(id, steps) pairs already graded in ``path``; adds their results to ``correct``.
 
@@ -208,22 +229,7 @@ def main() -> None:
     args = parser.parse_args()
 
     mx.set_cache_limit(int(args.cache_limit_gb * 1024**3))
-    snap = Path(snapshot_download(args.model, revision=xh.OURO_REVISIONS[args.model]))
-    model = OuroForCausalLM(OuroConfig.from_json(snap / "config.json"), ut_steps=4)
-    if args.weights and args.adapters:
-        raise SystemExit("give --weights or --adapters, not both")
-    model.load_weights(args.weights or str(snap / "model.safetensors"), strict=True)
-    if args.adapters:
-        run = json.loads((Path(args.adapters).parent / "config.json").read_text())
-        add_lora(model, run["rank"], run["alpha"], 0.0)
-        adapters = mx.load(args.adapters)
-        expected = sum(1 for k in adapters if "lora_" in k)
-        if expected != 7 * 2 * model.cfg.num_hidden_layers:
-            raise SystemExit(f"{args.adapters}: {expected} LoRA tensors, expected 7·2·layers")
-        model.load_weights(list(adapters.items()), strict=False)
-    mx.eval(model.parameters())
-    model.eval()
-    tokenizer = PreTrainedTokenizerFast(tokenizer_file=str(snap / "tokenizer.json"))
+    model, tokenizer = load_model(args.model, args.weights, args.adapters)
     stop_ids = {0, tokenizer.convert_tokens_to_ids("<|im_end|>")}
 
     trained = args.adapters or args.weights

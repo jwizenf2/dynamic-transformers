@@ -31,6 +31,7 @@ import importlib.util
 import json
 import math
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
@@ -192,42 +193,115 @@ def execute(
     """
     if not calls:
         return False, "no calls"
-    spec = {t["name"]: t for t in tools}
     results: dict[str, dict[str, Any]] = {}
     value: Any = None
     for i, call in enumerate(calls):
-        name = call["name"]
-        if name not in spec or not hasattr(functions, name):
-            return False, f"unknown function {name}"
-        params = list((spec[name].get("parameters") or {}).keys())
-        given = call.get("arguments") or {}
-        if set(given) - set(params):
-            return False, f"{name}: unknown arguments {sorted(set(given) - set(params))}"
-        args = []
-        for p in params:
-            if p not in given:
-                break  # later parameters must take their defaults (e.g. log's base)
-            v = given[p]
-            if isinstance(v, str):
-                m = _REF.match(v)
-                if not m:
-                    return False, f"{name}: non-numeric argument {v!r}"
-                src = re.sub(r"^var_?", "var_", m.group(1))
-                if src not in results or m.group(2) not in results[src]:
-                    return False, f"{name}: unresolved reference {v!r}"
-                v = results[src][m.group(2)]
-            args.append(v)
-        if len(args) < len([p for p in params if p in given]):
-            return False, f"{name}: argument after a missing one"
-        if not _in_range(name, args):
-            return False, f"{name}: arguments out of range"
-        try:
-            value = getattr(functions, name)(*args)
-        except Exception as exc:  # noqa: BLE001 (any failure of a predicted call is a miss)
-            return False, f"{name}: {type(exc).__name__}"
-        outputs = list((spec[name].get("output_parameters") or {"result": None}).keys())
-        results[_label(call, i)] = {outputs[0]: value}
+        ok, value = run_call(call, i, tools, functions, results)
+        if not ok:
+            return False, value
     return True, value
+
+
+def run_call(
+    call: dict[str, Any],
+    index: int,
+    tools: list[dict[str, Any]],
+    functions: ModuleType,
+    results: dict[str, dict[str, Any]],
+) -> tuple[bool, Any]:
+    """Run one call; (True, result) or (False, reason). On success the result is stored in
+    ``results`` under the call's label (positional ``var_{index + 1}`` when unlabelled), so
+    later calls, also in later turns of a multi-turn dialogue, can reference it."""
+    spec = {t["name"]: t for t in tools}
+    name = call["name"]
+    if name not in spec or not hasattr(functions, name):
+        return False, f"unknown function {name}"
+    params = list((spec[name].get("parameters") or {}).keys())
+    given = call.get("arguments") or {}
+    if set(given) - set(params):
+        return False, f"{name}: unknown arguments {sorted(set(given) - set(params))}"
+    args = []
+    for p in params:
+        if p not in given:
+            break  # later parameters must take their defaults (e.g. log's base)
+        v = given[p]
+        if isinstance(v, str):
+            m = _REF.match(v)
+            if not m:
+                return False, f"{name}: non-numeric argument {v!r}"
+            src = re.sub(r"^var_?", "var_", m.group(1))
+            if src not in results or m.group(2) not in results[src]:
+                return False, f"{name}: unresolved reference {v!r}"
+            v = results[src][m.group(2)]
+        args.append(v)
+    if len(args) < len([p for p in params if p in given]):
+        return False, f"{name}: argument after a missing one"
+    if not _in_range(name, args):
+        return False, f"{name}: arguments out of range"
+    try:
+        value = getattr(functions, name)(*args)
+    except Exception as exc:  # noqa: BLE001 (any failure of a predicted call is a miss)
+        return False, f"{name}: {type(exc).__name__}"
+    outputs = list((spec[name].get("output_parameters") or {"result": None}).keys())
+    results[_label(call, index)] = {outputs[0]: value}
+    return True, value
+
+
+def tool_responses(outcomes: list[tuple[str, bool, Any]]) -> str:
+    """Hermes ``<tool_response>`` blocks for one turn's calls: (name, ok, result or reason)."""
+    blocks = []
+    for name, ok, value in outcomes:
+        content = (list(value) if isinstance(value, tuple) else value) if ok else {"error": value}
+        body = json.dumps({"name": name, "content": content}, ensure_ascii=False)
+        blocks.append(f"<tool_response>\n{body}\n</tool_response>")
+    return "\n".join(blocks)
+
+
+def run_dialogue(
+    assistant: Callable[[str | None], list[dict[str, Any]]],
+    tools: list[dict[str, Any]],
+    functions: ModuleType,
+    max_turns: int = 8,
+) -> dict[str, Any]:
+    """Multi-turn execution of a tool-calling dialogue (the Hermes protocol).
+
+    ``assistant(feedback)`` returns the calls of the next assistant turn; ``feedback`` is the
+    ``<tool_response>`` text for the previous turn's calls (None on the first turn). Every call
+    is executed as it arrives; results persist across turns, so positional references
+    (``$var_N.result$``, N counted over the whole dialogue) also resolve. The dialogue ends at
+    the first turn without calls or after ``max_turns`` turns with calls. As in NESTful's
+    scoring, the prediction is the result of the last call made.
+
+    Returns ok/value of the last call, turns with calls, total calls, failed calls, and
+    whether the model ended the dialogue itself (``finished``).
+    """
+    results: dict[str, dict[str, Any]] = {}
+    last: tuple[bool, Any] = (False, "no calls")
+    feedback: str | None = None
+    turns = n_calls = errors = 0
+    finished = False
+    for _ in range(max_turns):
+        calls = assistant(feedback)
+        if not calls:
+            finished = True
+            break
+        turns += 1
+        outcomes = []
+        for call in calls:
+            ok, value = run_call(call, n_calls, tools, functions, results)
+            n_calls += 1
+            errors += not ok
+            last = (ok, value)
+            outcomes.append((call["name"], ok, value))
+        feedback = tool_responses(outcomes)
+    return {
+        "ok": last[0],
+        "value": last[1],
+        "turns": turns,
+        "calls": n_calls,
+        "errors": errors,
+        "finished": finished,
+    }
 
 
 def answers_match(pred: Any, gold: Any) -> bool:

@@ -227,3 +227,37 @@ def test_load_nestful_parquet_decodes_json_fields(tmp_path):
     a, b = load_nestful_parquet(path)
     assert (a.calls, a.tools, a.answer) == (CHAIN, TOOLS, 40.0)
     assert b.answer == "abc"  # non-JSON answers stay strings
+
+
+def test_run_dialogue_feeds_results_back(functions):
+    from dht.toolcall.nestful import run_dialogue
+
+    seen = []
+    turns = [
+        [{"name": "divide", "arguments": {"arg_0": 25, "arg_1": 100}}],
+        # uses the number from the tool response, then a positional reference to call 1
+        [{"name": "multiply", "arguments": {"arg_0": 0.25, "arg_1": 80}}],
+        [{"name": "add", "arguments": {"arg_0": 20, "arg_1": "$var_2.result$"}}],
+        [],
+    ]
+
+    def assistant(feedback):
+        seen.append(feedback)
+        return turns[len(seen) - 1]
+
+    out = run_dialogue(assistant, TOOLS, functions)
+    assert out == {"ok": True, "value": 40.0, "turns": 3, "calls": 3, "errors": 0, "finished": True}
+    assert seen[0] is None
+    assert seen[1] == '<tool_response>\n{"name": "divide", "content": 0.25}\n</tool_response>'
+
+
+def test_run_dialogue_errors_and_turn_limit(functions):
+    from dht.toolcall.nestful import run_dialogue
+
+    def bad(feedback):
+        return [{"name": "subtract", "arguments": {"arg_0": 1, "arg_1": 2}}]
+
+    out = run_dialogue(bad, TOOLS, functions, max_turns=2)
+    assert out["ok"] is False and out["turns"] == 2 and out["errors"] == 2
+    assert not out["finished"]
+    assert run_dialogue(lambda f: [], TOOLS, functions)["value"] == "no calls"
