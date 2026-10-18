@@ -62,6 +62,15 @@
   use `"label"`, the model writes all calls in one turn with self-computed intermediate values;
   multi-turn evaluation is added to the plan before nested SFT data. Training-seed variance
   is not in these intervals.
+- 2026-10-18 00:08: seed queue job 635c8cb3 (commit c00b9b5, project dynamic-transformers-sft-seeds)
+  started; step-0 val CE equals ouro-full's, confirming the same split.
+- Multi-turn NESTful eval (`scripts/lab/ouro_nestful_multiturn.py`, commit 0d7bffb): calls are
+  executed per turn and results fed back as Hermes `<tool_response>` turns. Correction to the
+  note above: missing labels are not fatal (labels default to positions); the issue is that the
+  model writes intermediate values itself. Smoke 59b75235 (depth-full, 3 requests, d4): the
+  protocol runs, but in all 3 dialogues the model answers in text after the first tool response
+  instead of making the next call (1 turn each; 1/3 correct). Full run 23852b7d: both models,
+  sequential variant, first 60 requests, d1–4.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
