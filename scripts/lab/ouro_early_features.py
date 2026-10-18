@@ -3,6 +3,13 @@
     python scripts/lab/ouro_early_features.py --task xlam --split train --n 1000
     python scripts/lab/ouro_early_features.py --task xlam --split val --n 200
     python scripts/lab/ouro_early_features.py --task nestful --n 960
+    python scripts/lab/ouro_early_features.py --hermes --adapters <run>/adapters.safetensors \
+        --task xlam --split train --n 1000        # fine-tuned model, Hermes prompts
+    python scripts/lab/ouro_early_features.py --hermes --adapters ... --task bfcl
+
+``--hermes`` uses the prompts of ``ouro_sft_eval.py`` (Hermes system prompt, zero-shot, the same
+request ids and order), so the features join its per-depth correctness rows by id; with
+``--adapters`` the fine-tuned model is probed exactly (base + LoRA, as evaluated).
 
 Why: the pass-1 prompt features (``ouro_headroom.py``) give a router that only matches fixed-3
 at 78% on xLAM, and the routing literature reports that query-only features plateau
@@ -117,7 +124,9 @@ def probe(model, ids: list[int], k: int) -> np.ndarray:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--task", choices=["xlam", "nestful"], required=True)
+    parser.add_argument("--task", choices=["xlam", "nestful", "bfcl"], required=True)
+    parser.add_argument("--hermes", action="store_true", help="ouro_sft_eval.py prompts")
+    parser.add_argument("--adapters", default=None, help="fine-tuned run's adapters.safetensors")
     parser.add_argument("--split", choices=["train", "val"], default="val")
     parser.add_argument("--model", default="ByteDance/Ouro-2.6B")
     parser.add_argument("--start", type=int, default=0)
@@ -127,28 +136,42 @@ def main() -> None:
     args = parser.parse_args()
 
     mx.set_cache_limit(int(args.cache_limit_gb * 1024**3))
-    snap = Path(snapshot_download(args.model, revision=xh.OURO_REVISIONS[args.model]))
-    model = OuroForCausalLM(OuroConfig.from_json(snap / "config.json"), ut_steps=4)
-    model.load_weights(str(snap / "model.safetensors"), strict=True)
-    mx.eval(model.parameters())
-    model.eval()
-    tokenizer = PreTrainedTokenizerFast(tokenizer_file=str(snap / "tokenizer.json"))
+    if args.hermes:
+        from ouro_sft_eval import items as hermes_items
+        from ouro_sft_eval import load_model
 
-    items = (
-        xlam_prompts(args.split, args.start, args.n)
-        if args.task == "xlam"
-        else nestful_prompts(args.start, args.n)
-    )
-    name = args.split if args.task == "xlam" else "nestful"
+        model, tokenizer = load_model(args.model, None, args.adapters)
+        spec = argparse.Namespace(task=args.task, n=args.n, xlam_split=args.split, start=args.start)
+        # Token ids come ready-made (ChatML); ids are unique per task (BFCL ids include the
+        # category).
+        items = [(ex_id, ids) for _, ex_id, ids, _ in hermes_items(spec, tokenizer)]
+        model_tag = Path(args.adapters).parent.name if args.adapters else "base-hermes"
+    else:
+        if args.task == "bfcl" or args.adapters:
+            raise SystemExit("--task bfcl and --adapters need --hermes")
+        snap = Path(snapshot_download(args.model, revision=xh.OURO_REVISIONS[args.model]))
+        model = OuroForCausalLM(OuroConfig.from_json(snap / "config.json"), ut_steps=4)
+        model.load_weights(str(snap / "model.safetensors"), strict=True)
+        mx.eval(model.parameters())
+        model.eval()
+        tokenizer = PreTrainedTokenizerFast(tokenizer_file=str(snap / "tokenizer.json"))
+        items = (
+            xlam_prompts(args.split, args.start, args.n)
+            if args.task == "xlam"
+            else nestful_prompts(args.start, args.n)
+        )
+        model_tag = args.model.split("/")[-1]
+    name = args.split if args.task == "xlam" else args.task
     out = Path(
-        f"results/ouro_early_features/{args.model.split('/')[-1]}/"
+        f"results/ouro_early_features/{model_tag}/"
         f"{args.task}_{name}_{args.start}_{args.start + len(items)}"
     )
     out.mkdir(parents=True, exist_ok=True)
     ids_out, feats = [], []
     t0 = time.perf_counter()
     for j, (ex_id, prompt) in enumerate(items, 1):
-        feats.append(probe(model, tokenizer(prompt)["input_ids"], args.k))
+        ids = prompt if isinstance(prompt, list) else tokenizer(prompt)["input_ids"]
+        feats.append(probe(model, ids, args.k))
         ids_out.append(ex_id)
         mx.clear_cache()
         print(f"::progress {j}/{len(items)} requests", flush=True)

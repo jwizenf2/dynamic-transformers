@@ -129,8 +129,14 @@ def items(args, tokenizer):
     elif args.task == "xlam":
         root = Path(snapshot_download(xh.XLAM, repo_type="dataset", revision=xh.XLAM_REVISION))
         examples = {e.id: e for e in load_xlam(root / "xlam_function_calling_60k.json")}
-        _, val_ids = split_ids(list(examples), 2000, 0)
-        for i in val_ids[: args.n or 200]:
+        train_ids, val_ids = split_ids(list(examples), 2000, 0)
+        if getattr(args, "xlam_split", "val") == "train":
+            # Router-training pool: the same train ids as ouro_headroom.py (train_ids[2000:]).
+            start = getattr(args, "start", 0)
+            chosen = train_ids[2000 + start : 2000 + start + (args.n or 1000)]
+        else:
+            chosen = val_ids[: args.n or 200]
+        for i in chosen:
             e = examples[i]
             tools = json.dumps([to_openai_tool(f) for f in e.functions], ensure_ascii=False)
 
@@ -223,6 +229,8 @@ def main() -> None:
     parser.add_argument("--task", choices=["bfcl", "xlam", "nestful"], required=True)
     parser.add_argument("--n", type=int, default=0, help="per category for bfcl; 0 = all")
     parser.add_argument("--steps", type=int, nargs="+", default=[1, 2, 3, 4])
+    parser.add_argument("--xlam-split", choices=["val", "train"], default="val")
+    parser.add_argument("--start", type=int, default=0, help="offset into the xLAM train pool")
     parser.add_argument("--max-tokens", type=int, default=512)
     parser.add_argument("--tag", default=None)
     parser.add_argument("--cache-limit-gb", type=float, default=2.0)
@@ -234,7 +242,10 @@ def main() -> None:
 
     trained = args.adapters or args.weights
     tag = args.tag or (Path(trained).parent.name if trained else "base")
-    out = Path(f"results/ouro_sft_eval/{tag}/{args.task}")
+    task_dir = args.task
+    if args.task == "xlam" and args.xlam_split == "train":
+        task_dir = f"xlam_train_{args.start}_{args.start + (args.n or 1000)}"
+    out = Path(f"results/ouro_sft_eval/{tag}/{task_dir}")
     out.mkdir(parents=True, exist_ok=True)
     work = list(items(args, tokenizer))
     correct: dict[tuple[str, int], list[bool]] = defaultdict(list)
@@ -249,7 +260,8 @@ def main() -> None:
             for r in args.steps:
                 if (str(ex_id), r) in done:
                     continue
-                text = tokenizer.decode(generate(model, ids, r, args.max_tokens, stop_ids))
+                gen = generate(model, ids, r, args.max_tokens, stop_ids)
+                text = tokenizer.decode(gen)
                 calls = parse_hermes(text)
                 ok = grade(calls)
                 correct[(cat, r)].append(ok)
@@ -261,6 +273,7 @@ def main() -> None:
                             "steps": r,
                             "correct": ok,
                             "n_calls": len(calls),
+                            "out_tokens": len(gen),
                             "text": text[:600],
                         }
                     )
