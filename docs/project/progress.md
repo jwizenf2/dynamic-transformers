@@ -71,6 +71,18 @@
   protocol runs, but in all 3 dialogues the model answers in text after the first tool response
   instead of making the next call (1 turn each; 1/3 correct). Full run 23852b7d: both models,
   sequential variant, first 60 requests, d1–4.
+- Multi-turn NESTful result (job 23852b7d, 60 requests, same ids as single-turn), d1–4:
+  depth-aware multi-turn .000/.050/.117/.133 vs single-turn .017/.050/.133/.133; Ouro loss
+  .000/.017/.167/.150 vs .000/.017/.083/.133. Feeding results back does not change accuracy:
+  at d2–d4 98–100% of dialogues end after one turn (the model answers in text after the first
+  tool response), with 3.4–5.0 calls vs 7.7 gold calls per request. Ouro loss at d1 loops
+  instead (mean 3.1 turns, 30% hit the 8-turn limit, 16.8 calls). d4 accuracy by gold chain
+  depth is flat-to-falling (e.g. depth-aware 1/10, 4/10, 0/10, 2/10, 1/10, 0/10 for depths
+  2–7+). Conclusion: the Hermes SFT models do not do multi-step chains under either protocol;
+  path B needs multi-step training data (the nested-SFT variant), not only a different eval.
+  Results: `results/ouro_nestful_mt/` (not committed). Both seed and multi-turn jobs were
+  preempted again at ~05:35 (the daily early-morning memory event; 05:14 the day before) and
+  resumed by the lab.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
