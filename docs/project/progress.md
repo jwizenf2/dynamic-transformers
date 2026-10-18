@@ -15,6 +15,45 @@
 - Clean rerun (d3b2bc00, alone, memory leak fixed): gate speedup over fixed-4 ×1.20 / 1.06 /
   1.03 / 1.01 at batch 1/4/8/16; per-request fixed-3 ×1.33 at every batch.
 
+## 2026-10-17 — Full LoRA SFT: Ouro loss vs depth-aware loss (job 03ce6df5)
+
+- Job 03ce6df5 (commit f76d0b3, plan `full`): Ouro-2.6B LoRA SFT on Hermes FC v1 (6,378 train /
+  708 val conversations, max length 4,096, 2 epochs, 3,188 steps, seed 0), Ouro loss
+  (2608.18171) then depth-aware loss, each evaluated with `--adapters` at fixed depth 1–4.
+  35.9 h wall time; ouro-full trained in 11.3 h; one preemption at 05:14 (depth-full step 1,498)
+  resumed by the lab at the saved step; peak 52.5 GB, no swap.
+- Validation CE by loop (100 val conversations), step 0 → 3,188: Ouro loss 0.793/0.525/0.473/0.465
+  → 0.221/0.157/0.151/0.150; depth-aware 0.793/0.525/0.473/0.465 → 0.181/0.154/0.150/0.149.
+  Depth-aware lowers loop-1 CE (0.181 vs 0.221) with loops 2–4 equal; both curves flatten after
+  ~2,000 steps, no rise (no overfitting signal).
+- BFCL v3 non-live AST (our checker, not `bfcl-eval`; 400/200/200/200), d1/d2/d3/d4:
+
+  | | Ouro loss | Depth-aware |
+  |---|---|---|
+  | simple | .728/.920/.938/.938 | .778/.905/.925/.930 |
+  | multiple | .665/.895/.940/.915 | .735/.880/.915/.910 |
+  | parallel | .590/.870/.885/.900 | .620/.880/.890/.905 |
+  | parallel_multiple | .395/.855/.905/.915 | .490/.870/.900/.910 |
+  | mean of categories | .594/.885/.917/.917 | .656/.884/.908/.914 |
+  | request-weighted | .621/.892/.921/.921 | .680/.888/.911/.917 |
+
+  Base Ouro produced no Hermes-format tool calls.
+- xLAM val (200): Ouro loss .570/.755/.830/.815; depth-aware .660/.775/.830/.840 (base, few-shot
+  prompt, not the same format: d3 .78, d4 .82).
+- NESTful math (first 120 of the depth-balanced order): Ouro loss .000/.025/.067/.117;
+  depth-aware .008/.042/.108/.108 (base few-shot on 360: .003/.031/.117/.189; not comparable
+  prompts). Hermes data has no nested calls.
+- Oracle per-request depth (cheapest correct depth; a ceiling, not a policy): BFCL Ouro loss
+  .951 at 1.38 mean loops, depth-aware .940 at 1.30; xLAM .855 at 1.40 / .855 at 1.28; NESTful
+  .167 at 1.39 / .175 at 1.34.
+- Single training seed, no intervals yet: depth-aware vs Ouro loss differences (+3 to +10 at
+  d1, within ~1 point at d2–d4 on BFCL) need the seed runs and a paired bootstrap.
+- Models kept on the lab for testing: `~/AI/jobs/dynamic-transformers-sft-full/results/ouro_sft/
+  {ouro-full,depth-full}/` (`model.safetensors` merged bf16 for `--weights`,
+  `adapters.safetensors` exact for `--adapters`, `config.json`, `log.jsonl`). Local copies of
+  adapters, logs and eval rows: `results/ouro_sft_full/` (not committed). Lab cleanup deleted
+  resume state and the e2e/pretest leftovers (24.7 → 10.5 GB).
+
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
 - Router v3 on xLAM val: 82.0% at 3.67 effective passes, 81.0% at 3.27, 80.5% at 3.19 (fixed-3
