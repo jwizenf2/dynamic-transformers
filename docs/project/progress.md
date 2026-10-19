@@ -96,6 +96,10 @@
   requests are solved at depth 1 (oracle headroom .940 at 1.30 is not captured). Path A as a
   router-vs-fixed-depth result is weak with these features; next: per-feature predictability
   (AUC for correct-at-d1), richer signals, and the Ouro-loss model when its data lands.
+  Predictability (depth-full, probe features, trained on xLAM train): AUC for correct-at-d1
+  .837 on xLAM val (in-sample .850) but .685 on BFCL (in-sample .720), correct-at-d2 .754 /
+  .594. The probe signal transfers poorly across benchmarks and is limited on BFCL even
+  in-sample.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
