@@ -113,6 +113,12 @@
   the serving bench on the merged ouro-full weights (`--weights`, commit 45ff461).
 - Seed check: depth-s1 (depth-aware, seed 1) training near done (step 3,136/3,188 at 08:49 Oct
   19, after a preemption at step 2,848).
+- Seed 1, Ouro loss (ouro-s1, all 1,000 BFCL): d1–4 .598/.872/.913/.924 vs seed 0
+  .621/.892/.921/.921 (seed spread ≤2.3 points). Depth-aware seed 0 minus Ouro seed 1:
+  d1 +.082 [+.060, +.105], d2 +.016 [+.002, +.030], d3 −.002, d4 −.007 (both CIs include 0).
+  d1 by category, Ouro s0 / s1 / depth-aware s0: simple .728/.715/.777, multiple
+  .665/.610/.735, parallel .590/.575/.620, parallel_multiple .395/.375/.490. depth-s1 trained;
+  its BFCL eval and ouro-s2 training running.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
