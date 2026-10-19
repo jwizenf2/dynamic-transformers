@@ -100,6 +100,19 @@
   .837 on xLAM val (in-sample .850) but .685 on BFCL (in-sample .720), correct-at-d2 .754 /
   .594. The probe signal transfers poorly across benchmarks and is limited on BFCL even
   in-sample.
+- 2026-10-18 evening: routers parked (user decision); focus on the most probable headline.
+  Router-data job ba545a1c paused (cancelled; depth-full data complete, ouro-full xLAM labels
+  308/4000 rows kept for a later resume). Token-gate eval for fine-tuned models
+  (`ouro_token_gate.py --hermes --adapters`, commit 508d228) submitted as job 4c77f09f (BFCL,
+  q 0.5/0.9, ouro-full then depth-full).
+- Fine-tuned gate, ouro-full (trained gate), first 939 BFCL requests: q 0.5 .931 at 2.64
+  nominal passes/token (exits: 0% pass 1, 35.9% pass 2, 63.9% pass 3, 0.3% pass 4); q 0.9 .922
+  at 4.00; fixed depth on the same requests .651/.899/.922/.922. Unlike the base model, the
+  SFT gate exits early and is accurate. Under lockstep batching most steps should still need
+  pass 3 (64% of tokens), so its realised cost is expected near fixed-3; to be measured with
+  the serving bench on the merged ouro-full weights (`--weights`, commit 45ff461).
+- Seed check: depth-s1 (depth-aware, seed 1) training near done (step 3,136/3,188 at 08:49 Oct
+  19, after a preemption at step 2,848).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
