@@ -119,6 +119,14 @@
   d1 by category, Ouro s0 / s1 / depth-aware s0: simple .728/.715/.777, multiple
   .665/.610/.735, parallel .590/.575/.620, parallel_multiple .395/.375/.490. depth-s1 trained;
   its BFCL eval and ouro-s2 training running.
+- 2026-10-19 09:10: user asked for a cooldown and the pivot to chaining. Seed job 635c8cb3
+  paused (ouro-s1 trained + evaluated, depth-s1 trained, its eval 24/4000 rows; ouro-s2 just
+  started, no state saved). Seed 2 for both losses deferred to paper-writing time. Gate job
+  4c77f09f paused after ouro-full finished (depth-full not started).
+- Fine-tuned gate, ouro-full, all 1,000 BFCL: q 0.5 .929 at 2.65 nominal passes/token (exits
+  0/35.1/64.6/0.3% at passes 1–4); q 0.9 .921 at 4.00 (all at pass 4); fixed .621/.892/.921/.921.
+- Chain training data survey: `docs/research/chain_training_data_2026-10-19.md` (Hermes v1 has 0
+  call-after-response turns; recommended mix: own executed chains + APIGen-MT + BUTTON).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
