@@ -2,6 +2,14 @@
 
     python scripts/lab/ouro_token_gate.py --task xlam --n 200 --q 0.5 0.7 0.9
     python scripts/lab/ouro_token_gate.py --task nestful --n 360 --q 0.5 0.7 0.9
+    python scripts/lab/ouro_token_gate.py --hermes --adapters <run>/adapters.safetensors \
+        --task bfcl --n 0 --q 0.5 0.8          # fine-tuned model, ouro_sft_eval.py prompts
+
+``--hermes`` uses the zero-shot Hermes prompts, ``<tool_call>`` parsing and grading of
+``ouro_sft_eval.py`` (same request ids), stopping at ``<|im_end|>``; with ``--adapters`` the
+fine-tuned model is loaded exactly (base + LoRA; the Ouro-loss run also carries its trained exit
+gate, the depth-loss run keeps the base gate). Rows are appended and a restarted run skips
+graded (id, q) pairs.
 
 Why: our earlier gate baseline (router_analysis*.py) read the gate once, at the last prompt
 token, as a request-level proxy. Ouro's actual mechanism decides per generated token, and
@@ -80,8 +88,12 @@ def exit_pass(gates: list[float], q: float) -> int:
     return len(gates)
 
 
-def generate_token_exit(model, tokenizer, prompt: str, max_tokens: int, q: float):
-    ids = tokenizer(prompt)["input_ids"]
+def generate_token_exit(model, tokenizer, prompt, max_tokens: int, q: float, stop_ids=None):
+    """Greedy decoding with Q-exit per token. ``prompt`` is text (few-shot formats, stopped at a
+    blank line) or ready token ids (Hermes chat, stopped at ``stop_ids``)."""
+    hermes = isinstance(prompt, list)
+    ids = prompt if hermes else tokenizer(prompt)["input_ids"]
+    stops = stop_ids if hermes else {tokenizer.eos_token_id}
     caches = model.make_cache()
     start = time.perf_counter()
     logits, gates = all_passes(model, mx.array([ids]), caches)
@@ -90,13 +102,14 @@ def generate_token_exit(model, tokenizer, prompt: str, max_tokens: int, q: float
     for _ in range(max_tokens):
         k = exit_pass([g.item() for g in gates], q)
         tid = int(mx.argmax(logits[k - 1], axis=-1).item())
-        if tid == tokenizer.eos_token_id:
+        if tid in stops:
             break
         out.append(tid)
         exits.append(k)
-        text = tokenizer.decode(out)
-        if "\n\n" in text or "###" in text:
-            break
+        if not hermes:
+            text = tokenizer.decode(out)
+            if "\n\n" in text or "###" in text:
+                break
         logits, gates = all_passes(model, mx.array([[tid]]), caches)
     return tokenizer.decode(out), exits, time.perf_counter() - start
 
@@ -142,7 +155,9 @@ def nestful_items(args):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--task", choices=["xlam", "nestful"], required=True)
+    parser.add_argument("--task", choices=["xlam", "nestful", "bfcl"], required=True)
+    parser.add_argument("--hermes", action="store_true", help="ouro_sft_eval.py prompts/grading")
+    parser.add_argument("--adapters", default=None, help="fine-tuned run's adapters.safetensors")
     parser.add_argument("--model", default="ByteDance/Ouro-2.6B")
     parser.add_argument("--n", type=int, default=200)
     parser.add_argument("--start", type=int, default=0)
@@ -150,28 +165,63 @@ def main() -> None:
     parser.add_argument("--max-tokens", type=int, default=None)
     parser.add_argument("--cache-limit-gb", type=float, default=2.0)
     args = parser.parse_args()
-    max_tokens = args.max_tokens or (160 if args.task == "xlam" else 400)
+    max_tokens = args.max_tokens or (512 if args.hermes else (160 if args.task == "xlam" else 400))
 
     mx.set_cache_limit(int(args.cache_limit_gb * 1024**3))
-    snap = Path(snapshot_download(args.model, revision=xh.OURO_REVISIONS[args.model]))
-    model = OuroForCausalLM(OuroConfig.from_json(snap / "config.json"), ut_steps=4)
-    model.load_weights(str(snap / "model.safetensors"), strict=True)
-    mx.eval(model.parameters())
-    model.eval()
-    tokenizer = PreTrainedTokenizerFast(tokenizer_file=str(snap / "tokenizer.json"))
-    tokenizer.eos_token_id = 0
+    stop_ids = None
+    if args.hermes:
+        from ouro_sft_eval import items as hermes_items
+        from ouro_sft_eval import load_model, parse_hermes
 
-    items = list((xlam_items if args.task == "xlam" else nestful_items)(args))
+        model, tokenizer = load_model(args.model, None, args.adapters)
+        stop_ids = {0, tokenizer.convert_tokens_to_ids("<|im_end|>")}
+        spec = argparse.Namespace(task=args.task, n=args.n, xlam_split="val", start=0)
+
+        def wrap(grade_calls):
+            return lambda text: grade_calls(parse_hermes(text))
+
+        items = [
+            (ex_id, ids, wrap(g), {"cat": cat})
+            for cat, ex_id, ids, g in hermes_items(spec, tokenizer)
+        ]
+        model_tag = Path(args.adapters).parent.name if args.adapters else "base-hermes"
+    else:
+        if args.task == "bfcl" or args.adapters:
+            raise SystemExit("--task bfcl and --adapters need --hermes")
+        snap = Path(snapshot_download(args.model, revision=xh.OURO_REVISIONS[args.model]))
+        model = OuroForCausalLM(OuroConfig.from_json(snap / "config.json"), ut_steps=4)
+        model.load_weights(str(snap / "model.safetensors"), strict=True)
+        mx.eval(model.parameters())
+        model.eval()
+        tokenizer = PreTrainedTokenizerFast(tokenizer_file=str(snap / "tokenizer.json"))
+        tokenizer.eos_token_id = 0
+        items = list((xlam_items if args.task == "xlam" else nestful_items)(args))
+        model_tag = args.model.split("/")[-1]
+    model.ut_steps = 4
     tag = f"{args.task}_{args.start}_{args.start + len(items)}"
-    out = Path(f"results/ouro_token_gate/{args.model.split('/')[-1]}/{tag}")
+    out = Path(f"results/ouro_token_gate/{model_tag}/{tag}")
     out.mkdir(parents=True, exist_ok=True)
     stats: dict[float, list] = defaultdict(list)
+    done: set = set()
+    if (out / "examples.jsonl").exists():  # resume after a preemption: keep graded rows
+        for line in (out / "examples.jsonl").read_text().splitlines():
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                break
+            done.add((str(r["id"]), r["q"]))
+            info_r = {k: r[k] for k in ("cat", "depth", "n_calls") if k in r}
+            stats[r["q"]].append((r["correct"], r["mean_exit"], r["out_tokens"], info_r))
     t0 = time.perf_counter()
-    with open(out / "examples.jsonl", "w") as rows:
+    with open(out / "examples.jsonl", "a") as rows:
         for k, (ex_id, prompt, grade, info) in enumerate(items, 1):
             for q in args.q:
-                text, exits, secs = generate_token_exit(model, tokenizer, prompt, max_tokens, q)
-                ok = grade(text)
+                if (str(ex_id), q) in done:
+                    continue
+                text, exits, secs = generate_token_exit(
+                    model, tokenizer, prompt, max_tokens, q, stop_ids
+                )
+                ok = bool(grade(text))
                 mean_exit = float(np.mean(exits)) if exits else 0.0
                 stats[q].append((ok, mean_exit, len(exits), info))
                 rows.write(
@@ -213,6 +263,11 @@ def main() -> None:
     summary: dict = {"model": args.model, "task": args.task, "args": vars(args), "by_q": {}}
     for q in args.q:
         entry = summarize(stats[q])
+        if args.task == "bfcl":
+            by = defaultdict(list)
+            for r in stats[q]:
+                by[r[3].get("cat", "?")].append(r)
+            entry["by_category"] = {c: summarize(v) for c, v in sorted(by.items())}
         if args.task == "nestful":
             by = defaultdict(list)
             for r in stats[q]:
