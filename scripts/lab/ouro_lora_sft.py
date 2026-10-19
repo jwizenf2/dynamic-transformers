@@ -122,23 +122,33 @@ def checkpoint_layers() -> None:
     OuroDecoderLayer.__call__ = checkpointed
 
 
+def encode_rows(tokenizer, rows: list[dict], max_len: int, prefix: str) -> tuple[list, int]:
+    """(id, token ids, assistant-target mask) per conversation; drops ones over max_len."""
+    out, dropped = [], 0
+    for row in rows:
+        ids, mask = [], []
+        for m in row["conversations"]:
+            role = ROLES[m["from"]]
+            head = tokenizer.encode(f"<|im_start|>{role}\n", add_special_tokens=False)
+            body = tokenizer.encode(m["value"] + "<|im_end|>\n", add_special_tokens=False)
+            ids += head + body
+            mask += [0] * len(head) + [int(role == "assistant")] * len(body)
+        if len(ids) > max_len:
+            dropped += 1
+            continue
+        out.append((f"{prefix}:{row['id']}", ids, mask))
+    return out, dropped
+
+
 def conversations(tokenizer, max_len: int) -> tuple[list, int]:
-    """Token ids and assistant-target masks per conversation; drops ones over max_len."""
+    """Hermes FC v1 conversations (both files), encoded; drops ones over max_len."""
     out, dropped = [], 0
     for fname in HERMES_FILES:
         path = hf_hub_download(HERMES, fname, repo_type="dataset", revision=HERMES_REVISION)
-        for row in json.loads(Path(path).read_text(encoding="utf-8")):
-            ids, mask = [], []
-            for m in row["conversations"]:
-                role = ROLES[m["from"]]
-                head = tokenizer.encode(f"<|im_start|>{role}\n", add_special_tokens=False)
-                body = tokenizer.encode(m["value"] + "<|im_end|>\n", add_special_tokens=False)
-                ids += head + body
-                mask += [0] * len(head) + [int(role == "assistant")] * len(body)
-            if len(ids) > max_len:
-                dropped += 1
-                continue
-            out.append((f"{fname}:{row['id']}", ids, mask))
+        rows = json.loads(Path(path).read_text(encoding="utf-8"))
+        enc, d = encode_rows(tokenizer, rows, max_len, fname)
+        out += enc
+        dropped += d
     return out, dropped
 
 
@@ -258,6 +268,18 @@ def main() -> None:
     parser.add_argument("--save-every", type=int, default=50, help="resume checkpoint period")
     parser.add_argument("--resume", action="store_true", help="continue from state/ in --name")
     parser.add_argument("--cache-limit-gb", type=float, default=4.0)
+    parser.add_argument(
+        "--extra-data",
+        nargs="*",
+        default=[],
+        help="local Hermes-format JSON added to training only",
+    )
+    parser.add_argument(
+        "--hermes-train-n", type=int, default=None, help="subsample the Hermes training part"
+    )
+    parser.add_argument(
+        "--init-adapters", default=None, help="warm start from a run's adapters.safetensors"
+    )
     args = parser.parse_args()
     if args.dropout > 0:
         raise SystemExit("--dropout > 0 is incompatible with gradient checkpointing here")
@@ -279,6 +301,14 @@ def main() -> None:
         gate.weight = gate.weight.astype(mx.float32)
         gate.bias = gate.bias.astype(mx.float32)
         gate.unfreeze()
+    if args.init_adapters:
+        # Stage-2 training: start from a finished run's LoRA (and, for the Ouro loss, gate);
+        # the optimizer state starts fresh.
+        init = mx.load(args.init_adapters)
+        n_lora = sum(1 for k in init if "lora_" in k)
+        if n_lora != 7 * 2 * model.cfg.num_hidden_layers:
+            raise SystemExit(f"{args.init_adapters}: {n_lora} LoRA tensors, expected 7·2·layers")
+        model.load_weights(list(init.items()), strict=False)
     checkpoint_layers()
     mx.eval(model.parameters())
     n_train_params = sum(v.size for _, v in tree_flatten(model.trainable_parameters()))
@@ -287,6 +317,17 @@ def main() -> None:
     random.Random(args.split_seed).shuffle(data)
     n_val = len(data) // 10
     val, train = data[:n_val], data[n_val:]
+    # The validation set stays the same Hermes split (comparable val CE across runs); extra data
+    # and Hermes subsampling only change the training set.
+    n_hermes_train = len(train)
+    if args.hermes_train_n is not None:
+        train = random.Random(args.seed + 2).sample(train, min(args.hermes_train_n, len(train)))
+    extra_dropped = 0
+    for path in args.extra_data:
+        rows = json.loads(Path(path).read_text(encoding="utf-8"))
+        enc, d = encode_rows(tokenizer, rows, args.max_len, Path(path).stem)
+        train += enc
+        extra_dropped += d
     steps_per_epoch = len(train) // args.grad_accum
     total = args.max_steps or int(steps_per_epoch * args.epochs)
     warmup = max(1, int(0.03 * total))
@@ -305,6 +346,8 @@ def main() -> None:
         "n_train": len(train),
         "n_val": len(val),
         "dropped_over_max_len": dropped,
+        "hermes_train_available": n_hermes_train,
+        "extra_dropped_over_max_len": extra_dropped,
         "trainable_params": n_train_params,
         "total_steps": total,
         "warmup_steps": warmup,

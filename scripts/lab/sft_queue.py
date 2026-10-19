@@ -34,6 +34,13 @@ from pathlib import Path
 PY = sys.executable
 SFT = "scripts/lab/ouro_lora_sft.py"
 EVAL = "scripts/lab/ouro_sft_eval.py"
+MULTITURN = "scripts/lab/ouro_nestful_multiturn.py"
+# Stage-1 depth-aware model on the lab (job 03ce6df5); the chain run warm-starts from it.
+DEPTH_FULL = (
+    "/Users/jeremywizenfeld/AI/jobs/dynamic-transformers-sft-full/results/ouro_sft/"
+    "depth-full/adapters.safetensors"
+)
+CHAINS = "results/chains/chains_s0_n6000.json"
 
 # name, loss, extra trainer args
 PLANS = {
@@ -63,6 +70,26 @@ PLANS = {
     # Training seeds for the loss comparison: same recipe and the same train/val split
     # (--split-seed 0, as in ouro-full/depth-full); the seed changes LoRA init and data order.
     # BFCL only, because xLAM/NESTful made the full evals slow.
+    # Path B stage 2: depth-aware loss on 6,000 synthetic executed chains plus 2,000 Hermes
+    # conversations (replay against forgetting single calls), 1 epoch, warm-started from the
+    # stage-1 depth-aware model. Evaluated on BFCL (regression check), single-turn NESTful and
+    # multi-turn NESTful without the sequential hint (``plain``).
+    "chains": {
+        "prepare": [(CHAINS, [PY, "scripts/lab/make_chains.py", "--n", "6000", "--seed", "0"])],
+        "train": [
+            (
+                "chain-depth",
+                "depth",
+                ["--init-adapters", DEPTH_FULL, "--extra-data", CHAINS]
+                + ["--hermes-train-n", "2000", "--epochs", "1"],
+            ),
+        ],
+        "eval": [
+            ("bfcl", ["--n", "0"]),
+            ("nestful", ["--n", "120"]),
+            ("nestful-mt", ["--n", "120", "--variant", "plain"]),
+        ],
+    },
     "seeds": {
         "train": [
             ("ouro-s1", "ouro", ["--seed", "1"]),
@@ -113,8 +140,15 @@ def eval_chain(name: str, tasks: list) -> list[list[str]]:
     adapters = f"results/ouro_sft/{name}/adapters.safetensors"
     cmds = []
     for task, extra in tasks:
-        if not Path(f"results/ouro_sft_eval/{name}/{task}/summary.json").exists():
-            cmds.append([PY, EVAL, "--adapters", adapters, "--task", task, *extra])
+        if task == "nestful-mt":
+            variant = extra[extra.index("--variant") + 1] if "--variant" in extra else "sequential"
+            done = Path(f"results/ouro_nestful_mt/{name}/{variant}/summary.json").exists()
+            cmd = [PY, MULTITURN, "--adapters", adapters, *extra]
+        else:
+            done = Path(f"results/ouro_sft_eval/{name}/{task}/summary.json").exists()
+            cmd = [PY, EVAL, "--adapters", adapters, "--task", task, *extra]
+        if not done:
+            cmds.append(cmd)
     return cmds
 
 
@@ -151,6 +185,10 @@ def main() -> None:
         signal.alarm(int(args.self_yield_after))
 
     t0 = time.time()
+    for path, cmd in plan.get("prepare", []):
+        if not Path(path).exists():
+            if wait(start(cmd)) != 0:
+                raise SystemExit(f"prepare step failed: {' '.join(cmd)}")
     background: list[tuple[str, subprocess.Popen]] = []
     for name, loss, extra in plan["train"]:
         if Path(f"results/ouro_sft/{name}/model.safetensors").exists():
