@@ -127,6 +127,17 @@
   0/35.1/64.6/0.3% at passes 1–4); q 0.9 .921 at 4.00 (all at pass 4); fixed .621/.892/.921/.921.
 - Chain training data survey: `docs/research/chain_training_data_2026-10-19.md` (Hermes v1 has 0
   call-after-response turns; recommended mix: own executed chains + APIGen-MT + BUTTON).
+- User decision: no APIGen-MT (non-commercial); train on our own executed chains so the release
+  stays permissive. `dht.toolcall.chains` (27 tools in text/list/date/unit/fictional-lookup
+  domains, none named like NESTful's 40; chains of 2–6 executed dependent calls, 20% start with a
+  two-call branch) + `scripts/lab/make_chains.py`; 6,000 conversations, median ~1,100 tokens,
+  none over 4,096. Trainer: `--init-adapters`, `--extra-data`, `--hermes-train-n`; queue plan
+  `chains` (commit 38f1bbc).
+- 2026-10-19 10:49: chain job 3b941faa started (depth loss, warm start from depth-full,
+  6,000 chains + 2,000 Hermes, 1 epoch = 2,000 steps; step-0 val CE equals depth-full's final
+  .1813/.1536/.1499/.1493, confirming the warm start). Serving bench with the ouro-full gate:
+  job 9bea1457 at batch 1/4/8 (batch 16 needs ~40 GB, which does not fit next to the training);
+  tok/s shared with the training.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
