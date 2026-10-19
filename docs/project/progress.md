@@ -83,6 +83,19 @@
   Results: `results/ouro_nestful_mt/` (not committed). Both seed and multi-turn jobs were
   preempted again at ~05:35 (the daily early-morning memory event; 05:14 the day before) and
   resumed by the lab.
+- First router on a fine-tuned model (depth-full; job ba545a1c data; `router_sft.py`): trained on
+  1,000 xLAM train-pool requests (probe features, 4 logistic predictors, CV l2 = 10), tested
+  on BFCL (1,000) and xLAM val (200). Effective passes include the 8-token probe at 4 passes;
+  BFCL/xLAM-val output lengths come from the stored text (cut at 600 chars, conservative).
+  BFCL: fixed d1–4 .680/.888/.911/.917 (oracle .940 at 1.30); router .911 at 3.38 effective
+  passes, .909 at 3.00, .897 at 2.52, .888 at 2.40, i.e. on or below the fixed-depth points
+  (fixed-3 .911 at 3, fixed-2 .888 at 2); above matched random by 0–3 points. xLAM val: fixed
+  .66/.775/.83/.84; router .840 at 3.42 (matches fixed-4 with ~15% fewer passes), .785 at 2.27,
+  .770 at 1.99, roughly on the fixed frontier. Reading: on the fine-tuned model, fixed depth 3
+  (or 2) already captures most of the gain, and the probe features do not identify which
+  requests are solved at depth 1 (oracle headroom .940 at 1.30 is not captured). Path A as a
+  router-vs-fixed-depth result is weak with these features; next: per-feature predictability
+  (AUC for correct-at-d1), richer signals, and the Ouro-loss model when its data lands.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 

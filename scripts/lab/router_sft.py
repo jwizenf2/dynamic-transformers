@@ -32,15 +32,26 @@ from router_analysis import fit_logistic, predict  # noqa: E402
 from router_analysis_v3 import curve, cv_l2, load_early  # noqa: E402
 
 
-def labels(directory: Path) -> tuple[dict[str, np.ndarray], dict[str, int]]:
-    """Per request id: correctness at depths 1..4 and output length at depth 4."""
+def labels(directory: Path, tokenizer=None) -> tuple[dict[str, np.ndarray], dict[str, int]]:
+    """Per request id: correctness at depths 1..4 and output length at depth 4.
+
+    Rows written before ``out_tokens`` was logged (the 2026-10-17 BFCL/xLAM-val evals) get the
+    length of their stored text, which was cut at 600 characters: long outputs are undercounted,
+    so the probe's share of the cost is overstated (conservative for the router).
+    """
     by: dict[str, dict[int, bool]] = {}
     toks: dict[str, int] = {}
     for line in (directory / "examples.jsonl").read_text().splitlines():
         r = json.loads(line)
         by.setdefault(str(r["id"]), {})[r["steps"]] = r["correct"]
         if r["steps"] == 4:
-            toks[str(r["id"])] = max(int(r.get("out_tokens", 1)), 1)
+            if "out_tokens" in r:
+                n = int(r["out_tokens"])
+            elif tokenizer is not None:
+                n = len(tokenizer.encode(r["text"], add_special_tokens=False))
+            else:
+                raise SystemExit(f"{directory}: rows have no out_tokens; pass a tokenizer")
+            toks[str(r["id"])] = max(n, 1)
     full = {i: np.array([v[d] for d in (1, 2, 3, 4)], float) for i, v in by.items() if len(v) == 4}
     return full, toks
 
@@ -68,10 +79,17 @@ def main() -> None:
         for role, prefix in groups.items()
     }
     train_dir = next(eval_dir.glob("xlam_train_*"))
+    from huggingface_hub import snapshot_download
+    from ouro_headroom import OURO_REVISIONS
+    from transformers import PreTrainedTokenizerFast
+
+    model_id = "ByteDance/Ouro-2.6B"
+    snap = Path(snapshot_download(model_id, revision=OURO_REVISIONS[model_id]))
+    tokenizer = PreTrainedTokenizerFast(tokenizer_file=str(snap / "tokenizer.json"))
     sets = {
         "train": labels(train_dir),
-        "bfcl": labels(eval_dir / "bfcl"),
-        "val": labels(eval_dir / "xlam"),
+        "bfcl": labels(eval_dir / "bfcl", tokenizer),
+        "val": labels(eval_dir / "xlam", tokenizer),
     }
     tr_ids, ytr, xtr, _ = joined(sets["train"][0], feat["train"], sets["train"][1])
     mu, sd = xtr.mean(0), xtr.std(0) + 1e-8
