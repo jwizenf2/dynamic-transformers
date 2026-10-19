@@ -163,11 +163,15 @@ def main() -> None:
     parser.add_argument("--new-tokens", type=int, default=64)
     parser.add_argument("--q", type=float, nargs="+", default=[0.5, 0.8])
     parser.add_argument("--repeats", type=int, default=2)
+    parser.add_argument(
+        "--weights", default=None, help="merged fine-tuned safetensors (gate included)"
+    )
+    parser.add_argument("--tag", default=None, help="output folder name")
     args = parser.parse_args()
 
     snap = Path(snapshot_download(args.model, revision=xh.OURO_REVISIONS[args.model]))
     model = OuroForCausalLM(OuroConfig.from_json(snap / "config.json"), ut_steps=4)
-    model.load_weights(str(snap / "model.safetensors"), strict=True)
+    model.load_weights(args.weights or str(snap / "model.safetensors"), strict=True)
     mx.eval(model.parameters())
     model.eval()
     tokenizer = PreTrainedTokenizerFast(tokenizer_file=str(snap / "tokenizer.json"))
@@ -177,7 +181,10 @@ def main() -> None:
         raise ValueError("--context is longer than the shortest prompt")
     cropped = [i[-args.context :] for i in all_ids]
 
-    out = Path(f"results/ouro_serving/{args.model.split('/')[-1]}/ctx{args.context}")
+    tag = args.tag or (
+        Path(args.weights).parent.name if args.weights else args.model.split("/")[-1]
+    )
+    out = Path(f"results/ouro_serving/{tag}/ctx{args.context}")
     out.mkdir(parents=True, exist_ok=True)
     rows = []
     policies = [("fixed", r) for r in (1, 2, 3, 4)] + [("token-gate", q) for q in args.q]
