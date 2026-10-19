@@ -138,6 +138,17 @@
   .1813/.1536/.1499/.1493, confirming the warm start). Serving bench with the ouro-full gate:
   job 9bea1457 at batch 1/4/8 (batch 16 needs ~40 GB, which does not fit next to the training);
   tok/s shared with the training.
+- Serving bench with the fine-tuned (ouro-full) gate, job 9bea1457 (NESTful prompts cropped to
+  1,024 tokens, 64 forced decode steps, 2 repeats; GPU shared with the chain training, so tok/s
+  are indicative, passes_run exact). Gate q0.5 lockstep passes per step: 3.05 (b1), 3.34 (b4),
+  3.48 (b8) while each row's own mean exit stays ~3.0–3.05; q0.9 runs 4.00. Decode tok/s at b8:
+  fixed-1/2/3/4 173.8/92.6/64.7/46.4, gate q0.5 51.3, q0.9 44.9; at b4: 108.0/56.6/33.7/25.6, gate
+  32.3. At b8 the gate is 1.11× fixed-4 and 0.79× fixed-3, and lockstep passes rise with batch
+  size toward 4. With BFCL accuracy gate q0.5 .929 vs fixed-3 .921 / fixed-2 .892: in batched
+  serving fixed-3 is ~1.26× faster than the gate for −0.8 points, fixed-2 ~1.8× for −3.7 points.
+  Caveats: exit statistics come from NESTful-style prompts with forced decoding (per-token mean
+  exit 3.05 here vs 2.65 on BFCL answers); clean (unshared) timing and batch 16 still to run.
+- depth-s1 BFCL eval submitted (job in project dynamic-transformers-seed-eval).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
