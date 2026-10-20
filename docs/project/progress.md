@@ -210,6 +210,17 @@
   allocation; the cost reduction on commonly solved requests is the cleaner signal. A learned
   policy has no lookahead; its accuracy will be lower than this ceiling.
 - Serving bench resubmitted alone (70 GB) at 15:05.
+- RL depth policy (path B method): `dht.toolcall.depth_policy` (linear softmax over depths 1–4,
+  REINFORCE with batch-mean baseline and entropy bonus; reward 1[correct] − λ(L̄−1)/3; unit test:
+  learns shallow-on-easy/deep-on-hard on a toy chain) and `scripts/lab/ouro_depth_policy.py`
+  (environment = frozen chain model, per-turn probe features from the 4-loop prefill of the last
+  prompt position, cached turns; trains on synthetic chains seed 7; evaluates on 120 NESTful
+  requests vs fixed 1–4 and schedules deep-early / decreasing). Commit a300e8c; not yet run on
+  the lab before this submission.
+- 2026-10-20 ~15:15, user away: queued directly on the lab (no monitor running): chain v2
+  63bcd748 (held until the serving bench frees memory), RL policy dd255e86 (`sleep 900` first so
+  the bench finishes alone; chain-depth v1, train-n 120, 5 epochs, λ 0.2/0.5, eval-n 120,
+  timeout 48h). Serving bench 77731ae3 finishing (47/72 runs at 15:08).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
