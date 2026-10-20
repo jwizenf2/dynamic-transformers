@@ -50,3 +50,28 @@ def test_conversations_are_executed_dependent_chains():
         assert n_calls == ex["n_calls"] and 2 <= n_calls <= 6
         assert ex["turns"] >= 2
         assert json.dumps(seen_results[-1]) in conv[-1]["value"]
+
+
+def test_v2_mix_has_parallel_and_single_call_conversations():
+    rows = chains.generate(300, 1, "S {tools}", parallel_p=0.3, single_p=0.2)
+    kinds = {"parallel": 0, "single": 0, "chain": 0}
+    for ex in rows:
+        conv = ex["conversations"]
+        gpt_calls = [m for m in conv if m["from"] == "gpt" and "<tool_call>" in m["value"]]
+        if ex["turns"] == 1:
+            calls = CALL.findall(gpt_calls[0]["value"])
+            responses = RESP.findall(conv[3]["value"])
+            assert len(gpt_calls) == 1 and len(calls) == len(responses) == ex["n_calls"]
+            for c, r in zip(calls, responses, strict=True):
+                c, r = json.loads(c), json.loads(r)
+                assert chains.BY_NAME[c["name"]].fn(**c["arguments"]) == r["content"]
+            kinds["single" if ex["n_calls"] == 1 else "parallel"] += 1
+            if ex["n_calls"] > 1:
+                assert conv[-1]["value"].startswith("Here are the results.")
+        else:
+            kinds["chain"] += 1
+    assert all(v > 20 for v in kinds.values()), kinds
+    # v1 output is unchanged when the new kinds are off
+    assert chains.generate(30, 0, "S {tools}") == chains.generate(
+        30, 0, "S {tools}", parallel_p=0.0, single_p=0.0
+    )

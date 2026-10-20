@@ -27,11 +27,21 @@ def main() -> None:
     parser.add_argument("--n", type=int, default=6000)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--branch-p", type=float, default=0.2)
+    parser.add_argument("--parallel-p", type=float, default=0.0, help="v2: parallel conversations")
+    parser.add_argument("--single-p", type=float, default=0.0, help="v2: single-call conversations")
     parser.add_argument("--out", default=None)
     args = parser.parse_args()
 
-    rows = generate(args.n, args.seed, SYSTEM, branch_p=args.branch_p)
-    out = Path(args.out or f"results/chains/chains_s{args.seed}_n{args.n}.json")
+    rows = generate(
+        args.n,
+        args.seed,
+        SYSTEM,
+        branch_p=args.branch_p,
+        parallel_p=args.parallel_p,
+        single_p=args.single_p,
+    )
+    tag = f"_p{args.parallel_p:g}_s{args.single_p:g}" if (args.parallel_p or args.single_p) else ""
+    out = Path(args.out or f"results/chains/chains_s{args.seed}_n{args.n}{tag}.json")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(rows, ensure_ascii=False))
     stats = {

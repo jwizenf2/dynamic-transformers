@@ -504,6 +504,11 @@ def request_text(steps: list[Step]) -> str:
         for p, _ in s.tool.params:
             filled[p] = steps[s.deps[p]].tool.noun if p in s.deps else _fmt(s.args[p])
         parts.append(s.tool.phrase.format(**filled))
+    if len({st.turn for st in steps}) == 1:  # independent calls only (parallel)
+        if len(parts) == 1:
+            return parts[0][0].upper() + parts[0][1:] + "."
+        text = "Please " + ", ".join(parts[:-1]) + f", and {parts[-1]}."
+        return text[0].upper() + text[1:]
     if steps[0].turn == steps[1].turn:  # branch: two independent starts
         text = f"First {parts[0]}, and separately {parts[1]}. Then {', then '.join(parts[2:])}."
     else:
@@ -536,18 +541,48 @@ def render(steps: list[Step], rng: random.Random, system_template: str, n_distra
             for s in group
         )
         conv.append({"from": "tool", "value": responses})
-    conv.append({"from": "gpt", "value": f"The final result is {_fmt(steps[-1].result)}."})
+    if len({st.turn for st in steps}) == 1 and len(steps) > 1:  # parallel: report every result
+        listed = "; ".join(f"{st.tool.name}: {_fmt(st.result)}" for st in steps)
+        conv.append({"from": "gpt", "value": f"Here are the results. {listed}."})
+    else:
+        conv.append({"from": "gpt", "value": f"The final result is {_fmt(steps[-1].result)}."})
     return conv
 
 
-def generate(n: int, seed: int, system_template: str, lengths=(2, 6), branch_p: float = 0.2):
-    """``n`` conversations ``{"id", "conversations", "n_calls", "turns"}``; deterministic."""
+def make_parallel(rng: random.Random, k: int) -> list[Step]:
+    """``k`` independent calls in one assistant turn (no call uses another's result)."""
+    tools = rng.sample(TOOLS, k)
+    return [Step(t, (a := _literal_args(t, rng)), t.fn(**a), 0) for t in tools]
+
+
+def generate(
+    n: int,
+    seed: int,
+    system_template: str,
+    lengths=(2, 6),
+    branch_p: float = 0.2,
+    parallel_p: float = 0.0,
+    single_p: float = 0.0,
+):
+    """``n`` conversations ``{"id", "conversations", "n_calls", "turns"}``; deterministic.
+
+    Mix (v2): with probability ``parallel_p`` a parallel conversation (2–4 independent calls in
+    one turn, then an answer listing every result), with probability ``single_p`` a single call
+    then the answer (teaches stopping after one result), otherwise a dependent chain. With both
+    at 0 the output equals v1 for the same seed.
+    """
     rng = random.Random(seed)
     out = []
     while len(out) < n:
-        steps = make_chain(rng, rng.randint(*lengths), branch_p)
-        if len(steps) < 2:
-            continue
+        kind = rng.random() if (parallel_p or single_p) else 1.0
+        if kind < parallel_p:
+            steps = make_parallel(rng, rng.randint(2, 4))
+        elif kind < parallel_p + single_p:
+            steps = make_parallel(rng, 1)
+        else:
+            steps = make_chain(rng, rng.randint(*lengths), branch_p)
+            if len(steps) < 2:
+                continue
         out.append(
             {
                 "id": f"chain_{seed}_{len(out)}",

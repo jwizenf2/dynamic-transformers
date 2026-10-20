@@ -41,6 +41,7 @@ DEPTH_FULL = (
     "depth-full/adapters.safetensors"
 )
 CHAINS = "results/chains/chains_s0_n6000.json"
+CHAINS_V2 = "results/chains/chains_s1_n8000_p0.2_s0.1.json"
 
 # name, loss, extra trainer args
 PLANS = {
@@ -87,6 +88,30 @@ PLANS = {
         "eval": [
             ("bfcl", ["--n", "0"]),
             ("nestful", ["--n", "120"]),
+            ("nestful-mt", ["--n", "120", "--variant", "plain"]),
+        ],
+    },
+    # Path B v2: as "chains" but the synthetic mix adds parallel conversations (20%, several
+    # independent calls in one turn, against the BFCL parallel regression) and single-call
+    # conversations (10%, teach stopping after one result), and the Hermes replay grows to 3,000.
+    "chains-v2": {
+        "prepare": [
+            (
+                CHAINS_V2,
+                [PY, "scripts/lab/make_chains.py", "--n", "8000", "--seed", "1"]
+                + ["--parallel-p", "0.2", "--single-p", "0.1"],
+            )
+        ],
+        "train": [
+            (
+                "chain-depth-v2",
+                "depth",
+                ["--init-adapters", DEPTH_FULL, "--extra-data", CHAINS_V2]
+                + ["--hermes-train-n", "3000", "--epochs", "1"],
+            ),
+        ],
+        "eval": [
+            ("bfcl", ["--n", "0"]),
             ("nestful-mt", ["--n", "120", "--variant", "plain"]),
         ],
     },
