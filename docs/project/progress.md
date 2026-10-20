@@ -149,6 +149,17 @@
   Caveats: exit statistics come from NESTful-style prompts with forced decoding (per-token mean
   exit 3.05 here vs 2.65 on BFCL answers); clean (unshared) timing and batch 16 still to run.
 - depth-s1 BFCL eval submitted (job in project dynamic-transformers-seed-eval).
+- 2×2 seeds on all 1,000 BFCL (job 6ab74f6e for depth-s1), d1–4:
+  Ouro loss s0 .621/.892/.921/.921, s1 .598/.872/.913/.924 (mean .609±.012/.882±.010/.917±.004/
+  .923±.002); depth-aware s0 .680/.888/.911/.917, s1 .683/.891/.913/.917 (mean .681±.002/.889±.002/
+  .912±.001/.917±.000). Depth-aware minus Ouro per seed pairing: d1 +.059 [+.038,+.081] and +.085
+  [+.060,+.109]; d2 −.004 [−.016,+.008] and +.019 [+.005,+.035]; d3 −.010 and .000; d4 −.004 and
+  −.007 (all d3/d4 CIs include 0). The d1 gain holds across seeds and the depth-aware runs are
+  also more stable across seeds (half-range ≤.002 vs up to .012). Gate job 4c77f09f resumed for
+  depth-full.
+- Chain run 3b941faa: training done (2,000 steps); Hermes val CE by loop step 0 → 2,000
+  .1813/.1536/.1499/.1493 → .1818/.1540/.1504/.1498 (peak .195 at step 200, recovered); evals
+  running (BFCL 778/1,000 requests at 21:55).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
