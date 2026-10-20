@@ -182,6 +182,12 @@
   gate (trained gate) exits at pass 3 for 65% (.929 at 2.65). Under lockstep batching a 96% pass-2
   exit rate should keep far more steps at 2 passes (to be measured with the serving bench on
   depth-full merged weights).
+- 2026-10-20 ~04:50, queued (user approved all three): serving bench b0af962b (depth-full gate,
+  batch 1–16, clean while alone; plus ouro-full gate at batch 16); chain v2 807a0063 (synthetic mix
+  with 20% parallel and 10% single-call conversations, 3,000 Hermes replay, warm start from
+  depth-full; commit 6fffdd0); per-call depth oracle 0321c446 (`ouro_percall_oracle.py`, commit
+  853eeda; chain-depth v1, 60 NESTful requests; fixed depths, per-request oracle, outcome-greedy
+  per-call oracle) as Gate B for the RL policy.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
