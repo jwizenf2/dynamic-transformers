@@ -197,6 +197,19 @@
   runs beside it) → chain v2.
 - Per-call oracle, first request: every fixed depth fails (d1 stops after 1 turn, d2–d4 loop to
   the 9-turn limit) while the per-call oracle succeeds with depths [4, 4, 4, 1, 1] (5 turns).
+- Per-call oracle (job 0321c446, chain-depth v1, first 60 multi-turn NESTful requests, plain
+  prompt, 8-call limit): fixed d1–4 .000/.117/.200/.267 at 1/2/3/4 loops/token; per-request
+  oracle (cheapest correct fixed depth) .267 at 3.65; per-call outcome-greedy oracle .367 at 3.36
+  loops/token (3.32 per turn). 6 requests are solved per call but by no fixed depth; none the
+  other way. On the 16 requests both solve, per-call uses 1.99 vs 2.69 loops/token (−26%). Depth
+  varies within the dialogue in 20/60; late turns lean shallow (turn ≥5 of correct dialogues:
+  depth 1 in 15/30 turns, depth 4 in 1), e.g. [4,4,4,1,1], [2,1,2,1], [4,3,2,1].
+  Gate B: passes as an upper bound (higher accuracy at lower cost than the per-request oracle).
+  Caveat: the per-call oracle sees future outcomes and tries more trajectories (up to 4 per turn
+  with a depth-4 rollout each), so part of the +10 points is search/selection, not depth
+  allocation; the cost reduction on commonly solved requests is the cleaner signal. A learned
+  policy has no lookahead; its accuracy will be lower than this ceiling.
+- Serving bench resubmitted alone (70 GB) at 15:05.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
