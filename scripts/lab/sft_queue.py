@@ -128,11 +128,13 @@ PLANS = {
 
 running: list[subprocess.Popen] = []
 yield_requested = False
+stop_signal = signal.SIGUSR1
 
 
 def on_yield(signum, frame) -> None:
-    global yield_requested
-    yield_requested = True
+    """SIGUSR1 (broker yield) or SIGTERM (lab cancel): children get SIGUSR1 and save state."""
+    global yield_requested, stop_signal
+    yield_requested, stop_signal = True, signum
     print(json.dumps({"queue": "yield requested", "forwarding_to": len(running)}), flush=True)
     for proc in running:
         if proc.poll() is None:
@@ -157,8 +159,8 @@ def stop_now() -> None:
     for proc in list(running):
         wait(proc)
     print(json.dumps({"queue": "stopped for yield"}), flush=True)
-    signal.signal(signal.SIGUSR1, signal.SIG_DFL)
-    os.kill(os.getpid(), signal.SIGUSR1)
+    signal.signal(stop_signal, signal.SIG_DFL)
+    os.kill(os.getpid(), stop_signal)
 
 
 def eval_chain(name: str, tasks: list) -> list[list[str]]:
@@ -205,6 +207,7 @@ def main() -> None:
     args = parser.parse_args()
     plan = PLANS[args.plan]
     signal.signal(signal.SIGUSR1, on_yield)
+    signal.signal(signal.SIGTERM, on_yield)
     if args.self_yield_after:
         signal.signal(signal.SIGALRM, lambda s, f: os.kill(os.getpid(), signal.SIGUSR1))
         signal.alarm(int(args.self_yield_after))

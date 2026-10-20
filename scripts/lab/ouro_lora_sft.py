@@ -405,13 +405,16 @@ def main() -> None:
             (tmp / name).replace(state_dir / name)
 
     yield_requested = False
+    stop_signal = signal.SIGUSR1
 
     def on_yield(signum, frame) -> None:
-        nonlocal yield_requested
-        yield_requested = True
-        print(json.dumps({"yield_requested": True}), flush=True)
+        # SIGUSR1: the broker asks the job to yield; SIGTERM: the lab's cancel (also 60 s to save).
+        nonlocal yield_requested, stop_signal
+        yield_requested, stop_signal = True, signum
+        print(json.dumps({"yield_requested": True, "signal": int(signum)}), flush=True)
 
     signal.signal(signal.SIGUSR1, on_yield)
+    signal.signal(signal.SIGTERM, on_yield)
 
     log = open(out / "log.jsonl", "a")
     if start == 1:
@@ -467,8 +470,8 @@ def main() -> None:
         if yield_requested and step < total:
             print(json.dumps({"yielded_at_step": step}), flush=True)
             log.close()
-            signal.signal(signal.SIGUSR1, signal.SIG_DFL)
-            os.kill(os.getpid(), signal.SIGUSR1)
+            signal.signal(stop_signal, signal.SIG_DFL)
+            os.kill(os.getpid(), stop_signal)
         print(f"::progress {step}/{total} steps", flush=True)
         if step % 10 == 0 or "val_ce_by_loop" in rec:
             print(json.dumps(rec), flush=True)
