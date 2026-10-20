@@ -188,6 +188,15 @@
   depth-full; commit 6fffdd0); per-call depth oracle 0321c446 (`ouro_percall_oracle.py`, commit
   853eeda; chain-depth v1, 60 NESTful requests; fixed depths, per-request oracle, outcome-greedy
   per-call oracle) as Gate B for the RL policy.
+- 2026-10-20 09:20–09:36: the serving bench (peak 60.7 GB at batch 16) and chain v2 (60 GB) were
+  admitted together; swap grew 7.4 GB in 10 min and the broker preempted the bench (8/15 runs,
+  no resume support). On the user's request chain v2 was stopped (lab cancel = SIGTERM; the
+  trainer only saved on SIGUSR1, so its 42 steps were lost) and the per-call oracle runs alone.
+  Fix (commit 02dc192): trainer and driver save state on SIGTERM too (stub test: stop at step 7,
+  resume from 7). From now on one heavy job at a time: oracle → serving bench (asks 70 GB so nothing
+  runs beside it) → chain v2.
+- Per-call oracle, first request: every fixed depth fails (d1 stops after 1 turn, d2–d4 loop to
+  the 9-turn limit) while the per-call oracle succeeds with depths [4, 4, 4, 1, 1] (5 turns).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
