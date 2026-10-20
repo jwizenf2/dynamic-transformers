@@ -160,6 +160,28 @@
 - Chain run 3b941faa: training done (2,000 steps); Hermes val CE by loop step 0 → 2,000
   .1813/.1536/.1499/.1493 → .1818/.1540/.1504/.1498 (peak .195 at step 200, recovered); evals
   running (BFCL 778/1,000 requests at 21:55).
+- Chain run 3b941faa results (chain-depth = depth-full + 6,000 synthetic chains + 2,000 Hermes):
+  * BFCL (mean of categories) .649/.873/.886/.891 vs depth-full .656/.884/.908/.914: simple
+    .803/.890/.920/.930 (d4 =), multiple .770/.925/.930/.925 (d4 +1.5), parallel .535/.840/.860/
+    .865 (d4 −4.0), parallel_multiple .490/.835/.835/.845 (d4 −6.5). Parallel single-turn calls
+    regress (the chain data teaches one dependent call per turn).
+  * Single-turn NESTful .008/.042/.058/.042 (vs .008/.042/.108/.108): single-turn scoring sees
+    only the first call, and the model now calls one step at a time.
+  * Multi-turn NESTful, plain prompt (no sequential hint), n=120: .000/.083/.167/.208; on the first
+    60 ids .000/.117/.200/.250 vs depth-full with the sequential hint .000/.050/.117/.133. The
+    model now chains: mean turns 3.5–4.2 (was ~1), 13–22% end after one turn (was 98–100%),
+    ~4 calls vs 7.5 gold. Accuracy rises with loops at every step and invalid calls fall with
+    loops (errors per call .41/.20/.07/.04 at d1–4); 13–30% of dialogues hit the 8-turn limit
+    (more at low depth). d4 by gold chain depth 2..7+: 8/20, 7/20, 3/20, 2/20, 3/20, 2/20.
+  * Hermes val CE recovered to the stage-1 level (above). Model kept on the lab:
+    `~/AI/jobs/dynamic-transformers-chains/results/ouro_sft/chain-depth/` (state/ deleted); local
+    results `results/chains_run/` (not committed).
+- Depth-full gate (job 4c77f09f, all 1,000 BFCL): q0.5 .912 at 2.04 nominal passes/token (exits
+  0/96.4/3.6/0% at passes 1–4); q0.9 .917 at 4.00; fixed .680/.888/.911/.917. With the depth-aware
+  loss the gate exits at pass 2 for 96% of tokens and matches fixed-3 accuracy; the Ouro-loss model's
+  gate (trained gate) exits at pass 3 for 65% (.929 at 2.65). Under lockstep batching a 96% pass-2
+  exit rate should keep far more steps at 2 passes (to be measured with the serving bench on
+  depth-full merged weights).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
