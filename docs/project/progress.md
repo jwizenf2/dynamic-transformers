@@ -222,6 +222,37 @@
   the bench finishes alone; chain-depth v1, train-n 120, 5 epochs, λ 0.2/0.5, eval-n 120,
   timeout 48h). Serving bench 77731ae3 finishing (47/72 runs at 15:08).
 
+## 2026-10-21 — RL depth policy, chain v2 and clean serving bench
+
+- RL depth policy dd255e86 (commit a300e8c, chain-depth v1, 10.6 h): NESTful multi-turn, plain,
+  n=120, accuracy at loops/token: fixed 1–4 .000/.083/.175/.217 at 1/2/3/4; deep-early .158 at
+  3.18; decreasing .117 at 2.77; policy λ0.2 .108 at 2.83; policy λ0.5 .117 at 2.74. Both
+  policies fall below the fixed-2/fixed-3 line (≈.157 at 2.8) and solve no request that no fixed
+  depth solves (deep-early and decreasing each solve 1). No headroom from the per-call oracle
+  (.367 on the first 60) is recovered.
+- Diagnosis: synthetic training chains are solved at essentially every depth. Mean reward starts
+  at .899 (λ0.2) and .748 (λ0.5), exactly 1 − λ·0.5 for 100% accuracy under uniform depths, so
+  the only training signal is cost; correctness carries none. Learning was also slow: entropy
+  1.386 → 1.345 (λ0.2) and 1.204 (λ0.5) after 40 steps. The learned depth mix on NESTful
+  (λ0.2: 52% depth 2, 40% depth 4; λ0.5: 47% depth 3) is not tied to difficulty. Synthetic
+  chains are too easy to teach when loops matter; the environment needs tasks where shallow
+  depth fails (NESTful-like, disjoint from the test split) or a reward from per-call oracle
+  labels.
+- Chain v2 63bcd748 (commit 02dc192, 11k rows incl. parallel/single chains + 3k Hermes,
+  2,750 steps, 2.9 h train; final val CE by loop .181/.154/.151/.150). BFCL mean of categories
+  d1–4 .731/.876/.891/.896 (v1 .649/.873/.886/.891; depth-full .680/.888/.911/.917); parallel
+  .675/.850/.860/.865, parallel_multiple .630/.860/.875/.875: smaller regression than v1, still
+  ~2 points under depth-full at d4, best d1 of all runs. Multi-turn NESTful plain d1–4
+  .000/.058/.167/.192 (v1 .000/.083/.167/.208): no gain. Turn-limit rate 11/26/12/14% (v1
+  30/26/16/13%), errors/call .17/.12/.06/.06 (v1 .41/.20/.07/.04). Lab state/ deleted;
+  model.safetensors kept.
+- Clean serving bench 77731ae3 (depth-full, alone, ctx 1024, 64 new tokens), tok/s fixed-1/2/3/4
+  vs gate q0.5 (passes run / mean row exit): b1 80/41/28/21 vs 33 (2.38/2.38); b4 260/132/88/66
+  vs 85 (2.93/2.40); b8 411/207/138/104 vs 121 (3.25/2.44); b16 432/218/146/110 vs 125
+  (3.37/2.42). With BFCL (gate .912, fixed-3 .911) the gate is ×1.20 over fixed-3 at batch 1
+  and slower at b ≥ 4 (×0.97/0.88/0.86). ouro-full b16: gate 114 tok/s (3.71/3.04) vs fixed-3
+  145. Per-request fixed depth keeps its saving under batching; the per-token gate does not.
+
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
 - Router v3 on xLAM val: 82.0% at 3.67 effective passes, 81.0% at 3.27, 80.5% at 3.19 (fixed-3
