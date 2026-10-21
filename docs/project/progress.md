@@ -282,6 +282,15 @@
   3/20, 2/20, 2/40. Verdict: the environment carries a depth signal, but 80% of tasks are
   unsolved at every depth and give no correctness signal; train the policy on tasks solvable at
   some depth, or raise solvability first (MathQA chain SFT).
+- Independent review (`docs/research/review_2026-10-21_independent.md`). Correction to the per-call
+  oracle reading above (checked on the rows): the 6 per-call-only wins are [4,4,4,1,1], [4,4,4,1,2],
+  [4,3,2,1], [1,2,1], [4,4,4,2,1], [4,4,4,4,4,1], mostly forced depth 4 early plus a late shallow
+  turn that changes a failing trajectory, i.e. largely search with ~5x the rollout budget of the
+  per-request oracle. "Late turns lean shallow" is mostly the final no-call turn (16/22 correct
+  per-call dialogues end with a depth-1 stop turn, which is never graded); first-turn depth on the
+  16 commonly solved requests is 2/1/3 for 7/5/4, so "plan deep, execute shallow" is not supported.
+  Open gap: single-turn NESTful .11 for our SFT model vs .371 reported by 2608.18171 and .189 for
+  our base few-shot prompt; check the protocol before attributing the ceiling to capacity.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
