@@ -127,3 +127,34 @@ def test_build_task_filters_and_keeps():
         )[1]
         == "op"
     )
+
+
+def test_near_duplicate_index_ignores_numbers():
+    from dht.toolcall.mathqa import NearDuplicateIndex
+
+    idx = NearDuplicateIndex(
+        ["A grocer has a sale of Rs. 6435 and Rs. 6927 for 2 months. Find the average sale."]
+    )
+    rewrite = "A grocer has a sale of Rs. 5000 and Rs. 7000 for 2 months. Find the average sale."
+    assert idx.max_similarity(rewrite) == 1.0
+    assert (
+        idx.max_similarity("A train 120 m long crosses a pole in 6 seconds. Find its speed.") < 0.3
+    )
+
+
+def test_near_duplicate_index_catches_bare_expressions():
+    from dht.toolcall.mathqa import NearDuplicateIndex
+
+    idx = NearDuplicateIndex(["63 + 5 * 12 / (180/3) = ?"])
+    assert idx.max_similarity("90 + 5 * 12 / (180/3) = ?") == 1.0
+    assert idx.max_similarity("|5 - 2| - |6 - 9| = ?") < 0.3
+
+
+def test_same_computation_index():
+    from dht.toolcall.mathqa import SameComputationIndex
+
+    ref = formula_calls("subtract(multiply(divide(750, 18), 39), 750)")
+    idx = SameComputationIndex([ref])
+    assert idx.matches(formula_calls("subtract(multiply(divide(300, 18), 39), 300)"))
+    assert not idx.matches(formula_calls("subtract(multiply(divide(300, 17), 41), 300)"))
+    assert not idx.matches(formula_calls("add(multiply(divide(300, 18), 39), 300)"))

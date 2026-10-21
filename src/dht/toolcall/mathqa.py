@@ -20,9 +20,15 @@ normalised problem text):
 * NESTful's tool lists: the gold tools, plus add/subtract/multiply/divide/inverse (present in
   ≥99.7% of lists when not gold), plus random other math tools; 7–12 tools, mostly 9–10, shuffled
   (``tool_list``).
-* NESTful has no single-call samples; we also require ``MIN_CALLS`` = 2. Resulting tasks
-  (16,814 train, 2,517 validation) match NESTful's mean calls (5.11 / 5.04 vs 5.06) and mean
-  dependency depth (3.62 / 3.59 vs 3.58).
+* NESTful has no single-call samples; we also require ``MIN_CALLS`` = 2.
+* Leakage: AQuA-RAT's training set holds crowd-sourced rewrites of the same problems with other
+  numbers. With only exact-text dedup, 1,074 of NESTful's 1,416 problems had a train problem at
+  number-masked template similarity >= 0.7. ``make_mathqa.py`` therefore also drops tasks at
+  >= 0.3 (``NearDuplicateIndex``) or with the same computation as a test problem
+  (``SameComputationIndex``). Afterwards no NESTful problem has a train/val task at >= 0.4
+  (brute force; 20 / 9 between 0.3 and 0.4, same topic, different problems). Result: 8,772
+  train / 1,293 val tasks; mean calls 5.53 / 5.46 (NESTful 5.06), mean dependency depth
+  3.74 / 3.75 (3.58): slightly harder, since common short templates were most often rewritten.
 * NESTful's answer filter could not be reproduced exactly: 268 MathQA test problems whose calls
   execute to exactly the correct option are not in NESTful. We keep a problem when its executed
   result is within ``ANSWER_REL_TOL`` (1%) of the correct option's number; on the test split this
@@ -68,6 +74,83 @@ _TOKEN = re.compile(r"\s*([A-Za-z_][A-Za-z_0-9]*|-?\d+(?:\.\d+)?(?:/\d+(?:\.\d+)
 def normalize(text: str) -> str:
     """Lowercase alphanumerics only: the key that matches MathQA, AQuA-RAT and NESTful text."""
     return re.sub(r"[^a-z0-9]", "", text.lower())
+
+
+NEAR_DUP_JACCARD = 0.3
+# Numbers too common to identify a problem (units, percentages, small counts).
+_COMMON_NUMBERS = frozenset({0, 1, 2, 3, 4, 10, 12, 60, 100, 1000, 3600, 0.5, 0.25})
+
+
+def computation_signature(calls: list[dict[str, Any]]) -> tuple[tuple, frozenset]:
+    """(call skeleton with numbers masked, set of distinctive literal numbers)."""
+    skeleton = tuple(
+        (c["name"], tuple("ref" if isinstance(v, str) else "num" for v in c["arguments"].values()))
+        for c in calls
+    )
+    numbers = frozenset(
+        v
+        for c in calls
+        for v in c["arguments"].values()
+        if not isinstance(v, str) and v not in _COMMON_NUMBERS
+    )
+    return skeleton, numbers
+
+
+class SameComputationIndex:
+    """Flags a task whose computation has the same skeleton as a reference problem's and shares
+    at least ``min_shared`` distinctive numbers with it: rewrites that change the wording but not
+    the arithmetic (e.g. "750 m train … 39 sec … 18 sec" vs "300 meter train … 39 seconds … 18
+    seconds", template similarity 0.31). Caught 95 train / 17 val tasks that passed the n-gram
+    filter (2026-10-21)."""
+
+    def __init__(self, calls_list: list[list[dict[str, Any]]], min_shared: int = 2):
+        self.min_shared = min_shared
+        self.by_skeleton: dict[tuple, list[frozenset]] = {}
+        for calls in calls_list:
+            skeleton, numbers = computation_signature(calls)
+            self.by_skeleton.setdefault(skeleton, []).append(numbers)
+
+    def matches(self, calls: list[dict[str, Any]]) -> bool:
+        skeleton, numbers = computation_signature(calls)
+        return any(len(numbers & n) >= self.min_shared for n in self.by_skeleton.get(skeleton, ()))
+
+
+def template_grams(text: str, n: int = 3) -> frozenset[tuple[str, ...]]:
+    """Token n-grams (words, numbers, operators/punctuation) with every number replaced by
+    ``<n>``: two problems that differ only in their numbers (AQuA-RAT's crowd-sourced rewrites,
+    also bare expressions such as ``90 + 5 * 12 / (180/3) = ?``) get the same set."""
+    words = re.findall(r"[a-z]+|\d+(?:\.\d+)?|[^\sa-z0-9]", text.lower())
+    words = ["<n>" if w[0].isdigit() else w for w in words]
+    return frozenset(tuple(words[i : i + n]) for i in range(len(words) - n + 1))
+
+
+class NearDuplicateIndex:
+    """Max Jaccard similarity of a problem's template n-grams to a reference set (the test split).
+
+    Measured on 2026-10-21: before this filter, 1,074 of NESTful's 1,416 math problems had a
+    MathQA-train problem at similarity ≥ 0.7 (798 at ≥ 0.9), mostly the same problem with other
+    numbers. Candidates come from an inverted index over n-grams that occur in fewer than
+    ``max_df`` reference problems; the best ``top`` candidates by shared n-grams are scored.
+    """
+
+    def __init__(self, texts: list[str], max_df: int = 200, top: int = 10):
+        self.grams = [template_grams(t) for t in texts]
+        self.max_df, self.top = max_df, top
+        self.index: dict[tuple[str, ...], list[int]] = {}
+        for i, g in enumerate(self.grams):
+            for x in g:
+                self.index.setdefault(x, []).append(i)
+
+    def max_similarity(self, text: str) -> float:
+        q = template_grams(text)
+        shared: dict[int, int] = {}
+        for x in q:
+            hits = self.index.get(x, ())
+            if len(hits) < self.max_df:
+                for i in hits:
+                    shared[i] = shared.get(i, 0) + 1
+        best = sorted(shared.items(), key=lambda kv: -kv[1])[: self.top]
+        return max((c / len(q | self.grams[i]) for i, c in best), default=0.0)
 
 
 def _tokens(text: str) -> list[str]:

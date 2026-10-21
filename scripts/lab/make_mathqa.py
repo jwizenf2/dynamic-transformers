@@ -7,7 +7,12 @@ AQuA-RAT (``deepmind/aqua_rat``, original question text) and NESTful (``ibm-rese
 only to exclude its problems). Construction and measured fidelity: ``dht.toolcall.mathqa``.
 
 Leakage guard: a train/validation problem is dropped when its normalised text equals any MathQA
-test problem or any NESTful query (52 NESTful queries reappear in MathQA train, 6 in validation).
+test problem or NESTful query (52 NESTful queries reappear verbatim in MathQA train, 6 in
+validation), and when its number-masked word-trigram Jaccard similarity to any of them is
+>= ``--near-dup`` (default 0.3). AQuA-RAT's training set contains crowd-sourced rewrites of
+the same problems with other numbers: without the second filter 1,074 of NESTful's 1,416
+problems had a train problem at similarity >= 0.7. A third filter drops tasks with the same
+computation skeleton as a test problem and >= 2 shared distinctive numbers (rewordings).
 
 Outputs (``--out``, default ``results/mathqa``):
 * ``<split>_tasks.jsonl``: ``{"id", "query", "tools", "calls", "answer", "category"}``, the
@@ -34,7 +39,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ouro_nestful as nf  # noqa: E402
 from ouro_sft_eval import SYSTEM  # noqa: E402
 
-from dht.toolcall.mathqa import build_task, levels, normalize, render_dialogue  # noqa: E402
+from dht.toolcall.mathqa import (  # noqa: E402
+    NEAR_DUP_JACCARD,
+    NearDuplicateIndex,
+    SameComputationIndex,
+    build_task,
+    formula_calls,
+    levels,
+    normalize,
+    render_dialogue,
+)
 from dht.toolcall.nestful import (  # noqa: E402
     basic_function_names,
     dependency_depth,
@@ -59,6 +73,12 @@ def main() -> None:
     parser.add_argument("--sft-n", type=int, default=8000, help="SFT dialogues (train split)")
     parser.add_argument("--args", choices=["literal", "ref"], default="literal")
     parser.add_argument("--out", default="results/mathqa")
+    parser.add_argument(
+        "--near-dup",
+        type=float,
+        default=NEAR_DUP_JACCARD,
+        help="drop tasks at or above this template similarity to any test problem",
+    )
     args = parser.parse_args()
 
     specs_file = nf.VENDORED / "tool_specs.json"
@@ -93,6 +113,14 @@ def main() -> None:
         for s in ("train", "validation", "test")
     }
     banned = {normalize(r["Problem"]) for r in rows["test"]} | {normalize(e.query) for e in nestful}
+    near = NearDuplicateIndex([r["Problem"] for r in rows["test"]] + [e.query for e in nestful])
+    test_calls = [e.calls for e in nestful]
+    for r in rows["test"]:
+        try:
+            test_calls.append(formula_calls(r["annotated_formula"]))
+        except (ValueError, IndexError):
+            pass
+    same = SameComputationIndex(test_calls)
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -119,6 +147,10 @@ def main() -> None:
                 continue
             seen.add(key)
             task, why = build_task(row, catalog, functions, rng, original)
+            if task is not None and near.max_similarity(task["query"]) >= args.near_dup:
+                task, why = None, "near_dup"
+            elif task is not None and same.matches(task["calls"]):
+                task, why = None, "same_computation"
             reasons[why] += 1
             if task is not None:
                 tasks.append({"id": f"mathqa-{split}-{i}", **task})
@@ -164,6 +196,7 @@ def main() -> None:
         "turns": _hist(r["turns"] for r in sft),
         "ids_sha256": hashlib.sha256("\n".join(r["id"] for r in sft).encode()).hexdigest(),
     }
+    stats["near_dup_threshold"] = args.near_dup
     stats["revisions"] = {
         "mathqa": MATHQA_REVISION,
         "aqua_rat": AQUA_REVISION,

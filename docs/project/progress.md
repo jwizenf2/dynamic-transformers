@@ -260,9 +260,14 @@
   8 others are NESTful truncating decimals); tool lists follow NESTful's rule (gold + add/
   subtract/multiply/divide/inverse + random math tools, 7–12); NESTful's exact answer filter is
   not reproducible (268 exactly-correct test problems are absent), we keep results within 1% of
-  the correct option and ≥2 calls. 16,814 train / 2,517 val tasks after dropping 131 + 17
-  problems that duplicate MathQA test or NESTful; mean calls 5.11 / 5.04 (NESTful 5.06), mean
-  dependency depth 3.62 / 3.59 (3.58). 8,000 multi-turn SFT dialogues (one turn per dependency
+  the correct option and ≥2 calls.
+  Leakage (user question): exact-text dedup removed 131 + 17 problems, but AQuA-RAT's train set
+  holds crowd-sourced rewrites with other numbers: 1,074/1,416 NESTful problems had a train
+  problem at number-masked template similarity ≥ 0.7 (798 at ≥ 0.9). Added two filters: template
+  similarity ≥ 0.3 to any MathQA-test/NESTful problem (7,947 + 1,207 dropped) and same
+  computation skeleton with ≥ 2 shared distinctive numbers (95 + 17). Brute-force recheck: no
+  NESTful problem has a task at ≥ 0.4. Result 8,772 train / 1,293 val tasks; mean calls
+  5.53 / 5.46 (NESTful 5.06), mean dependency depth 3.74 / 3.75 (3.58). 8,000 multi-turn SFT dialogues (one turn per dependency
   level, literal values). `ouro_nestful_multiturn.py --tasks` evaluates on them. Fixed a crash
   in `nestful._in_range` on integers above float range (now a failed call). Nothing run on the
   lab yet; next is a fixed-depth calibration of chain-depth on 120 validation tasks.
