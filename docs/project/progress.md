@@ -327,6 +327,10 @@
   `recurrent_kv_cache_mode="last_loop"`. Neither was tested with depth changing between turns.
   Experiment (after the oracle controls): mixed per-turn depths with this cache vs full-cache
   recompute, accuracy and measured throughput with depth-bucketed batches, Ouro and Dory.
+- Professor's suggestion (2026-10-21, user agreed): MCTS as an offline teacher for intermediate
+  states, contextual bandit (greedy or LinUCB/TS, DHT's formulation per tool-call step) at
+  inference, escalation rule as the greedy training-free baseline. Plan:
+  `docs/research/plan_2026-10-21_mcts_bandit.md`; starts only if oracle v2 shows depth is a lever.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
