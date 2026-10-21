@@ -319,6 +319,14 @@
   (per example, batching not tested). Our contribution narrows to the first test on a pretrained
   looped LLM fine-tune plus serving and per-step control. Update page and talk track now cite it.
   Candidate follow-ups: geometric-prior SFT; post-hoc confidence readouts as controller baselines.
+- Planned serving design for per-step depth (user agreed 2026-10-21): new text (prompt, tool
+  responses, the previous turn's output) is prefilled with full per-loop KV at 4 loops; generated
+  tokens of a turn run at the chosen depth and are cached last-loop only. Basis: Ouro paper §5.4.2
+  (Table 14): last-step KV reuse during decoding GSM8K 78.85 vs 78.92 full, MATH-500 80.40 vs 82.40,
+  4x less memory; reuse during prefilling costs >10 points on GSM8K. Dory exposes the same idea as
+  `recurrent_kv_cache_mode="last_loop"`. Neither was tested with depth changing between turns.
+  Experiment (after the oracle controls): mixed per-turn depths with this cache vs full-cache
+  recompute, accuracy and measured throughput with depth-bucketed batches, Ouro and Dory.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
