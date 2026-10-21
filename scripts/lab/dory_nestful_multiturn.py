@@ -29,7 +29,9 @@ format):
 4. Ends at a turn without calls or after ``--max-turns`` turns with calls. Graded like NESTful:
    the last executed call's result must match the gold answer.
 Per turn we log generated tokens, reasoning tokens and prompt tokens; compute is reported as
-loop-tokens (L x (prompt + generated) per turn, prefill included). Rows are appended and a
+block-tokens: blocks run per token (8 input + 20 x L recurrent + 8 output) x (prompt + generated)
+tokens per turn, prefill included; loop-tokens (L x tokens) are also logged but overstate the cost
+of extra loops for Dory, whose input and output blocks run once. Rows are appended and a
 restart skips graded (id, L) pairs.
 """
 
@@ -88,6 +90,12 @@ def generate(model, tok, prompt: str, loops: int, max_tokens: int, sampler) -> t
         logits = model(mx.array([[tid]]), caches)[:, -1, :]
     model.args.n_recurrent_loops = 4
     return tok.decode(out), len(out), len(ids)
+
+
+def blocks(model, loops: int) -> int:
+    """Transformer blocks (attention + MLP pairs) run per token at ``loops`` loops."""
+    a = model.args
+    return (a.n_input_layers + loops * a.n_recurrent_layers + a.n_output_layers) // 2
 
 
 def dialogue(model, tok, ex, functions, loops, args, seed_base) -> dict:
@@ -152,6 +160,10 @@ def dialogue(model, tok, ex, functions, loops, args, seed_base) -> dict:
         "truncated_turns": sum(x["truncated"] for x in turns),
         "loop_tokens": loops * sum(x["tokens"] + x["prompt"] for x in turns),
         "decode_loop_tokens": loops * gen,
+        # Dory loops only its middle blocks: per token cost ∝ input + loops x recurrent + output
+        # blocks (attention+MLP pairs; 8 + 20L + 8), so 4 loops cost 96/36 = 2.67x one loop.
+        "block_tokens": blocks(model, loops) * sum(x["tokens"] + x["prompt"] for x in turns),
+        "decode_block_tokens": blocks(model, loops) * gen,
         "value": repr(last[1])[:80],
         "per_turn": turns,
     }
@@ -231,6 +243,8 @@ def main() -> None:
                 "reasoning_tokens": round(sum(r["reasoning_tokens"] for r in rs) / len(rs), 1),
                 "loop_tokens": round(sum(r["loop_tokens"] for r in rs) / len(rs)),
                 "decode_loop_tokens": round(sum(r["decode_loop_tokens"] for r in rs) / len(rs)),
+                "block_tokens": round(sum(r["block_tokens"] for r in rs) / len(rs)),
+                "decode_block_tokens": round(sum(r["decode_block_tokens"] for r in rs) / len(rs)),
                 "turn_limit": round(sum(not r["finished"] for r in rs) / len(rs), 3),
                 "errors_per_call": round(
                     sum(r["errors"] for r in rs) / max(1, sum(r["calls"] for r in rs)), 3
