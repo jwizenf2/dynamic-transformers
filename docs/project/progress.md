@@ -311,6 +311,14 @@
   8 output blocks run once, so 1/2/3/4 loops = 36/56/76/96 blocks per token): reasoning off first (NESTful 60, MathQA-val 60),
   then reasoning on (same), loops 1–4; reasoning off is the Ouro-comparable setting. Kill criterion:
   4-loop NESTful < ~.35 or no depth dependence.
+- Prior art for the depth-aware loss (read 2026-10-21): Popescu, Sáez de Ocáriz Borde & Liò,
+  arXiv 2607.20519, "fixed-prior depth supervision": uniform prior π_t = 1/T is our depth-aware
+  objective; on synthetic MANO/parity, fixed-prior + post-hoc confidence readouts (margin, entropy,
+  top-1) beat learned linear/MLP gates; geometric prior (λ = .3) best; on released Ouro checkpoints
+  (not retrained) post-hoc readouts match the gate; latency 1.24–1.58x for the gate on Ouro-1.4B
+  (per example, batching not tested). Our contribution narrows to the first test on a pretrained
+  looped LLM fine-tune plus serving and per-step control. Update page and talk track now cite it.
+  Candidate follow-ups: geometric-prior SFT; post-hoc confidence readouts as controller baselines.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
