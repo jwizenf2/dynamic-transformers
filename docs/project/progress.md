@@ -272,6 +272,16 @@
   level, literal values). `ouro_nestful_multiturn.py --tasks` evaluates on them. Fixed a crash
   in `nestful._in_range` on integers above float range (now a failed call). Nothing run on the
   lab yet; next is a fixed-depth calibration of chain-depth on 120 validation tasks.
+- Calibration c4908a53 (commit d1a29a4; task build on the lab reproduced the local ids hash):
+  chain-depth v1, multi-turn plain, first 120 decontaminated MathQA validation tasks
+  (depth-balanced), d1–4 .008/.092/.133/.150 (NESTful same model .000/.083/.175/.217). Solved at
+  some depth 24/120 (NESTful 29/120); of those, 23 depend on depth (only 1 solved at every depth;
+  synthetic chains: ~all at every depth). Most common pattern 0011 (7) as on NESTful (12);
+  cheapest correct depth 1/2/3/4: 1/10/8/5. Non-monotone patterns (e.g. 0100, 0110) 6/24.
+  Errors/call .35/.06/.04/.04; turn-limit 23/26/13/19%. d4 by gold depth 2..6+: 5/20, 6/20,
+  3/20, 2/20, 2/40. Verdict: the environment carries a depth signal, but 80% of tasks are
+  unsolved at every depth and give no correctness signal; train the policy on tasks solvable at
+  some depth, or raise solvability first (MathQA chain SFT).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
