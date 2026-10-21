@@ -307,7 +307,8 @@
   `scripts/lab/dory_nestful_multiturn.py` (fixed loops, Dory chat template with tools, thinking on,
   NVIDIA sampling, NESTful execution and grading; compute as loop-tokens incl. prefill). Local smoke
   with a tiny random Dory + the real tokenizer/template: loop switching and the tool round trip work.
-  Queued job 14d18849 (commit 8708177): NESTful 60 then MathQA-val 60, loops 1–4. Kill criterion:
+  Job 14d18849 replaced by 6c808b18 (same commit): reasoning off first (NESTful 60, MathQA-val 60),
+  then reasoning on (same), loops 1–4; reasoning off is the Ouro-comparable setting. Kill criterion:
   4-loop NESTful < ~.35 or no depth dependence.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
