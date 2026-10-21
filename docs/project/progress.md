@@ -240,7 +240,8 @@
   labels.
 - Chain v2 63bcd748 (commit 02dc192, 11k rows incl. parallel/single chains + 3k Hermes,
   2,750 steps, 2.9 h train; final val CE by loop .181/.154/.151/.150). BFCL mean of categories
-  d1–4 .731/.876/.891/.896 (v1 .649/.873/.886/.891; depth-full .680/.888/.911/.917); parallel
+  d1–4 .731/.876/.891/.896 (v1 .649/.873/.886/.891; depth-full .656/.884/.908/.914; earlier text
+  quoted depth-full's request-weighted .680/.888/.911/.917 here by mistake); parallel
   .675/.850/.860/.865, parallel_multiple .630/.860/.875/.875: smaller regression than v1, still
   ~2 points under depth-full at d4, best d1 of all runs. Multi-turn NESTful plain d1–4
   .000/.058/.167/.192 (v1 .000/.083/.167/.208): no gain. Turn-limit rate 11/26/12/14% (v1
