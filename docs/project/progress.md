@@ -298,6 +298,17 @@
   dialogues, escalation at 1/2/3 and sticky 2; costs with and without the final no-call turn,
   recompute and incremental prefill). The update page and talk track no longer claim that late
   turns need fewer loops.
+- Dory 1.0 4B spike (user decision; NVIDIA looped agentic model, released 2026-10-16, OpenMDW-1.1,
+  1–4 loops set at run time, no adaptive mechanism; runtime support only via an unmerged llama.cpp
+  PR or vLLM PR; `transformers` 5.17 has no `dory`). Route: community MLX port
+  (internet-projects/dory-mlx @ 0184a45, Apache-2.0, audited, vendored in `third_party/dory_mlx`;
+  upstream parity vs an fp32 PyTorch reference top-1 100%, KL ≤ .003) on NVIDIA's BF16 weights;
+  loop count set per call. `dht.toolcall.dory_format` (Dory's XML tool-call format; tests) and
+  `scripts/lab/dory_nestful_multiturn.py` (fixed loops, Dory chat template with tools, thinking on,
+  NVIDIA sampling, NESTful execution and grading; compute as loop-tokens incl. prefill). Local smoke
+  with a tiny random Dory + the real tokenizer/template: loop switching and the tool round trip work.
+  Queued job 14d18849 (commit 8708177): NESTful 60 then MathQA-val 60, loops 1–4. Kill criterion:
+  4-loop NESTful < ~.35 or no depth dependence.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
