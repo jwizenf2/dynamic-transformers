@@ -291,6 +291,13 @@
   16 commonly solved requests is 2/1/3 for 7/5/4, so "plan deep, execute shallow" is not supported.
   Open gap: single-turn NESTful .11 for our SFT model vs .371 reported by 2608.18171 and .189 for
   our base few-shot prompt; check the protocol before attributing the ceiling to capacity.
+- Queued 12:56 (commit 4b6ee90, both ~10–12 GB, side by side): `ouro_nestful_protocols.py`
+  (job 778fd9b1; ouro-full then depth-full; single-turn NESTful, first 240, depths 2 and 4;
+  prompts hermes / hermes-icl / raw-icl) and per-call oracle v2 (job 1f2f3c8b; chain-depth v1,
+  NESTful 120; fixed 1–4, per-call depth oracle, same-budget sampling oracle, best-of-4 sampled
+  dialogues, escalation at 1/2/3 and sticky 2; costs with and without the final no-call turn,
+  recompute and incremental prefill). The update page and talk track no longer claim that late
+  turns need fewer loops.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
