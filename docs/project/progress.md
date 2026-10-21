@@ -307,7 +307,8 @@
   `scripts/lab/dory_nestful_multiturn.py` (fixed loops, Dory chat template with tools, thinking on,
   NVIDIA sampling, NESTful execution and grading; compute as loop-tokens incl. prefill). Local smoke
   with a tiny random Dory + the real tokenizer/template: loop switching and the tool round trip work.
-  Job 14d18849 replaced by 6c808b18 (same commit): reasoning off first (NESTful 60, MathQA-val 60),
+  Job 14d18849 replaced by bbae7a8c (commit 66eb9da, adds block-token compute: Dory's 8 input and
+  8 output blocks run once, so 1/2/3/4 loops = 36/56/76/96 blocks per token): reasoning off first (NESTful 60, MathQA-val 60),
   then reasoning on (same), loops 1–4; reasoning off is the Ouro-comparable setting. Kill criterion:
   4-loop NESTful < ~.35 or no depth dependence.
 
