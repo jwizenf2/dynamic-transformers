@@ -162,7 +162,9 @@ def _in_range(name: str, args: list[Any]) -> bool:
     def ok(v: Any) -> bool:
         if isinstance(v, bool):
             return False
-        if isinstance(v, (int, float)):
+        if isinstance(v, int):  # compared exactly: math.isfinite overflows above ~1e308
+            return abs(v) <= _LIMIT
+        if isinstance(v, float):
             return math.isfinite(v) and abs(v) <= _LIMIT
         if isinstance(v, list):
             return len(v) <= 1000 and all(ok(x) for x in v)

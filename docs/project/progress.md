@@ -252,6 +252,20 @@
   (3.37/2.42). With BFCL (gate .912, fixed-3 .911) the gate is ×1.20 over fixed-3 at batch 1
   and slower at b ≥ 4 (×0.97/0.88/0.86). ouro-full b16: gate 114 tok/s (3.71/3.04) vs fixed-3
   145. Per-request fixed depth keeps its saving under batching; the per-token gate does not.
+- MathQA train/val as NESTful-distribution tasks (`dht.toolcall.mathqa`,
+  `scripts/lab/make_mathqa.py`): NESTful's math portion is the MathQA test split (paper §3), so
+  running its construction on MathQA train/validation (Apache-2.0; original text from AQuA-RAT,
+  Apache-2.0) gives training/RL tasks from the test distribution, disjoint by construction.
+  Checks: our formula → call conversion equals NESTful's gold for 1,407/1,415 test samples (the
+  8 others are NESTful truncating decimals); tool lists follow NESTful's rule (gold + add/
+  subtract/multiply/divide/inverse + random math tools, 7–12); NESTful's exact answer filter is
+  not reproducible (268 exactly-correct test problems are absent), we keep results within 1% of
+  the correct option and ≥2 calls. 16,814 train / 2,517 val tasks after dropping 131 + 17
+  problems that duplicate MathQA test or NESTful; mean calls 5.11 / 5.04 (NESTful 5.06), mean
+  dependency depth 3.62 / 3.59 (3.58). 8,000 multi-turn SFT dialogues (one turn per dependency
+  level, literal values). `ouro_nestful_multiturn.py --tasks` evaluates on them. Fixed a crash
+  in `nestful._in_range` on integers above float range (now a failed call). Nothing run on the
+  lab yet; next is a fixed-depth calibration of chain-depth on 120 validation tasks.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 

@@ -1,0 +1,726 @@
+[
+ {
+  "description": "adds two numbers",
+  "name": "add",
+  "output_parameters": {
+   "result": {
+    "description": "The addition result",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "The first number",
+    "type": "int or float"
+   },
+   "arg_1": {
+    "description": "The second number",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the number of ways to choose r items from n items without repetition and without order",
+  "name": "choose",
+  "output_parameters": {
+   "result": {
+    "description": "Number of combinations",
+    "type": "int"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Total number of items",
+    "type": "int"
+   },
+   "arg_1": {
+    "description": "Number of items being chosen",
+    "type": "int"
+   }
+  }
+ },
+ {
+  "description": "Calculate the area of a circle given its radius",
+  "name": "circle_area",
+  "output_parameters": {
+   "result": {
+    "description": "the circle area",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "The circle radius",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the circumference of a circle",
+  "name": "circumface",
+  "output_parameters": {
+   "result": {
+    "description": "Circumference of the circle",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Radius of the circle",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the edge length of a cube given its volume",
+  "name": "cube_edge_by_volume",
+  "output_parameters": {
+   "result": {
+    "description": "Edge length of the cube",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Volume of the cube",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the length of the diagonal of a rectangle",
+  "name": "diagonal",
+  "output_parameters": {
+   "result": {
+    "description": "Length of the diagonal",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Length of the rectangle",
+    "type": "float"
+   },
+   "arg_1": {
+    "description": "Width of the rectangle",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "divides two numbers",
+  "name": "divide",
+  "output_parameters": {
+   "result": {
+    "description": "The division result",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "The first number",
+    "type": "int or float"
+   },
+   "arg_1": {
+    "description": "The second number",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": " Calculate the factorial of a non-negative integer",
+  "name": "factorial",
+  "output_parameters": {
+   "result": {
+    "description": "the factorial result",
+    "type": "int"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "The input number",
+    "type": "int"
+   }
+  }
+ },
+ {
+  "description": "Return the largest integer less than or equal to x.",
+  "name": "floor",
+  "output_parameters": {
+   "result": {
+    "description": "the flooring result",
+    "type": "int"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "The input number",
+    "type": "int"
+   }
+  }
+ },
+ {
+  "description": "calculate the Greatest Common Divisor (GCD) of two numbers",
+  "name": "gcd",
+  "output_parameters": {
+   "result": {
+    "description": "Greatest Common Divisor",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "first number",
+    "type": "int or float"
+   },
+   "arg_1": {
+    "description": "second number",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Return the inverse (reciprocal) of a number",
+  "name": "inverse",
+  "output_parameters": {
+   "result": {
+    "description": "The inverse result",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "The number to inverse",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the least common multiple of two numbers",
+  "name": "lcm",
+  "output_parameters": {
+   "result": {
+    "description": "the least common multiple",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "first number",
+    "type": "int or float"
+   },
+   "arg_1": {
+    "description": "second number",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the logarithm of x with the given base (default is natural log)",
+  "name": "log",
+  "output_parameters": {
+   "result": {
+    "description": "logarithm of provided number with the given base ",
+    "type": "int"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "The input number",
+    "type": "int or float"
+   },
+   "arg_1": {
+    "description": "The base",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Find the maximum value among the given numbers",
+  "name": "max_number",
+  "output_parameters": {
+   "result": {
+    "description": "Maximum value",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "A list of numbers",
+    "type": "list of float"
+   }
+  }
+ },
+ {
+  "description": "Find the minimum value among the given numbers",
+  "name": "min_number",
+  "output_parameters": {
+   "result": {
+    "description": "Minimum value",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "A list of numbers",
+    "type": "list of float"
+   }
+  }
+ },
+ {
+  "description": "Multiplies two numbers",
+  "name": "multiply",
+  "output_parameters": {
+   "result": {
+    "description": "The multiplication result",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "The first number",
+    "type": "int or float"
+   },
+   "arg_1": {
+    "description": "The second number",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Return the negation of a number",
+  "name": "negate",
+  "output_parameters": {
+   "result": {
+    "description": "The inverse result",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "The number to inverse",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the probability of an event not occurring",
+  "name": "negate_prob",
+  "output_parameters": {
+   "result": {
+    "description": "Probability of the event not occurring",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Probability of the event occurring",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the number of permutations of n items taken r at a time",
+  "name": "permutation",
+  "output_parameters": {
+   "result": {
+    "description": "Number of permutations",
+    "type": "int"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Total number of items",
+    "type": "int"
+   },
+   "arg_1": {
+    "description": "Number of items being arranged",
+    "type": "int"
+   }
+  }
+ },
+ {
+  "description": "Raise a number to a power",
+  "name": "power",
+  "output_parameters": {
+   "result": {
+    "description": "the power result",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "The base number",
+    "type": "int or float"
+   },
+   "arg_1": {
+    "description": "The exponent number",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the area of a rectangle given its length and width",
+  "name": "rectangle_area",
+  "output_parameters": {
+   "result": {
+    "description": "the rectangle area",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "rectangle length",
+    "type": "int or float"
+   },
+   "arg_1": {
+    "description": "rectangle width",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the perimeter of a rectangle",
+  "name": "rectangle_perimeter",
+  "output_parameters": {
+   "result": {
+    "description": "the rectangle perimeter",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "rectangle length",
+    "type": "int or float"
+   },
+   "arg_1": {
+    "description": "rectangle width",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the remainder of a divided by b",
+  "name": "remainder",
+  "output_parameters": {
+   "result": {
+    "description": "the remainder",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "first number",
+    "type": "int or float"
+   },
+   "arg_1": {
+    "description": "second number",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the remainder of a divided by b",
+  "name": "reminder",
+  "output_parameters": {
+   "result": {
+    "description": "the remainder",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "first number",
+    "type": "int or float"
+   },
+   "arg_1": {
+    "description": "second number",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the area of a rhombus",
+  "name": "rhombus_area",
+  "output_parameters": {
+   "result": {
+    "description": "Area of the rhombus",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Length of the first diagonal",
+    "type": "float"
+   },
+   "arg_1": {
+    "description": "Length of the second diagonal",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "Calculate speed given distance and time.",
+  "name": "speed",
+  "output_parameters": {
+   "result": {
+    "description": "the speed",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "distance",
+    "type": "int or float"
+   },
+   "arg_1": {
+    "description": "time",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the square root of a non-negative number.",
+  "name": "sqrt",
+  "output_parameters": {
+   "result": {
+    "description": "the square root of the provided number",
+    "type": "int"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "The input number",
+    "type": "int"
+   }
+  }
+ },
+ {
+  "description": "Calculate the area of a square given its side",
+  "name": "square_area",
+  "output_parameters": {
+   "result": {
+    "description": "the square area",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "The sequare side",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the edge length of a square given its area",
+  "name": "square_edge_by_area",
+  "output_parameters": {
+   "result": {
+    "description": "Edge length of the square",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Area of the square",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the edge length of a square given its perimeter",
+  "name": "square_edge_by_perimeter",
+  "output_parameters": {
+   "result": {
+    "description": "Edge length of the square",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Perimeter of the square",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the perimeter of a square given its side length",
+  "name": "square_perimeter",
+  "output_parameters": {
+   "result": {
+    "description": "the square perimeter",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "side length",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "subtract two numbers",
+  "name": "subtract",
+  "output_parameters": {
+   "result": {
+    "description": "The subtraction result",
+    "type": "int or float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "The first number",
+    "type": "int or float"
+   },
+   "arg_1": {
+    "description": "The second number",
+    "type": "int or float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the surface area of a cube",
+  "name": "surface_cube",
+  "output_parameters": {
+   "result": {
+    "description": "Surface area of the cube",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Length of a side of the cube",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the surface area of a cylinder",
+  "name": "surface_cylinder",
+  "output_parameters": {
+   "result": {
+    "description": "Surface area of the cylinder",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Radius of the base of the cylinder",
+    "type": "float"
+   },
+   "arg_1": {
+    "description": "Height of the cylinder",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the surface area of a sphere",
+  "name": "surface_sphere",
+  "output_parameters": {
+   "result": {
+    "description": "Surface area of the sphere",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Radius of the sphere",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the area of a triangle given base and height",
+  "name": "triangle_area",
+  "output_parameters": {
+   "result": {
+    "description": "Area of the triangle",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Length of the base of the triangle",
+    "type": "float"
+   },
+   "arg_1": {
+    "description": "Height of the triangle",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the volume of a cone",
+  "name": "volume_cone",
+  "output_parameters": {
+   "result": {
+    "description": "Volume of the cone",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Radius of the base of the cone",
+    "type": "float"
+   },
+   "arg_1": {
+    "description": "Height of the cone",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the volume of a cube",
+  "name": "volume_cube",
+  "output_parameters": {
+   "result": {
+    "description": "Volume of the cube",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Length of a side of the cube",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the volume of a cylinder",
+  "name": "volume_cylinder",
+  "output_parameters": {
+   "result": {
+    "description": "Volume of the cylinder",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Radius of the base of the cylinder",
+    "type": "float"
+   },
+   "arg_1": {
+    "description": "Height of the cylinder",
+    "type": "float"
+   }
+  }
+ },
+ {
+  "description": "Calculate the volume of a sphere",
+  "name": "volume_sphere",
+  "output_parameters": {
+   "result": {
+    "description": "Volume of the sphere",
+    "type": "float"
+   }
+  },
+  "parameters": {
+   "arg_0": {
+    "description": "Radius of the sphere",
+    "type": "float"
+   }
+  }
+ }
+]

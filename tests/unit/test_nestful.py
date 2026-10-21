@@ -261,3 +261,13 @@ def test_run_dialogue_errors_and_turn_limit(functions):
     assert out["ok"] is False and out["turns"] == 2 and out["errors"] == 2
     assert not out["finished"]
     assert run_dialogue(lambda f: [], TOOLS, functions)["value"] == "no calls"
+
+
+def test_huge_int_argument_fails_the_call_instead_of_raising(tmp_path):
+    path = tmp_path / "f.py"
+    path.write_text(FUNCTIONS)
+    tools = [{"name": "add", "parameters": {"arg_0": {}, "arg_1": {}}}]
+    ok, reason = execute(
+        [{"name": "add", "arguments": {"arg_0": 10**400, "arg_1": 1}}], tools, load_functions(path)
+    )
+    assert not ok and "out of range" in reason

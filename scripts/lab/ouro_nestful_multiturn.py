@@ -43,6 +43,7 @@ import ouro_nestful as nf  # noqa: E402
 from ouro_sft_eval import SYSTEM, load_done, load_model, parse_hermes  # noqa: E402
 
 from dht.toolcall.nestful import (  # noqa: E402
+    NestfulExample,
     answers_match,
     basic_function_names,
     dependency_depth,
@@ -57,7 +58,17 @@ SEQUENTIAL = (
 )
 
 
-def requests(n: int):
+def load_tasks(path: Path) -> list[NestfulExample]:
+    """NESTful-format tasks from ``make_mathqa.py`` (``<split>_tasks.jsonl``)."""
+    rows = [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines() if x]
+    return [NestfulExample(r["id"], r["query"], r["tools"], r["calls"], r["answer"]) for r in rows]
+
+
+def requests(n: int, tasks: str | None = None):
+    """The first ``n`` requests in depth-balanced order: NESTful's math subset, or ``tasks``."""
+    if tasks:
+        ffile = nf.checked(nf.VENDORED / "basic_functions.py", "basic_functions.py")
+        return nf.ordered(load_tasks(Path(tasks)), 0)[:n], load_functions(ffile)
     snap = Path(
         snapshot_download(nf.NESTFUL_HF, repo_type="dataset", revision=nf.NESTFUL_HF_REVISION)
     )
@@ -115,17 +126,21 @@ def main() -> None:
     parser.add_argument("--max-turns", type=int, default=8)
     parser.add_argument("--max-tokens", type=int, default=256, help="per assistant turn")
     parser.add_argument("--tag", default=None)
+    parser.add_argument(
+        "--tasks", default=None, help="NESTful-format jsonl (make_mathqa.py) instead of NESTful"
+    )
     parser.add_argument("--cache-limit-gb", type=float, default=2.0)
     args = parser.parse_args()
 
     mx.set_cache_limit(int(args.cache_limit_gb * 1024**3))
     model, tokenizer = load_model(args.model, args.weights, args.adapters)
     stop_ids = {0, tokenizer.convert_tokens_to_ids("<|im_end|>")}
-    examples, functions = requests(args.n)
+    examples, functions = requests(args.n, args.tasks)
 
     trained = args.adapters or args.weights
     tag = args.tag or (Path(trained).parent.name if trained else "base")
-    out = Path(f"results/ouro_nestful_mt/{tag}/{args.variant}")
+    suffix = f"_{Path(args.tasks).stem}" if args.tasks else ""
+    out = Path(f"results/ouro_nestful_mt/{tag}/{args.variant}{suffix}")
     out.mkdir(parents=True, exist_ok=True)
     correct: dict[tuple[str, int], list[bool]] = defaultdict(list)
     done = load_done(out / "examples.jsonl", correct)
@@ -179,6 +194,7 @@ def main() -> None:
         "adapters": args.adapters,
         "weights": args.weights,
         "variant": args.variant,
+        "tasks": args.tasks,
         "n": len(examples),
         "max_turns": args.max_turns,
         "accuracy": {
