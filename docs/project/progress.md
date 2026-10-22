@@ -357,6 +357,12 @@
   oracle, same-budget sampling oracle, best of 4 sampled dialogues; block-token costs. Decides
   whether the MCTS + bandit plan moves to Dory. Open Ouro angle noted (not started): depth vs
   width (loops vs majority-voted samples) at matched compute; needs a novelty check.
+- NESTful prompt-protocol check (job 778fd9b1, single-turn, first 240, depths 2/4): accuracy at
+  d2 / d4 — ouro-full: hermes .013/.158, hermes-icl .046/.204, raw-icl .067/.229; depth-full:
+  hermes .029/.138, hermes-icl .021/.217, raw-icl .075/.212. NESTful's three ICL examples add
+  ~5–9 points at depth 4 (and switch the model to `$var` references) but no prompt reaches the .371
+  reported by 2608.18171; the low NESTful ceiling is mostly the model (or an unreported protocol
+  difference), not our prompt. Use the ICL prompt for future single-turn NESTful numbers.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
