@@ -332,6 +332,27 @@
   inference, escalation rule as the greedy training-free baseline. Plan:
   `docs/research/plan_2026-10-21_mcts_bandit.md`; starts only if oracle v2 shows depth is a lever.
 
+## 2026-10-22 — Oracle v2 (gate 0 fails on Ouro) and Dory reasoning-off calibration
+
+- Per-call oracle v2 (job 1f2f3c8b, chain-depth v1, NESTful 120, 8-turn limit): accuracy at decode
+  loops/token: fixed 1–4 .000/.083/.175/.225; per-request depth oracle .242 at 3.72; per-call depth
+  oracle .308 at 3.45; **same-budget per-call sampling oracle (3 samples at T 0.7 + greedy, depth 4)
+  .325**; best of 4 sampled depth-4 dialogues .308. Depth-only vs sample-only wins 6 vs 8 (31
+  both); problems solved by no fixed depth: depth oracle 8, sampling oracle 10, best-of-4 8.
+  Escalation (redo the turn at 4 when a call fails) adds nothing: escalate-1/2/3 .017/.083/.175 at
+  1.26/2.06/3.02 (= fixed 1/2/3); escalations occur in 41/17/9 of 120 dialogues. Cost: with
+  per-turn recompute, decode is 3% of fixed-4 loop-tokens (799 of 23,336); the depth oracle's
+  recompute total (24,217) is not below fixed-4's. Verdict (review's kill criterion): the per-call
+  oracle's gain is search, not depth allocation; per-step loop allocation on this Ouro model is
+  dropped as a headline. The MCTS + bandit plan is not started on Ouro.
+- Dory 1.0 4B, reasoning off (job bbae7a8c, paused by the user during the slow reasoning-on stage;
+  rows kept, resumable), NVIDIA sampling T 1.0 / top-p .95, one sample per (problem, loops):
+  NESTful first 60 multi-turn: loops 1–4 .267/.400/.383/.383 (errors/call .087/.027/.017/.028,
+  turn limit 3–5%); MathQA-val first 60: .250/.267/.333/.400. Block-tokens per problem (incl.
+  prefill) NESTful 253k/445k/557k/720k. Dory at 1 loop matches the fine-tuned Ouro at 4 loops; on
+  NESTful the gain is mostly 1 → 2 loops; on MathQA it keeps rising to 4. Single sampled run, n=60:
+  intervals are wide (±~12 points).
+
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
 - Router v3 on xLAM val: 82.0% at 3.67 effective passes, 81.0% at 3.27, 80.5% at 3.19 (fixed-3
