@@ -352,6 +352,11 @@
   prefill) NESTful 253k/445k/557k/720k. Dory at 1 loop matches the fine-tuned Ouro at 4 loops; on
   NESTful the gain is mostly 1 → 2 loops; on MathQA it keeps rising to 4. Single sampled run, n=60:
   intervals are wide (±~12 points).
+- Queued Dory oracle control (job dcc301b2, commit a6b9809, `dory_percall_oracle.py`, NESTful 60,
+  reasoning off, greedy base, 3 samples at T 0.7 for the sampling oracle): fixed 1–4, per-call depth
+  oracle, same-budget sampling oracle, best of 4 sampled dialogues; block-token costs. Decides
+  whether the MCTS + bandit plan moves to Dory. Open Ouro angle noted (not started): depth vs
+  width (loops vs majority-voted samples) at matched compute; needs a novelty check.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
