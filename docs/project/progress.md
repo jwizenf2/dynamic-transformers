@@ -363,6 +363,17 @@
   ~5–9 points at depth 4 (and switch the model to `$var` references) but no prompt reaches the .371
   reported by 2608.18171; the low NESTful ceiling is mostly the model (or an unreported protocol
   difference), not our prompt. Use the ICL prompt for future single-turn NESTful numbers.
+- Dory oracle control (job dcc301b2, NESTful 60, reasoning off, greedy): fixed 1–4
+  .267/.350/.383/.350; per-request depth oracle .583 at 2.73; per-call depth oracle .633 at 2.55;
+  same-budget sampling oracle .617 at 4.0; best of 4 sampled dialogues .700. Depth-only vs
+  sample-only wins 8 vs 7 (30 both); solved by no fixed depth: depth 7, sample 8, best-of-4 10.
+  6 problems are solved only at 1 loop. Generation is 4–7% of block-tokens under per-turn
+  recompute. Verdict: as on Ouro, per-step depth acts as a source of diversity, not an allocation
+  lever; per-step depth control is dropped on both models.
+- Free check of width (Dory calibration rows, sampled T 1.0, NESTful 60): majority vote over the
+  final answers at loops 1–4 .467 (2–4: .467) vs best single loop count .400, at ~2.5x generation
+  cost; oracle any-loop .700. Next candidate: depth vs width (loops x voted samples) at matched
+  compute on Ouro and Dory.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
