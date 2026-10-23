@@ -42,6 +42,8 @@ DEPTH_FULL = (
 )
 CHAINS = "results/chains/chains_s0_n6000.json"
 CHAINS_V2 = "results/chains/chains_s1_n8000_p0.2_s0.1.json"
+MATHQA = "results/mathqa/train_sft.json"
+MATHQA_VAL = "results/mathqa/validation_tasks.jsonl"
 
 # name, loss, extra trainer args
 PLANS = {
@@ -115,6 +117,33 @@ PLANS = {
             ("nestful-mt", ["--n", "120", "--variant", "plain"]),
         ],
     },
+    # Path B v3: chain v2's mix plus the 8,000 decontaminated MathQA-train dialogues
+    # (``make_mathqa.py``: NESTful's construction on MathQA train, disjoint from NESTful = MathQA
+    # test), so the model sees NESTful-distribution chains where shallow depth fails. Evaluated on
+    # BFCL (regression), multi-turn NESTful plain, and multi-turn on MathQA validation.
+    "chains-v3": {
+        "prepare": [
+            (
+                CHAINS_V2,
+                [PY, "scripts/lab/make_chains.py", "--n", "8000", "--seed", "1"]
+                + ["--parallel-p", "0.2", "--single-p", "0.1"],
+            ),
+            (MATHQA, [PY, "scripts/lab/make_mathqa.py"]),
+        ],
+        "train": [
+            (
+                "chain-depth-v3",
+                "depth",
+                ["--init-adapters", DEPTH_FULL, "--extra-data", CHAINS_V2, MATHQA]
+                + ["--hermes-train-n", "3000", "--epochs", "1"],
+            ),
+        ],
+        "eval": [
+            ("bfcl", ["--n", "0"]),
+            ("nestful-mt", ["--n", "120", "--variant", "plain"]),
+            ("nestful-mt", ["--n", "120", "--variant", "plain", "--tasks", MATHQA_VAL]),
+        ],
+    },
     "seeds": {
         "train": [
             ("ouro-s1", "ouro", ["--seed", "1"]),
@@ -169,6 +198,8 @@ def eval_chain(name: str, tasks: list) -> list[list[str]]:
     for task, extra in tasks:
         if task == "nestful-mt":
             variant = extra[extra.index("--variant") + 1] if "--variant" in extra else "sequential"
+            if "--tasks" in extra:
+                variant += f"_{Path(extra[extra.index('--tasks') + 1]).stem}"
             done = Path(f"results/ouro_nestful_mt/{name}/{variant}/summary.json").exists()
             cmd = [PY, MULTITURN, "--adapters", adapters, *extra]
         else:

@@ -374,6 +374,14 @@
   final answers at loops 1–4 .467 (2–4: .467) vs best single loop count .400, at ~2.5x generation
   cost; oracle any-loop .700. Next candidate: depth vs width (loops x voted samples) at matched
   compute on Ouro and Dory.
+- 2026-10-23, Shabbos queue (user away ~30 h, lab idle): one sequential job in project
+  `dynamic-transformers-dory` (keeps the paused reasoning-on rows and `results/mathqa/`):
+  (1) `depth_width.py --backend dory --n 60` (k=4 sampled dialogues at each of loops 1–4, T .7,
+  majority vote at matched block-tokens); (2) the same on Ouro chain v1, NESTful 120;
+  (3) `sft_queue.py --plan chains-v3` (chain v2 mix + 8,000 MathQA-train dialogues, depth-aware,
+  warm start from depth-full; BFCL, multi-turn NESTful plain, multi-turn MathQA val);
+  (4) Dory reasoning-on NESTful 60 (resumes). Steps are separated so a failure moves on. Smoke
+  tests: Dory and Ouro, 1 request each; Dory sampling varies with seed (4–6 distinct of 6).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
