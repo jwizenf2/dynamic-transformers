@@ -382,6 +382,19 @@
   warm start from depth-full; BFCL, multi-turn NESTful plain, multi-turn MathQA val);
   (4) Dory reasoning-on NESTful 60 (resumes). Steps are separated so a failure moves on. Smoke
   tests: Dory and Ouro, 1 request each; Dory sampling varies with seed (4–6 distinct of 6).
+- Depth vs width results (job 65b8f28d, `results/depth_width/`, T .7, majority vote, ties to the
+  earliest attempt). Compute = prefill at 4 loops + generation at d, so it is dominated by the
+  number of attempts; depth is nearly free under it, not under decode-only cost.
+  * Dory (reasoning off, NESTful 60), single sample d1–4 .317/.550/.483/.450. Voting at one loop
+    count: d2 x4 .433, d3 x4 .517, d4 x4 .550 (pass@4 .52/.67/.65/.72). A vote over one sample
+    at each loop count 1–4 (mixed) .617 at 2.64M block-tokens, below d4 x4's 2.90M: paired
+    wins/losses vs d4 x4 7/3 (sign test ~.34, not significant), vs d3 x4 8/2, vs d2 x4 13/2.
+    Loop count looks like a useful diversity axis for voting on Dory; needs more requests.
+  * Ouro chain v1 (NESTful 120): single d1–4 .017/.042/.100/.150; d4 x3 .208 (= x4), d3 x4 .175;
+    mixed .092 (losses 14/0 vs d4 x4): shallow Ouro answers are noise, so depth dominates and
+    voting only helps at depth 4 (+6 points for 3x attempts).
+- Chain v3 training (same job): 4,746 steps, 13.1 h (one preemption, resumed at step 750); final
+  Hermes val CE by loop .181/.154/.150/.149 (v2 .181/.154/.151/.150). Evals running.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
