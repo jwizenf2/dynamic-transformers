@@ -67,6 +67,47 @@ def _hist(values) -> dict:
     return dict(sorted(Counter(values).items()))
 
 
+def load_sources(basic: set[str]):
+    """Pinned MathQA rows per split, AQuA-RAT original text by normalised problem, NESTful math."""
+    mq = Path(snapshot_download(MATHQA_HF, repo_type="dataset", revision=MATHQA_REVISION))
+    aq = Path(
+        snapshot_download(
+            AQUA_HF, repo_type="dataset", revision=AQUA_REVISION, allow_patterns=["raw/*"]
+        )
+    )
+    ns = Path(
+        snapshot_download(nf.NESTFUL_HF, repo_type="dataset", revision=nf.NESTFUL_HF_REVISION)
+    )
+    nestful = [
+        e
+        for e in load_nestful_parquet(nf.checked(ns / nf.NESTFUL_PARQUET, nf.NESTFUL_PARQUET))
+        if all(c["name"] in basic for c in e.calls)
+    ]
+    original: dict[str, str] = {}
+    for split in ("train", "validation", "test"):
+        for r in pq.read_table(aq / f"raw/{split}-00000-of-00001.parquet").to_pylist():
+            original.setdefault(normalize(r["question"]), r["question"])
+    rows = {
+        s: pq.read_table(mq / f"default/{s}/0000.parquet").to_pylist()
+        for s in ("train", "validation", "test")
+    }
+    return rows, original, nestful
+
+
+def leakage_guards(test_rows: list[dict], nestful: list):
+    """(exact-text ban set, near-duplicate index, same-computation index) over MathQA test and
+    NESTful: the three leakage filters of the module docstring."""
+    banned = {normalize(r["Problem"]) for r in test_rows} | {normalize(e.query) for e in nestful}
+    near = NearDuplicateIndex([r["Problem"] for r in test_rows] + [e.query for e in nestful])
+    test_calls = [e.calls for e in nestful]
+    for r in test_rows:
+        try:
+            test_calls.append(formula_calls(r["annotated_formula"]))
+        except (ValueError, IndexError):
+            pass
+    return banned, near, SameComputationIndex(test_calls)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--seed", type=int, default=0)
@@ -89,38 +130,8 @@ def main() -> None:
     functions = load_functions(ffile)
     basic = basic_function_names(ffile)
 
-    mq = Path(snapshot_download(MATHQA_HF, repo_type="dataset", revision=MATHQA_REVISION))
-    aq = Path(
-        snapshot_download(
-            AQUA_HF, repo_type="dataset", revision=AQUA_REVISION, allow_patterns=["raw/*"]
-        )
-    )
-    ns = Path(
-        snapshot_download(nf.NESTFUL_HF, repo_type="dataset", revision=nf.NESTFUL_HF_REVISION)
-    )
-    nestful = [
-        e
-        for e in load_nestful_parquet(nf.checked(ns / nf.NESTFUL_PARQUET, nf.NESTFUL_PARQUET))
-        if all(c["name"] in basic for c in e.calls)
-    ]
-
-    original: dict[str, str] = {}
-    for split in ("train", "validation", "test"):
-        for r in pq.read_table(aq / f"raw/{split}-00000-of-00001.parquet").to_pylist():
-            original.setdefault(normalize(r["question"]), r["question"])
-    rows = {
-        s: pq.read_table(mq / f"default/{s}/0000.parquet").to_pylist()
-        for s in ("train", "validation", "test")
-    }
-    banned = {normalize(r["Problem"]) for r in rows["test"]} | {normalize(e.query) for e in nestful}
-    near = NearDuplicateIndex([r["Problem"] for r in rows["test"]] + [e.query for e in nestful])
-    test_calls = [e.calls for e in nestful]
-    for r in rows["test"]:
-        try:
-            test_calls.append(formula_calls(r["annotated_formula"]))
-        except (ValueError, IndexError):
-            pass
-    same = SameComputationIndex(test_calls)
+    rows, original, nestful = load_sources(basic)
+    banned, near, same = leakage_guards(rows["test"], nestful)
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)

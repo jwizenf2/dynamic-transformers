@@ -158,3 +158,37 @@ def test_same_computation_index():
     assert idx.matches(formula_calls("subtract(multiply(divide(300, 18), 39), 300)"))
     assert not idx.matches(formula_calls("subtract(multiply(divide(300, 17), 41), 300)"))
     assert not idx.matches(formula_calls("add(multiply(divide(300, 18), 39), 300)"))
+
+
+def test_resample_numbers_changes_text_and_calls_consistently():
+    import random
+
+    from dht.toolcall.mathqa import resample_numbers
+
+    task = {
+        "query": "A train 1,200 m long passes a pole in 40 seconds. What is its speed in m/s?",
+        "tools": [CATALOG["divide"]],
+        "calls": [{"name": "divide", "label": "$var_1", "arguments": {"arg_0": 1200, "arg_1": 40}}],
+        "answer": 30.0,
+    }
+    out = resample_numbers(task, FUNCTIONS, random.Random(0))
+    assert out is not None
+    a, b = out["calls"][0]["arguments"].values()
+    assert (a, b) != (1200, 40)
+    assert f"{a} m long" in out["query"] and f"in {b} seconds" in out["query"]
+    assert out["answer"] == a / b
+    assert task["calls"][0]["arguments"] == {"arg_0": 1200, "arg_1": 40}  # source unchanged
+
+
+def test_resample_numbers_skips_tasks_without_written_literals():
+    import random
+
+    from dht.toolcall.mathqa import resample_numbers
+
+    task = {
+        "query": "What is half of one hundred?",
+        "tools": [CATALOG["divide"]],
+        "calls": [{"name": "divide", "label": "$var_1", "arguments": {"arg_0": 100, "arg_1": 2}}],
+        "answer": 50.0,
+    }
+    assert resample_numbers(task, FUNCTIONS, random.Random(0)) is None

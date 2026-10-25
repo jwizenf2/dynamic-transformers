@@ -373,3 +373,109 @@ def build_task(
         "answer": float(value),
         "category": row.get("category", ""),
     }, "ok"
+
+
+# Number resampling (augmentation): new numbers in the same problem.
+_TEXT_NUMBER = re.compile(r"(?<![\d.])(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)(?![\d.]*\d)")
+RESAMPLE_ANSWER_LIMIT = 1e9
+RESAMPLE_ANSWER_RATIO = 3.0  # new answer within 1/3x-3x of the original
+
+
+def _decimals(v: int | float) -> int:
+    text = repr(float(v))
+    return 0 if float(v).is_integer() else len(text.split(".")[1])
+
+
+def _new_value(v: int | float, rng: random.Random, percent: bool) -> int | float:
+    """A plausible replacement: same sign and number of decimals, 0.75-1.33x (integers <= 10:
+    +-2), at most 99 for a percentage. Narrow on purpose: wide changes break the story of the
+    problem (e.g. a part larger than the whole) while the arithmetic stays consistent."""
+    k = _decimals(v)
+    for _ in range(20):
+        if k == 0 and abs(v) <= 10:
+            new: int | float = rng.randint(max(1, int(v) - 2), int(v) + 2)
+        else:
+            new = round(v * rng.uniform(0.75, 1.33), k)
+            new = int(new) if k == 0 else new
+        if percent and new >= 100:
+            continue
+        if new > 0 and new != v:
+            return new
+    raise ValueError(f"no replacement for {v}")
+
+
+def resample_numbers(
+    task: dict[str, Any], functions: ModuleType, rng: random.Random
+) -> dict[str, Any] | None:
+    """The same problem with new numbers: a training-data augmentation.
+
+    Every literal of the gold calls that is not a common constant (``_COMMON_NUMBERS``) and
+    occurs in the query as a standalone number (``1,200`` counts as 1200) gets a new value, in
+    the query (every occurrence) and in the calls; literals not written in the query (implicit
+    constants such as 7 days) and common numbers stay. The calls are re-executed for the new
+    answer. Returns None when nothing could be changed, two old numbers would map to text
+    already present, execution fails, or the answer is not a finite positive number (if the
+    original was positive) below ``RESAMPLE_ANSWER_LIMIT`` and within ``RESAMPLE_ANSWER_RATIO``
+    of the original. The template (number-masked text)
+    and the call skeleton are unchanged, so leakage checks that ignore numbers give the same
+    result as for the source task; checks that use numbers must be re-run.
+    """
+    query = task["query"]
+    found: dict[float, list[re.Match]] = {}
+    for m in _TEXT_NUMBER.finditer(query):
+        found.setdefault(float(m.group(1).replace(",", "")), []).append(m)
+    literals = {
+        v
+        for c in task["calls"]
+        for v in c["arguments"].values()
+        if isinstance(v, int | float) and not isinstance(v, bool)
+    }
+    targets = sorted(v for v in literals if v not in _COMMON_NUMBERS and float(v) in found)
+    if not targets:
+        return None
+    mapping: dict[float, int | float] = {}
+    present = set(found)
+    for v in targets:
+        percent = any(query[m.end() : m.end() + 2].strip().startswith("%") for m in found[float(v)])
+        try:
+            new = _new_value(v, rng, percent)
+        except ValueError:
+            return None
+        if float(new) in present or new in mapping.values():
+            return None
+        mapping[float(v)] = new
+    edits = sorted(
+        ((m.start(1), m.end(1), mapping[f]) for f in mapping for m in found[f]), reverse=True
+    )
+    for start, end, new in edits:
+        query = query[:start] + str(new) + query[end:]
+    calls = [
+        {
+            **c,
+            "arguments": {
+                k: (
+                    mapping[float(v)]
+                    if isinstance(v, int | float)
+                    and not isinstance(v, bool)
+                    and float(v) in mapping
+                    else v
+                )
+                for k, v in c["arguments"].items()
+            },
+        }
+        for c in task["calls"]
+    ]
+    ok, value = execute(calls, task["tools"], functions)
+    if not ok or isinstance(value, (tuple, list, bool)):
+        return None
+    value = float(value)
+    if not math.isfinite(value) or abs(value) >= RESAMPLE_ANSWER_LIMIT:
+        return None
+    if task["answer"] > 0 and value <= 0:
+        return None
+    if (
+        task["answer"]
+        and not 1 / RESAMPLE_ANSWER_RATIO <= value / task["answer"] <= RESAMPLE_ANSWER_RATIO
+    ):
+        return None
+    return {**task, "query": query, "calls": calls, "answer": value}

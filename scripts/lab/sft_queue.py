@@ -44,6 +44,9 @@ CHAINS = "results/chains/chains_s0_n6000.json"
 CHAINS_V2 = "results/chains/chains_s1_n8000_p0.2_s0.1.json"
 MATHQA = "results/mathqa/train_sft.json"
 MATHQA_VAL = "results/mathqa/validation_tasks.jsonl"
+MATHQA_AUG = "results/mathqa_aug/train_aug_sft.json"
+# Chain v3 (job 65b8f28d), trained in this lab project folder (dynamic-transformers-dory).
+V3 = "results/ouro_sft/chain-depth-v3/adapters.safetensors"
 
 # name, loss, extra trainer args
 PLANS = {
@@ -142,6 +145,50 @@ PLANS = {
             ("bfcl", ["--n", "0"]),
             ("nestful-mt", ["--n", "120", "--variant", "plain"]),
             ("nestful-mt", ["--n", "120", "--variant", "plain", "--tasks", MATHQA_VAL]),
+        ],
+    },
+    # v4 gate (2026-10-25): is more data worth a full v4 run? Both arms continue chain v3 for
+    # 600 steps (~2,400 examples) with the same recipe (LR 2e-5, warmup + cosine) and 1,000
+    # Hermes rows against forgetting; they differ only in the MathQA part: number-resampled
+    # new problems (``make_mathqa_aug.py``) vs a second pass over v3's own MathQA dialogues
+    # (controls for "more steps"). Evaluated on the first 120 MathQA-validation tasks at
+    # depths 1/2/4 (v3: .167/.367/.458), NESTful untouched. Decision rule: full v4 only if the
+    # augmented arm beats v3 by >= 3 points at depth 4 and beats the second-pass arm.
+    "pilot-v4": {
+        "prepare": [
+            (MATHQA, [PY, "scripts/lab/make_mathqa.py"]),
+            (MATHQA_AUG, [PY, "scripts/lab/make_mathqa_aug.py", "--sft-n", "6000"]),
+        ],
+        "train": [
+            (
+                "pilot-aug",
+                "depth",
+                ["--init-adapters", V3, "--extra-data", MATHQA_AUG]
+                + ["--hermes-train-n", "1000", "--max-steps", "600"],
+            ),
+            (
+                "pilot-epoch",
+                "depth",
+                ["--init-adapters", V3, "--extra-data", MATHQA]
+                + ["--hermes-train-n", "1000", "--max-steps", "600"],
+            ),
+        ],
+        "eval": [
+            (
+                "nestful-mt",
+                [
+                    "--n",
+                    "120",
+                    "--variant",
+                    "plain",
+                    "--tasks",
+                    MATHQA_VAL,
+                    "--steps",
+                    "1",
+                    "2",
+                    "4",
+                ],
+            ),
         ],
     },
     "seeds": {
