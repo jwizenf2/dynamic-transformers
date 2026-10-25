@@ -394,7 +394,23 @@
     mixed .092 (losses 14/0 vs d4 x4): shallow Ouro answers are noise, so depth dominates and
     voting only helps at depth 4 (+6 points for 3x attempts).
 - Chain v3 training (same job): 4,746 steps, 13.1 h (one preemption, resumed at step 750); final
-  Hermes val CE by loop .181/.154/.150/.149 (v2 .181/.154/.151/.150). Evals running.
+  Hermes val CE by loop .181/.154/.150/.149 (v2 .181/.154/.151/.150).
+- Chain v3 evals (job finished 2026-10-25 09:27, 42.6 h total; `results/chains_v3_run/`):
+  multi-turn NESTful plain d1–4 .158/.383/.400/.475 (v2 .000/.058/.167/.192, v1
+  .000/.083/.167/.208); multi-turn MathQA val .167/.367/.417/.458 (chain v1 .008/.092/.133/.150).
+  BFCL mean of categories .686/.840/.862/.873 (v2 .731/.876/.891/.896; depth-full
+  .656/.884/.908/.914): a 2–4 point single-call regression at d2–d4.
+  * Overlap check of the 120 NESTful requests against the 8,772 MathQA-train tasks: max template
+    similarity < .3 for all (solved median .100, max .293; unsolved .083/.286); same computation
+    with ≥2 shared numbers 0/0. Solved requests more often share a computation skeleton (operation
+    tree, numbers ignored) with some training task (28/57 vs 14/63). That is in-distribution
+    learning of MathQA problem types (NESTful's math part is the MathQA test split), not
+    duplicates. Published NESTful numbers are zero/few-shot, so .475 is not comparable to the
+    .371 of 2608.18171 or to zero-shot Dory (.383) as a "beats" claim.
+- Dory reasoning on (NESTful 60, sampled T 1.0, max 3,072 tokens per turn): .183/.133/.150/.150,
+  ~2,800 reasoning tokens per dialogue and 40–45 truncated turns per loop count. Not a valid
+  reasoning-on measurement: the budget truncates the reasoning. Reasoning off stays the
+  comparison (.267/.400/.383/.383).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
