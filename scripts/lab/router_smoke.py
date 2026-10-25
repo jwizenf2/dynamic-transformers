@@ -2,7 +2,7 @@
 
     python scripts/lab/router_smoke.py \
         --adapters results/ouro_sft/chain-depth-v3/adapters.safetensors \
-        --start 120 --n 300
+        --n 292
     python scripts/lab/router_smoke_analysis.py results/router_smoke/chain-depth-v3
 
 Gate before building a per-request loop router on chain v3 (plan of 2026-10-25). Two questions:
@@ -11,10 +11,14 @@ runs agree), and (b) can signals available before generation predict it? Surface
 the question did not (best length/number rule within 1-3 points of a random depth mix, on 240
 requests); the remaining candidate is the model's own state.
 
-Requests: MathQA-validation tasks (``make_mathqa.py``; never trained on) in the depth-balanced
-order of ``ouro_nestful_multiturn.requests``, slice ``[start, start + n)``. The first 120 were
-used for the v3 evaluation and the depth-pattern analysis, so the default starts after them;
-NESTful (test) is not touched.
+Requests: the 292 "clean" MathQA-validation tasks (``make_mathqa_clean_val.py``: never trained on,
+and no near-duplicate, same computation or exact copy among the train tasks, the relation
+NESTful test has to train). The full validation set is mostly train templates with other
+numbers (v3 at depth 4: .346 on the 26 clean vs .489 on the 94 other tasks of the first 120),
+where depth need could track memorisation. Depth-balanced order of
+``ouro_nestful_multiturn.requests``, slice ``[start, start + n)``; NESTful is not touched. The
+greedy rows are also the v3 baseline of the v4 pilot (same protocol as
+``ouro_nestful_multiturn.py --variant plain``).
 
 Per request:
 * ``probe``: Ouro's first ``--k`` answer tokens decoded greedily with all 4 loops on the first
@@ -84,9 +88,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--model", default="ByteDance/Ouro-2.6B")
     parser.add_argument("--adapters", required=True)
-    parser.add_argument("--tasks", default="results/mathqa/validation_tasks.jsonl")
-    parser.add_argument("--start", type=int, default=120)
-    parser.add_argument("--n", type=int, default=300)
+    parser.add_argument("--tasks", default="results/mathqa/validation_clean_tasks.jsonl")
+    parser.add_argument("--start", type=int, default=0)
+    parser.add_argument("--n", type=int, default=292)
     parser.add_argument("--depths", type=int, nargs="+", default=[1, 2, 4])
     parser.add_argument("--k", type=int, default=8, help="probe tokens")
     parser.add_argument("--temperature", type=float, default=0.7)

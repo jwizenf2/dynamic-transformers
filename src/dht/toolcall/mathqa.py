@@ -436,7 +436,10 @@ def resample_numbers(
     mapping: dict[float, int | float] = {}
     present = set(found)
     for v in targets:
-        percent = any(query[m.end() : m.end() + 2].strip().startswith("%") for m in found[float(v)])
+        percent = any(
+            re.match(r"\s*(%|percent|per cent|pct)", query[m.end() : m.end() + 10], re.I)
+            for m in found[float(v)]
+        )
         try:
             new = _new_value(v, rng, percent)
         except ValueError:

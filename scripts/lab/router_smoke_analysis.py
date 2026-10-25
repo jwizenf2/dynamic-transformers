@@ -124,7 +124,20 @@ def at_loops(pts: list[tuple[float, float]], loops: float) -> float:
 
 
 def random_mix(acc: dict, loops: float) -> float:
-    return float(np.interp(loops, list(DEPTHS), [acc[d] for d in DEPTHS]))
+    """Best random mix of fixed depths at mean ``loops``: the upper concave hull of the points
+    (d, acc_d), non-decreasing (a mix never needs to spend more loops for less accuracy)."""
+    pts = [(float(d), float(acc[d])) for d in DEPTHS]
+    hull: list[tuple[float, float]] = []
+    for p in pts:
+        while len(hull) >= 2:
+            (x1, y1), (x2, y2) = hull[-2], hull[-1]
+            if (y2 - y1) * (p[0] - x1) <= (p[1] - y1) * (x2 - x1):
+                hull.pop()  # middle point is on or below the chord
+            else:
+                break
+        hull.append(p)
+    xs, ys = zip(*hull, strict=True)
+    return float(np.interp(loops, xs, np.maximum.accumulate(ys)))
 
 
 def main() -> None:

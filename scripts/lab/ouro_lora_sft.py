@@ -460,6 +460,9 @@ def main() -> None:
         # Skip validation when asked to yield: the 60 s grace period is for saving.
         if (step % args.eval_every == 0 or step == total) and not yield_requested:
             rec["val_ce_by_loop"] = evaluate()
+        # The final adapters are always written, also when a yield lands on the last step
+        # (evals read adapters.safetensors; skipping it would leave the previous save).
+        if "val_ce_by_loop" in rec or step == total:
             mx.save_safetensors(
                 str(out / "adapters.safetensors"), dict(tree_flatten(model.trainable_parameters()))
             )

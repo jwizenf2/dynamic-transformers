@@ -411,6 +411,33 @@
   ~2,800 reasoning tokens per dialogue and 40–45 truncated turns per loop count. Not a valid
   reasoning-on measurement: the budget truncates the reasoning. Reasoning off stays the
   comparison (.267/.400/.383/.383).
+- 2026-10-25, two cheap gates before ~40 GPU hours (plan: per-request router + v4), reviewed by an
+  independent Fable agent before queueing:
+  * Gate 1 router smoke (`router_smoke.py` + `router_smoke_analysis.py`, pre-registered): depth
+    1/2/4 x {greedy, sample} dialogues + an 8-token full-depth probe per request; stability of
+    depth need; 5-fold CV logistic router on probe + question features vs question-only vs the
+    best random mix (concave hull of fixed accuracies) vs oracle. PASS if gain over the mix at
+    2.5 mean loops >= .03 or >= 15% fewer loops than the mix at fixed-4 − .01. Synthetic check:
+    signal → PASS (+.125), noise → FAIL; reviewer's null simulation 0/60 false passes.
+  * Gate 2 v4 pilot (`sft_queue.py --plan pilot-v4`, `pilot_v4_analysis.py`): continue v3 600
+    steps on number-resampled MathQA (`resample_numbers`, `make_mathqa_aug.py`: 6,110 tasks;
+    guard dropped 25 exact copies of val/test problems and 15 same-computation matches) vs a
+    partial second pass over v3's MathQA data (Hermes share 1/7 in both); full v4 only if the
+    aug arm's paired gain (mean of depths 2, 4) has a 90% bootstrap lower bound > 0 and beats the
+    second-pass arm.
+  * Review blocker, fixed: MathQA-val was filtered against test/NESTful but not against train;
+    1,001 of 1,293 val tasks are exact copies, near-duplicates (template similarity >= .3) or
+    same computations of train tasks. Only 292 are "clean" (`make_mathqa_clean_val.py`). v3 on
+    the first 120 val tasks at d1–4: clean (26) .000/.231/.192/.346 vs other (94)
+    .213/.404/.479/.489, so the earlier MathQA-val numbers (.167/.367/.417/.458) are inflated by
+    memorised templates. NESTful (filtered against train) is unaffected. Both gates now use the
+    292 clean tasks; earlier MathQA-val calibration numbers should not be cited as held-out.
+  * Other review fixes: trainer always writes the final adapters; random-mix baseline uses the
+    concave hull; percent words in resampling; queue summary includes multi-turn results.
+  * Lab: a new commit replaces the project folder (2026-10-17 note; it also happened to
+    `dynamic-transformers-dory` in the Shabbos job). v3 adapters + config copied to
+    `~/AI/keep/ouro-chain-depth-v3/` on the lab (sha256 2c89ba25…60dc) and locally to
+    `results/chains_v3_run/ouro_sft/chain-depth-v3/`; the gates run in a new project folder.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 

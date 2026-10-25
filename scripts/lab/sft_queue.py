@@ -45,8 +45,10 @@ CHAINS_V2 = "results/chains/chains_s1_n8000_p0.2_s0.1.json"
 MATHQA = "results/mathqa/train_sft.json"
 MATHQA_VAL = "results/mathqa/validation_tasks.jsonl"
 MATHQA_AUG = "results/mathqa_aug/train_aug_sft.json"
-# Chain v3 (job 65b8f28d), trained in this lab project folder (dynamic-transformers-dory).
-V3 = "results/ouro_sft/chain-depth-v3/adapters.safetensors"
+MATHQA_CLEAN = "results/mathqa/validation_clean_tasks.jsonl"
+# Chain v3 (job 65b8f28d), copied out of its project folder (a new commit replaces the folder)
+# to ~/AI/keep on the lab; sha256 2c89ba25…60dc.
+V3 = "/Users/jeremywizenfeld/AI/keep/ouro-chain-depth-v3/adapters.safetensors"
 
 # name, loss, extra trainer args
 PLANS = {
@@ -148,15 +150,19 @@ PLANS = {
         ],
     },
     # v4 gate (2026-10-25): is more data worth a full v4 run? Both arms continue chain v3 for
-    # 600 steps (~2,400 examples) with the same recipe (LR 2e-5, warmup + cosine) and 1,000
-    # Hermes rows against forgetting; they differ only in the MathQA part: number-resampled
-    # new problems (``make_mathqa_aug.py``) vs a second pass over v3's own MathQA dialogues
-    # (controls for "more steps"). Evaluated on the first 120 MathQA-validation tasks at
-    # depths 1/2/4 (v3: .167/.367/.458), NESTful untouched. Decision rule: full v4 only if the
-    # augmented arm beats v3 by >= 3 points at depth 4 and beats the second-pass arm.
+    # 600 steps (~2,400 examples) with the same recipe (LR 2e-5, warmup + cosine) and Hermes
+    # rows at the same share of the pool (1/7) against forgetting; they differ only in the
+    # MathQA part: number-resampled new problems (``make_mathqa_aug.py``, 6,000) vs a partial
+    # second pass over v3's own 8,000 MathQA dialogues (controls for "more steps"). Evaluated
+    # on the 292 clean MathQA-validation tasks at depths 2 and 4 (v3 baseline = the router
+    # smoke's greedy rows, same protocol); NESTful untouched. Decision rule
+    # (``pilot_v4_analysis.py``): full v4 only if the augmented arm's paired gain over v3,
+    # averaged over depths 2 and 4, has a bootstrap 90% lower bound > 0 and its point estimate
+    # also beats the second-pass arm.
     "pilot-v4": {
         "prepare": [
             (MATHQA, [PY, "scripts/lab/make_mathqa.py"]),
+            (MATHQA_CLEAN, [PY, "scripts/lab/make_mathqa_clean_val.py"]),
             (MATHQA_AUG, [PY, "scripts/lab/make_mathqa_aug.py", "--sft-n", "6000"]),
         ],
         "train": [
@@ -170,24 +176,13 @@ PLANS = {
                 "pilot-epoch",
                 "depth",
                 ["--init-adapters", V3, "--extra-data", MATHQA]
-                + ["--hermes-train-n", "1000", "--max-steps", "600"],
+                + ["--hermes-train-n", "1333", "--max-steps", "600"],
             ),
         ],
         "eval": [
             (
                 "nestful-mt",
-                [
-                    "--n",
-                    "120",
-                    "--variant",
-                    "plain",
-                    "--tasks",
-                    MATHQA_VAL,
-                    "--steps",
-                    "1",
-                    "2",
-                    "4",
-                ],
+                ["--n", "292", "--variant", "plain", "--tasks", MATHQA_CLEAN, "--steps", "2", "4"],
             ),
         ],
     },
@@ -326,6 +321,10 @@ def main() -> None:
                 summary[f"{name}/{task}"] = json.loads(path.read_text())[
                     "overall_mean_of_categories"
                 ]
+    for path in sorted(Path("results/ouro_nestful_mt").glob("*/*/summary.json")):
+        name = f"{path.parent.parent.name}/{path.parent.name}"
+        if any(name.startswith(f"{m}/") for m, _, _ in plan["train"]):
+            summary[f"{name}/multiturn"] = json.loads(path.read_text())["accuracy"]
     print(json.dumps({"queue": "done", "hours": round((time.time() - t0) / 3600, 2)}), flush=True)
     print(json.dumps(summary, indent=1), flush=True)
     if failed:
