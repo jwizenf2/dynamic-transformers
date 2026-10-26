@@ -438,6 +438,23 @@
     `dynamic-transformers-dory` in the Shabbos job). v3 adapters + config copied to
     `~/AI/keep/ouro-chain-depth-v3/` on the lab (sha256 2c89ba25…60dc) and locally to
     `results/chains_v3_run/ouro_sft/chain-depth-v3/`; the gates run in a new project folder.
+- Gate results (job 6b4cc637, commit 80b8498, project dynamic-transformers-gates; results
+  `results/router_smoke/`, `results/pilot_v4/`):
+  * Router smoke, 292 clean MathQA-val tasks, v3 greedy d1/2/4 .096/.233/.360 (sampled
+    .068/.202/.298). Depth need is a stable property: P(sample ok | greedy ok) .39/.63/.69 vs
+    P(sample ok | greedy wrong) .03/.07/.08; cheapest-depth agreement .68 vs chance .43.
+    Oracle .404 at 1.62 mean loops. CV probe router at mean loops 1.5/2/2.5/3/3.5:
+    .192/.259/.299/.308/.339; question-only .192/.232/.263/.299/.314; random mix
+    .164/.233/.265/.296/.328. Gate: gain at 2.5 = +.034 (90% CI +.008 to +.063), PASS on
+    criterion (i) by .004; criterion (ii) fails (router needs 4.0 loops to reach fixed-4 − .01,
+    mix 3.85). Reading: a real but weak signal, about a quarter of the per-request headroom at
+    mid budgets, no savings at the high-accuracy end; question features add nothing.
+  * v4 pilot, paired on the same 292 tasks, mean of d2 and d4: v3 .296, aug arm .283 (d2/d4
+    .240/.325), partial second pass .318 (.281/.356). aug − v3 −.014 (90% CI −.038 to +.012);
+    second pass − v3 +.022 (−.003 to +.048); aug − second pass −.036 (−.062 to −.012). Verdict
+    SKIP FULL V4: number-resampled MathQA does not help on clean problems (and is worse than
+    more steps on the original data); the remaining errors are unfamiliar problem types, not
+    templates. Pilot final val CE by loop: aug .192/.164/.159/.158 vs v3 .181/.154/.150/.149.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
