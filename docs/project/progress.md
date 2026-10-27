@@ -476,6 +476,18 @@
   prompt loops and was corrected. The 60-task smoke showed v2 +.05 / v1 −.02 at 2.5 loops; every
   metric is therefore also reported on tasks 60–291. Labels kept on the lab at
   `~/AI/keep/router_smoke_v3/` (sha256 a2219190…0c42).
+- Router probe v2 result (job df8f262b, commit 9e699e1; `results/router_probe2/`): PASS.
+  (1) 24-feature decision-token router +.062 over the random mix at 2.5 loops, no probe cost
+  (90% CI +.035 to +.087; tasks 60–291 +.055); 8-token v1 +.034, question-only −.002. (2)
+  Deployable escalation router (start at 2 loops, loop-1/2 signals of the first ~45 tokens,
+  switch to 4) +.029 over the random mix at the mid budget (CI +.010 to +.050; tasks 60–291
+  +.017). Its curve: .339 at 0.79x fixed-4 cost (fixed-4 .360; random mix .307 at that cost),
+  .325 at 0.74x, .291 at 0.61x; it never reaches fixed-4 accuracy with savings. The full 4-loop
+  probe is not deployable without a shared prefix (−.18 uncached); with a shared cached tool
+  library +.012. Probe trajectory differs from the labelled d4 first turn on 3.4% of tasks.
+  Reading: decision-token signals predict depth need about twice as well as the 8-token probe;
+  a deployable escalation policy gains ~3 points at equal compute (~20–25% compute saved for
+  2–3.5 points of accuracy), a modest positive result.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
