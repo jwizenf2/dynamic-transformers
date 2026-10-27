@@ -88,10 +88,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--model", default="ByteDance/Ouro-2.6B")
     parser.add_argument("--adapters", required=True)
-    parser.add_argument("--tasks", default="results/mathqa/validation_clean_tasks.jsonl")
+    parser.add_argument(
+        "--tasks",
+        default="results/mathqa/validation_clean_tasks.jsonl",
+        help='NESTful-format jsonl, or "nestful" for the NESTful math subset (test set)',
+    )
+    parser.add_argument("--tag", default="", help="output folder suffix (e.g. nestful)")
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--n", type=int, default=292)
     parser.add_argument("--depths", type=int, nargs="+", default=[1, 2, 4])
+    parser.add_argument(
+        "--modes", nargs="+", choices=["greedy", "sample"], default=["greedy", "sample"]
+    )
     parser.add_argument("--k", type=int, default=8, help="probe tokens")
     parser.add_argument("--temperature", type=float, default=0.7)
     parser.add_argument("--max-turns", type=int, default=8)
@@ -102,9 +110,11 @@ def main() -> None:
     mx.set_cache_limit(int(args.cache_limit_gb * 1024**3))
     model, tok = load_model(args.model, None, args.adapters)
     stop_ids = {0, tok.convert_tokens_to_ids("<|im_end|>")}
-    examples, functions = requests(args.start + args.n, args.tasks)
+    tasks = None if args.tasks == "nestful" else args.tasks
+    examples, functions = requests(args.start + args.n, tasks)
     examples = examples[args.start :]
-    out = Path(f"results/router_smoke/{Path(args.adapters).parent.name}")
+    tag = f"_{args.tag}" if args.tag else ""
+    out = Path(f"results/router_smoke/{Path(args.adapters).parent.name}{tag}")
     out.mkdir(parents=True, exist_ok=True)
     path = out / "examples.jsonl"
     done, good = set(), []
@@ -132,7 +142,7 @@ def main() -> None:
             feats = probe(model, tok.encode(first, add_special_tokens=False), args.k)
             runs: dict[str, dict] = {}
             for d in args.depths:
-                for mode in ("greedy", "sample"):
+                for mode in args.modes:
                     model.ut_steps = d
                     caches = model.make_cache()
                     key = None if mode == "greedy" else mx.random.key(zlib.crc32(e.id.encode()) + d)

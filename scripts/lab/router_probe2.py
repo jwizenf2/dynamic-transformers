@@ -90,7 +90,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--model", default="ByteDance/Ouro-2.6B")
     parser.add_argument("--adapters", required=True)
-    parser.add_argument("--tasks", default="results/mathqa/validation_clean_tasks.jsonl")
+    parser.add_argument(
+        "--tasks",
+        default="results/mathqa/validation_clean_tasks.jsonl",
+        help='NESTful-format jsonl, or "nestful" for the NESTful math subset (test set)',
+    )
+    parser.add_argument("--tag", default="", help="output folder suffix (e.g. nestful)")
     parser.add_argument("--n", type=int, default=292)
     parser.add_argument("--k", type=int, default=48)
     parser.add_argument(
@@ -104,12 +109,13 @@ def main() -> None:
     mx.set_cache_limit(int(args.cache_limit_gb * 1024**3))
     model, tok = load_model(args.model, None, args.adapters)
     stop_ids = {0, tok.convert_tokens_to_ids("<|im_end|>")}
-    examples, _ = requests(args.n, args.tasks)
+    examples, _ = requests(args.n, None if args.tasks == "nestful" else args.tasks)
     smoke = [json.loads(x) for x in Path(args.smoke).read_text().splitlines()]
     assert [(e.id, e.query) for e in examples] == [(r["id"], r["query"]) for r in smoke], (
         "tasks differ from the router smoke's (rebuild of results/mathqa drifted?)"
     )
-    out = Path(f"results/router_probe2/{Path(args.adapters).parent.name}")
+    tag = f"_{args.tag}" if args.tag else ""
+    out = Path(f"results/router_probe2/{Path(args.adapters).parent.name}{tag}")
     out.mkdir(parents=True, exist_ok=True)
     path = out / "examples.jsonl"
     done, good = set(), []
