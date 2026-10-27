@@ -455,6 +455,27 @@
     SKIP FULL V4: number-resampled MathQA does not help on clean problems (and is worse than
     more steps on the original data); the remaining errors are unfamiliar problem types, not
     templates. Pilot final val CE by loop: aug .192/.164/.159/.158 vs v3 .181/.154/.150/.149.
+- 2026-10-26, mixed-traffic check (offline, v3 BFCL 1,000 + clean multi-step 292): the best
+  task-type rule (single-call → 2 loops, multi-step → 4) at 50% single-call traffic gives .610 at
+  3.0 loops vs .622 at fixed 4 and .584 for the random mix (+.026; +.016 at 80% single-call); the
+  per-request oracle is .654 at 1.42 loops. Task type explains little: single calls also gain
+  from 1 → 2 loops (BFCL .702/.846/.879), and most headroom is within task type.
+- Probe flaw found: the router smoke's 8 probe tokens were always `<tool_call>\n{"name": "` and
+  loops 1–3 matched loop 4 on 100% of them, so the probe never saw the decision tokens.
+  Loop speculative decoding (LoopSpec 2609.17184 and others) and cross-loop distillation (LoopOPD
+  2610.10623) were checked and are prior work; not pursued.
+- Router probe v2 (`router_probe2.py`, `router_probe2_analysis.py`): 48-token probe on the same
+  292 tasks, labels reused. Gate: (1) 24-feature router +.03 over the random mix at 2.5 loops
+  (no probe cost) with 90% lower bound > 0, and (2) a deployable escalation router (start at 2
+  loops, loop-1/2 signals of the first 48 tokens, switch to 4: cost 4·T_4 + 2k) not below the
+  random mix at the budget halfway between fixed-2 and fixed-4. Amendments before the lab run,
+  disclosed: (a) after a local smoke on the first 60 of the 292 tasks showed the uncached 4-loop
+  probe prefill dominating cost (−.25 for all feature sets), the gate moved to a prefix-cached
+  accounting; (b) the review showed every task has its own tool list (no shared prefix), so the
+  gate moved to the escalation design; (c) the review's escalation cost double-counted the reused
+  prompt loops and was corrected. The 60-task smoke showed v2 +.05 / v1 −.02 at 2.5 loops; every
+  metric is therefore also reported on tasks 60–291. Labels kept on the lab at
+  `~/AI/keep/router_smoke_v3/` (sha256 a2219190…0c42).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 

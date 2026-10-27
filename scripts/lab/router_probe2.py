@@ -93,6 +93,11 @@ def main() -> None:
     parser.add_argument("--tasks", default="results/mathqa/validation_clean_tasks.jsonl")
     parser.add_argument("--n", type=int, default=292)
     parser.add_argument("--k", type=int, default=48)
+    parser.add_argument(
+        "--smoke",
+        default="/Users/jeremywizenfeld/AI/keep/router_smoke_v3/examples.jsonl",
+        help="router smoke rows whose tasks (ids, queries, order) this probe must match",
+    )
     parser.add_argument("--cache-limit-gb", type=float, default=2.0)
     args = parser.parse_args()
 
@@ -100,6 +105,10 @@ def main() -> None:
     model, tok = load_model(args.model, None, args.adapters)
     stop_ids = {0, tok.convert_tokens_to_ids("<|im_end|>")}
     examples, _ = requests(args.n, args.tasks)
+    smoke = [json.loads(x) for x in Path(args.smoke).read_text().splitlines()]
+    assert [(e.id, e.query) for e in examples] == [(r["id"], r["query"]) for r in smoke], (
+        "tasks differ from the router smoke's (rebuild of results/mathqa drifted?)"
+    )
     out = Path(f"results/router_probe2/{Path(args.adapters).parent.name}")
     out.mkdir(parents=True, exist_ok=True)
     path = out / "examples.jsonl"
