@@ -488,6 +488,15 @@
   Reading: decision-token signals predict depth need about twice as well as the 8-token probe;
   a deployable escalation policy gains ~3 points at equal compute (~20–25% compute saved for
   2–3.5 points of accuracy), a modest positive result.
+- 2026-10-27 pre-registration (before any NESTful router data; `router_confirm.py` docstring):
+  the escalation router frozen on the 292 clean tasks (λ from training out-of-fold probabilities
+  at 0.75x fixed-4 cost) is applied once to NESTful requests [0, 240) (greedy labels at depths
+  1–4; the first 120 reproduce all earlier NESTful numbers). Primary: gain over the best random
+  mix of fixed depths at the realised cost, bootstrap 90% CI; CONFIRMED / CONSISTENT / NOT
+  CONFIRMED. n raised from 120 to 240 after the review's power estimate (P(CONFIRMED) ~0.44 at
+  120, ~0.7 at 240 if the clean-set effect transfers). Step 2 (stronger router, developed only on
+  the clean val + the 239-task MathQA-test pool from `make_mathqa_testpool.py`) is tested once on
+  the unseen NESTful requests [240, 480), paired against the frozen router.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 

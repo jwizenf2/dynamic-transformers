@@ -17,14 +17,27 @@ the 292 clean MathQA-validation tasks:
   fixed-4 cost (closest grid point), i.e. "save a quarter of the compute";
 * policy: switch to 4 loops iff λ·4/4 − P_4 < λ·2/4 − P_2.
 
-Then applied once to the 120 NESTful requests of ``ouro_nestful_multiturn`` (greedy labels at
-depths 1, 2, 4 from ``router_smoke.py --tasks nestful --modes greedy``, probe from
-``router_probe2.py --tasks nestful``). Primary: accuracy of the frozen policy minus the best
-random mix of fixed depths on NESTful at the policy's realised NESTful cost (upper concave hull
-of NESTful's fixed (mean loop-tokens, accuracy)), with a bootstrap 90% interval over requests
-(choices fixed). CONFIRMED if the lower bound > 0, CONSISTENT if the point estimate > 0, else
-NOT CONFIRMED. Secondary: the frozen models' full λ curve on NESTful, and the fixed-depth
-accuracies (depth 4 should reproduce the earlier .475 of ``ouro_nestful_multiturn``).
+Then applied once to NESTful requests [0, 240) in the depth-balanced order of
+``ouro_nestful_multiturn`` (greedy labels at depths 1–4 from ``router_smoke.py --tasks nestful
+--modes greedy``, probe from ``router_probe2.py --tasks nestful``; the first 120 are the set of
+all earlier fixed-depth NESTful numbers and reproduce them).
+
+Primary: accuracy of the frozen policy minus the best random mix of fixed depths on NESTful at
+the policy's realised NESTful cost (upper concave hull of NESTful's fixed (mean loop-tokens,
+accuracy), depths 1–4), with a bootstrap 90% interval over requests (choices fixed). CONFIRMED
+if the lower bound > 0, CONSISTENT if the point estimate > 0, else NOT CONFIRMED. Power (review,
+from the clean-set rows): bootstrap SD of the gain ~.013 at n = 240, so a transfer of the
+clean-set effect (+.029) gives CONFIRMED with probability ~0.7; CONSISTENT with an interval
+covering +.029 is weak but not contrary evidence. If the policy's realised cost exceeds
+fixed-4's, it is compared with fixed-4 directly (flagged). Secondary: the frozen models' full λ
+curve on NESTful, and the fixed-depth accuracies (on the first 120, depth 4 should reproduce
+the earlier .475).
+
+Step 2 (pre-registered here, same day, before any NESTful router data): a stronger router,
+developed only on the clean MathQA-val tasks and the MathQA-test pool, is tested once on the
+unseen NESTful requests [240, 480) against this frozen router at the same operating-point rule;
+primary = paired accuracy difference at equal realised cost, one-sided bootstrap. The
+confirmation requests [0, 240) are not used to choose between routers.
 """
 
 from __future__ import annotations
@@ -37,7 +50,7 @@ import numpy as np
 from router_probe2_analysis import features_escalate, hull_interp, policy_curve
 from router_smoke_analysis import fit_logistic, oof_probs
 
-DEPTHS = (1, 2, 4)
+DEPTHS = (1, 2, 4)  # labels every set has; fixed 3 joins the baseline hull when present
 ESC = (2, 4)
 TARGET = 0.75
 
@@ -66,6 +79,10 @@ def load(smoke_dir: str, probe_dir: str):
     k = np.array([len(probes[r["id"]]["probe"]) for r in smoke], float)
     fixed = {d: d * t[d] for d in DEPTHS}
     esc = {2: 2 * t[2], 4: 4 * t[4] + 2 * k}
+    if all("d3_greedy" in r["runs"] for r in smoke):
+        run3 = [r["runs"]["d3_greedy"] for r in smoke]
+        y[3] = np.array([r["correct"] for r in run3], float)
+        fixed[3] = 3 * np.array([r["prompt_tokens"] + r["tokens"] for r in run3], float)
     return x, y, fixed, esc
 
 
@@ -87,11 +104,13 @@ def main() -> None:
     # operating point from out-of-fold probabilities on the training tasks
     oof = oof_probs(xtr, ytr)
     grid = np.linspace(0, 2, 401)
-    ratios = []
+    ratios, esc_rates = [], []
     for lam in grid:
         c = choose(oof, lam)
         ratios.append(np.mean(np.where(c == 4, esc_tr[4], esc_tr[2])) / fixed_tr[4].mean())
-    lam_star = float(grid[int(np.argmin(np.abs(np.array(ratios) - TARGET)))])
+        esc_rates.append(float((c == 4).mean()))
+    star = int(np.argmin(np.abs(np.array(ratios) - TARGET)))
+    lam_star = float(grid[star])
 
     # frozen models on all training tasks
     mu = np.nanmean(xtr, axis=0)
@@ -108,8 +127,11 @@ def main() -> None:
     cost = np.where(choice == 4, esc_te[4], esc_te[2])
 
     def gain(idx):
-        fp = [(float(fixed_te[d][idx].mean()), float(yte[d][idx].mean())) for d in DEPTHS]
-        return float(correct[idx].mean() - hull_interp(fp, float(cost[idx].mean())))
+        fp = [(float(fixed_te[d][idx].mean()), float(yte[d][idx].mean())) for d in fixed_te]
+        c = float(cost[idx].mean())
+        if c > fixed_te[4][idx].mean():  # beyond the fixed range: compare with fixed-4
+            return float(correct[idx].mean() - yte[4][idx].mean())
+        return float(correct[idx].mean() - hull_interp(fp, c))
 
     rng = np.random.default_rng(0)
     boots = [gain(rng.integers(0, n, n)) for _ in range(2000)]
@@ -120,8 +142,10 @@ def main() -> None:
         "n_train": len(xtr),
         "n_test": n,
         "lambda": lam_star,
-        "train_oof_cost_ratio": float(ratios[int(np.argmin(np.abs(np.array(ratios) - TARGET)))]),
-        "nestful_fixed_accuracy": {d: float(yte[d].mean()) for d in DEPTHS},
+        "train_oof_cost_ratio": float(ratios[star]),
+        "train_oof_escalated": esc_rates[star],
+        "nestful_fixed_accuracy": {d: float(yte[d].mean()) for d in sorted(yte)},
+        "nestful_first120_fixed_accuracy": {d: float(yte[d][:120].mean()) for d in sorted(yte)},
         "nestful_fixed_cost_ratio": {
             d: float(fixed_te[d].mean() / fixed_te[4].mean()) for d in DEPTHS
         },
@@ -129,6 +153,7 @@ def main() -> None:
             "accuracy": float(correct.mean()),
             "cost_ratio_vs_fixed4": float(cost.mean() / fixed_te[4].mean()),
             "escalated": float((choice == 4).mean()),
+            "cost_above_fixed4_flag": bool(cost.mean() > fixed_te[4].mean()),
         },
         "primary_gain_vs_random_mix": g,
         "ci90": [lo, hi],
