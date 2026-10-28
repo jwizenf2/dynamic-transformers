@@ -497,6 +497,15 @@
   120, ~0.7 at 240 if the clean-set effect transfers). Step 2 (stronger router, developed only on
   the clean val + the 239-task MathQA-test pool from `make_mathqa_testpool.py`) is tested once on
   the unseen NESTful requests [240, 480), paired against the frozen router.
+- NESTful confirmation (job 52705b16, commit 0557977; `results/router_confirm/confirm.json`):
+  CONSISTENT. Fixed depths on NESTful [0, 240) d1–4 .171/.383/.442/.492 (first 120 reproduce
+  .158/.383/.400/.475 exactly). Frozen escalation router (λ .22): .471 at 0.764x fixed-4 cost,
+  escalating 49.6% (training out-of-fold 47.3%); gain over the best random mix at that cost
+  +.030 (90% CI −.005 to +.048; clean-set estimate was +.029). Versus fixed 3 loops at the same
+  cost (0.769x): +.029 paired (CI −.008 to +.067; 18 wins / 11 losses). Halves: first 120 router
+  .475 = fixed-4 at 0.76x cost; requests 120–239 router .467 vs fixed-3 .483 / fixed-4 .508.
+  Reading: the effect size transfers almost exactly but n = 240 cannot exclude zero at 90%.
+  Test-pool labels for step 2 collected (239 tasks, greedy d1/2/4 + probe).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
