@@ -80,12 +80,18 @@ compute and keeps its savings under batching).
 ## Phase E: baselines and remaining items
 
 - Baselines: fixed depths, random mix, task-type rule (single-call → 2, multi-step → 4), Ouro's exit
-  gate (q sweep), question-only router, 8-token probe router, LoopSpec, perfect router (ceiling).
+  gate (q sweep), KL-based per-token halting (stop looping when successive loops' output
+  distributions differ by less than a threshold; Geiping et al. 2025, training-free), question-only router, 8-token probe router, LoopSpec, perfect router (ceiling).
 - Training seeds (2 more) for chain v3 / depth-aware vs Ouro loss claims.
 - Ablations: features, probe length, operating points, {1,2,4} vs {1,2,3,4}.
 - Related work: LoopSpec, WaveFront, DAS, LoopAhead (speculative decoding for looped LMs); LoopOPD,
   LoopFormer (cross-loop distillation); 2607.20519 (fixed-prior depth supervision); Dr.LLM, LEDE,
-  LayerSkip, CALM (early exit); Ouro, Dory, Huginn/Raven (looped LMs).
+  LayerSkip, CALM (early exit); Ouro, Dory, Huginn/Raven, Nanbeige4.2 (looped LMs); Universal
+  Transformers (adaptive halting); Mixture-of-Recursions (per-token recursion router trained in
+  pretraining; ours is post-hoc, per request, batching-friendly, for multi-step tool use); SMELT
+  (looped vs conventional at matched compute); Virtual Logic Depth. Motivation: Raschka (Sep 2026)
+  on The Information's unconfirmed report that GPT-6 Astra uses looping; cite only as reported.
+  Note: Ouro's released code always runs all 4 passes (no early exit in practice).
 - Writing (weeks 7–8): analysis-paper framing (compute allocation in looped LMs for tool use; per-step
   depth = search; per-request headroom = mostly unsolvable requests; deployable router; batching;
   depth vs width; MathQA leakage audit), independent review, code/data release.
