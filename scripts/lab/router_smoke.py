@@ -26,9 +26,10 @@ Per request:
   the loop-4 argmax and the relative state change (``ouro_early_features.probe``, [k, 4, 5]).
   A deployed probe-then-commit router would pay these k tokens at full depth.
 * Dialogues at each depth in ``--depths``: greedy, and one sample (temperature
-  ``--temperature``, seed ``crc32(id) + depth`` then split per token), with the protocol of
-  ``ouro_nestful_multiturn.py`` (plain prompt; every pass of every turn at the request's depth,
-  incremental KV cache; executed and graded like NESTful).
+  ``--temperature``, seed ``crc32(id) + depth`` then split per token), plus optional extra samples
+  ``--sample-seeds s ...`` (``d<d>_sample<s>``, seed ``crc32(id) + depth + 1000·s``), with the
+  protocol of ``ouro_nestful_multiturn.py`` (plain prompt; every pass of every turn at the
+  request's depth, incremental KV cache; executed and graded like NESTful).
 Rows are appended (``examples.jsonl``) and a restart skips done ids.
 """
 
@@ -100,6 +101,13 @@ def main() -> None:
     parser.add_argument(
         "--modes", nargs="+", choices=["greedy", "sample"], default=["greedy", "sample"]
     )
+    parser.add_argument(
+        "--sample-seeds",
+        type=int,
+        nargs="*",
+        default=[],
+        help="extra sampled runs per depth, named d<d>_sample<s> (seed crc32(id) + d + 1000·s)",
+    )
     parser.add_argument("--k", type=int, default=8, help="probe tokens")
     parser.add_argument("--temperature", type=float, default=0.7)
     parser.add_argument("--max-turns", type=int, default=8)
@@ -141,11 +149,14 @@ def main() -> None:
             model.ut_steps = 4
             feats = probe(model, tok.encode(first, add_special_tokens=False), args.k)
             runs: dict[str, dict] = {}
+            seed0 = zlib.crc32(e.id.encode())
             for d in args.depths:
-                for mode in args.modes:
+                plan = [(m, None if m == "greedy" else seed0 + d) for m in args.modes]
+                plan += [(f"sample{s}", seed0 + d + 1000 * s) for s in args.sample_seeds]
+                for mode, seed in plan:
                     model.ut_steps = d
                     caches = model.make_cache()
-                    key = None if mode == "greedy" else mx.random.key(zlib.crc32(e.id.encode()) + d)
+                    key = None if seed is None else mx.random.key(seed)
                     log = {"tokens": 0, "prompt_tokens": 0, "texts": []}
                     assistant = make_assistant(
                         model,

@@ -19,17 +19,23 @@ Each phase gates the next. Pre-register every confirmatory test; develop only on
 
 ## Phase A: a router that matches fixed-4 accuracy at less compute (first)
 
-A1. Three-way decision at the 2-loop start: give up (continue at 1 loop, keeping the probe tokens:
-    2·(P+k) + (T_1 − P − k)), stay at 2 (2·T_2), escalate to 4 (4·T_4 + 2·k). Variant: start at 1
-    loop with loop-1-only signals.
-A2. Denoised labels: 3–4 sampled dialogues per depth (1, 2, 4) on the 531 training tasks (292 clean
-    val + 239 MathQA-test pool) → per-task success-probability estimates; train on soft targets.
+A1. Focus (user, 2026-10-28): the 2-vs-4 decision, i.e. match fixed-4 accuracy at less compute by
+    escalating exactly the requests that need 4 loops (NESTful: 85 correct at both, 33 only at 4,
+    7 only at 2, 115 at neither; perfect 2-vs-4 router .521 at 0.83x vs fixed-4 .492). Simulated
+    on NESTful outcomes: "4 helps" AUC ~.66 (today) matches fixed-4 at ~0.85x; ~.75 beats it at
+    ~0.76–0.80x. Saving compute on requests failed at every depth ("give up") is a later, separate
+    step, and if used is framed as selective prediction (flag likely failures).
+A2. Denoised labels: 3 extra sampled dialogues per depth (2, 4) on the 531 training tasks (292 clean
+    val + 239 MathQA-test pool) → per-task success rates; train on the expected benefit of 4 loops
+    (greedy + samples), evaluate on greedy outcomes only. Cross-validation folds keep all samples of
+    a task together. Two disjoint sample sets give a reliability ceiling for "4 helps".
 A3. Features: hidden states at the decision tokens (loops 1–2, pooled; PCA/ridge), token-type
     features (function-name token, digit tokens), probe length 16/32/48/64.
 A4. Models/objective: logistic, ridge on PCA, small MLP, gradient boosting; direct expected-reward
     policy (argmax_d p_d − λ·cost_d) instead of independent per-depth classifiers.
-A5. Protocol: develop by cross-validation on the 531; pre-register the final router and target
-    (within 1 point of fixed-4 at <= 0.80x cost, plus gain over the random mix); test once on
+A5. Protocol: develop by cross-validation on the 531 (a held-out 20% dev split or nested CV for
+    the final choice, short pre-listed model set); pre-register the final router and target
+    (within 1 point of fixed-4 at <= 0.85x cost, stretch <= 0.80x, plus gain over the random mix); test once on
     NESTful [240, 720) (480 unseen requests); report pooled with [0, 240) as secondary.
 A6. Optional: mid-dialogue escalation after the first tool result (needs new runs); bandit
     (online, bandit feedback) learning the same decision, offline replay with regret curves.

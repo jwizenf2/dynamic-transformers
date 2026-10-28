@@ -15,7 +15,9 @@ is prefilled at 4 loops, then up to ``k`` tokens are decoded greedily along the 
 (stopping at ``<|im_end|>`` or end of text), recording per token and loop: Ouro's exit-gate
 value, next-token entropy, top-2 log-prob margin, whether the loop's argmax equals loop 4's,
 and the relative state change ‖h_p − h_{p−1}‖/‖h_{p−1}‖ (as ``ouro_early_features.probe``),
-plus the loop-4 token ids, the prompt length and the system-prompt length (for the cost of the
+plus the loop-4 token ids, the prompt length and the system-prompt length; with ``--hidden``
+also the normed hidden states after loops 1 and 2 per probe token (``hidden/<id>.npy``,
+[t, 2, H] float16), (for the cost of the
 probe with and without prefix caching). Rows are appended
 to ``results/router_probe2/<model>/examples.jsonl``; a restart skips done ids.
 """
@@ -37,12 +39,15 @@ from ouro_nestful_multiturn import requests  # noqa: E402
 from ouro_sft_eval import SYSTEM, load_model  # noqa: E402
 
 
-def probe(model, ids: list[int], k: int, stop_ids: set[int]) -> tuple[np.ndarray, list[int]]:
+def probe(
+    model, ids: list[int], k: int, stop_ids: set[int], hidden: list | None = None
+) -> tuple[np.ndarray, list[int]]:
     """([t, 4, 5] stats, loop-4 token ids) for the first t <= k greedy tokens at 4 loops.
 
     Stats per token and loop: (gate, entropy, margin, agrees_with_loop4, rel_state_change);
     loop 1's state change is NaN. Same computation as ``ouro_early_features.probe`` but it stops
-    at any of ``stop_ids`` and returns the tokens.
+    at any of ``stop_ids`` and returns the tokens. If ``hidden`` is a list, the normed hidden
+    state of the token's position after loops 1 and 2 is appended per token ([2, H] float16).
     """
     n_layers = model.cfg.num_hidden_layers
     model.ut_steps = 4
@@ -53,12 +58,13 @@ def probe(model, ids: list[int], k: int, stop_ids: set[int]) -> tuple[np.ndarray
         h = model.model.embed_tokens(tokens)
         mask = "causal" if tokens.shape[1] > 1 else None
         prev = None
-        stats, argmaxes = [], []
+        stats, argmaxes, states = [], [], []
         for step in range(4):
             for i, layer in enumerate(model.model.layers):
                 h = layer(h, mask, caches[step * n_layers + i])
             h = model.model.norm(h)
             last = h[0, -1].astype(mx.float32)
+            states.append(last)
             z = model.lm_head(last)
             logp = z - mx.logsumexp(z)
             top2 = mx.topk(logp, 2)
@@ -72,6 +78,8 @@ def probe(model, ids: list[int], k: int, stop_ids: set[int]) -> tuple[np.ndarray
             stats.append(mx.stack([gate, ent, mx.abs(top2[1] - top2[0]), change]))
             argmaxes.append(mx.argmax(logp))
             prev = last
+        if hidden is not None:
+            hidden.append(np.array(mx.stack(states[:2]).astype(mx.float16)))
         s = np.array(mx.stack(stats))  # [4, 4]
         am = [int(a.item()) for a in argmaxes]
         row = np.empty((4, 5), dtype=np.float32)
@@ -103,6 +111,9 @@ def main() -> None:
         "--smoke",
         default="/Users/jeremywizenfeld/AI/keep/router_smoke_v3/examples.jsonl",
         help="router smoke rows whose tasks (ids, queries, order) this probe must match",
+    )
+    parser.add_argument(
+        "--hidden", action="store_true", help="also save loop-1/2 hidden states per probe token"
     )
     parser.add_argument("--cache-limit-gb", type=float, default=2.0)
     args = parser.parse_args()
@@ -142,7 +153,11 @@ def main() -> None:
                 "<|im_start|>assistant\n"
             )
             ids = tok.encode(first, add_special_tokens=False)
-            stats, out_ids = probe(model, ids, args.k, stop_ids)
+            states: list | None = [] if args.hidden else None
+            stats, out_ids = probe(model, ids, args.k, stop_ids, states)
+            if states is not None:  # [t, 2, H] float16, one file per task
+                (out / "hidden").mkdir(exist_ok=True)
+                np.save(out / "hidden" / f"{e.id}.npy", np.stack(states))
             system_block = f"<|im_start|>system\n{system}<|im_end|>\n"
             row = {
                 "id": e.id,
