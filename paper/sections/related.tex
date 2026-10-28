@@ -11,13 +11,19 @@ supports a last-loop KV cache \citep{nvidia2026dory}; Nanbeige4.2 runs its whole
 reports little benefit from more passes \citep{nanbeige2026}. Theory and controlled studies relate
 loops to multi-step reasoning \citep{saunshi2025latent,kohli2026loop}, and fine-tuned looped
 models improve compositional tool calling \citep{popescu2026toolcalling}. These works fix the
-loop count or use the model's own halting rule at inference; we study how to allocate loops.
+loop count or use the model's own halting rule at inference. Our work differs from
+\citet{popescu2026toolcalling}, the closest to it, in question and in protocol: we study where
+to spend loops rather than whether they help; calls are executed one turn at a time rather than
+generated as one sequence; every allocation policy is compared with random mixes of fixed depths
+and with a sampling control at equal compute, under batched serving; and confirmatory results
+are fixed in advance and measured on held-out requests.
 
 \paragraph{Adaptive depth: halting, early exit and routing.}
 Adaptive computation time \citep{graves2016adaptive} and PonderNet \citep{banino2021pondernet}
 learn when a recurrent computation should stop; Ouro's exit gate follows this line
 \citep{zhu2025ouro}. Diagnoses of learned gates in looped transformers find that they are not
-Pareto-optimal and that their depth use does not track problem difficulty \citep{popescu2026halting,olszowiec2026monitoring}. In standard
+Pareto-optimal and that their depth use does not track problem difficulty \citep{popescu2026halting,olszowiec2026monitoring}, and Ouro's per-loop KV caches remove most of the
+savings of exiting early \citep{mishra2026dynamic}. In standard
 transformers, early exit stops at an intermediate layer when the model is confident
 \citep{schuster2022calm,elhoushi2024layerskip}, and learned routers skip or repeat layers per
 token or per input
