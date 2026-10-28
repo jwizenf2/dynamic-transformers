@@ -29,8 +29,18 @@ A2. Denoised labels: 3 extra sampled dialogues per depth (2, 4) on the 531 train
     val + 239 MathQA-test pool) → per-task success rates; train on the expected benefit of 4 loops
     (greedy + samples), evaluate on greedy outcomes only. Cross-validation folds keep all samples of
     a task together. Two disjoint sample sets give a reliability ceiling for "4 helps".
+A2b. Pre-registered analysis of the new labels (review 2026-10-28): per task, success rates at 2 and
+    4 loops from greedy + 4 samples (T 0.7); Δ = P_4 − P_2. Reliability ceiling: disjoint sample
+    halves A = {s0, s1}, B = {s2, s3}; report corr(Δ_A, Δ_B), AUC of Δ_A for (Δ_B > 0) and for the
+    greedy "4 helps" label (Spearman-Brown to 4 samples); no feature router can beat the
+    sample→greedy AUC. Greedy outcomes stay the only evaluation target; sample-trained models are a
+    label-smoothing variant compared against greedy-only training. One row per task in CV.
 A3. Features: hidden states at the decision tokens (loops 1–2, pooled; PCA/ridge), token-type
     features (function-name token, digit tokens), probe length 16/32/48/64.
+    Hidden states (pre-registered): <= 3 poolings (mean loop-2 state; mean loop-2 − loop-1; mean at
+    tokens where loops 1/2 disagree) → standardise → PCA fitted inside each training fold, k in
+    {16, 32, 64} → L2 logistic/ridge, λ from a 3-point grid by nested CV; same folds and paired
+    bootstrap against the 12-feature router.
 A4. Models/objective: logistic, ridge on PCA, small MLP, gradient boosting; direct expected-reward
     policy (argmax_d p_d − λ·cost_d) instead of independent per-depth classifiers.
 A5. Protocol: develop by cross-validation on the 531 (a held-out 20% dev split or nested CV for

@@ -99,7 +99,7 @@ def main() -> None:
     parser.add_argument("--n", type=int, default=292)
     parser.add_argument("--depths", type=int, nargs="+", default=[1, 2, 4])
     parser.add_argument(
-        "--modes", nargs="+", choices=["greedy", "sample"], default=["greedy", "sample"]
+        "--modes", nargs="*", choices=["greedy", "sample"], default=["greedy", "sample"]
     )
     parser.add_argument(
         "--sample-seeds",

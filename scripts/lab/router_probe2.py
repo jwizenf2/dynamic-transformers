@@ -157,7 +157,9 @@ def main() -> None:
             stats, out_ids = probe(model, ids, args.k, stop_ids, states)
             if states is not None:  # [t, 2, H] float16, one file per task
                 (out / "hidden").mkdir(exist_ok=True)
-                np.save(out / "hidden" / f"{e.id}.npy", np.stack(states))
+                arr = np.stack(states)
+                assert np.isfinite(arr).all(), f"{e.id}: non-finite hidden state (float16 overflow)"
+                np.save(out / "hidden" / f"{e.id}.npy", arr)
             system_block = f"<|im_start|>system\n{system}<|im_end|>\n"
             row = {
                 "id": e.id,
