@@ -61,6 +61,14 @@ feasibility check, then SFT data / zero-shot protocol, depth labels, router tran
 Ouro-1.4B with the chain-v3 recipe (scale axis); Dory 1.0 4B zero-shot (another lab; depth saturates
 at ~2 loops, so allocation should matter less); optionally Dory fine-tuned (MLX trainer to build).
 
+Candidate: Nanbeige4.2-3B (Nanbeige Lab, arXiv 2607.22083; weights at
+huggingface.co/Nanbeige/Nanbeige4.2-3B, weight license not stated in the paper): looped, the whole
+stack run twice (2 passes, fixed in training; more passes gave marginal gains and unstable
+training), strong agentic results (MCP-Atlas 57.8, Claw-Eval Pass^3 52.2, SWE-Bench Verified 63.6).
+Only a 1-vs-2 depth choice exists, and only if 1-pass output is usable (no per-pass training
+signal reported): check 1 vs 2 passes on BFCL / NESTful before adopting. Related-work evidence that
+returns flatten after 2 passes (as for Dory's recommended default and our 3-loop result).
+
 ## Phase D: measured throughput
 
 End-to-end serving benchmark (MLX) with mixed single-call / multi-step traffic, batch 1–16:
