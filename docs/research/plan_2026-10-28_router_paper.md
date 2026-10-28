@@ -4,6 +4,16 @@ User's order of priorities: (A) make the router effect clearly significant first
 benchmark, (C) other models, (D) measured throughput, (E) more baselines and the remaining items.
 Each phase gates the next. Pre-register every confirmatory test; develop only on non-test data.
 
+## Venue (decided 2026-10-28)
+
+ACL 2027 via ACL Rolling Review, submission deadline 4 January 2027 (AoE; Kyoto, Aug 17–22,
+2027): long paper, 8 pages + references + appendix, Limitations section required; Findings is a
+possible outcome. Fallback if Phases B–D slip: COLM 2027 (deadline expected late March 2027, not
+yet announced). ICML 2027 (expected late January) fits less well: the paper is an empirical study
+of language models in tool use. Draft: `paper/` (ACL template, style files pinned).
+Astra (GPT-6) is not cited: its looped architecture rests on one anonymous report (The
+Information, via Fortune), with no OpenAI technical disclosure.
+
 ## Where we are
 
 - Escalation router (start at 2 loops, loop-1/2 decision-token signals, switch to 4) frozen on 292

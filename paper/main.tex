@@ -1,0 +1,40 @@
+% Working draft for ACL 2027 (ACL Rolling Review, January 2027 cycle).
+% Long paper: up to 8 pages of content in review mode; Limitations section required (not counted).
+\documentclass[11pt]{article}
+\usepackage[review]{acl}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{inconsolata}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{xcolor}
+
+% Numbers that depend on experiments still running (Phase A) are marked, never filled in.
+\newcommand{\pending}[1]{\textcolor{red}{[#1]}}
+
+\title{Two Loops or Four? Allocating Recurrent Depth in Looped Language Models for Multi-Step Tool Use}
+
+\author{Anonymous ACL submission}
+
+\begin{document}
+\maketitle
+
+\input{sections/abstract}
+\input{sections/introduction}
+\input{sections/related}
+
+% Sections still to write: setup (models, data, protocol, compute accounting, leakage audit),
+% per-step allocation, what each loop count buys, predictability of depth need, the escalation
+% router and its held-out confirmation, serving under batching, limitations.
+
+\section*{Limitations}
+\pending{To be written; must cover: single task family until Phase B, model sizes, greedy
+decoding only, compute counted in loop-tokens until Phase D, outcome noise in per-request labels.}
+
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,18 @@
+\begin{abstract}
+Looped language models apply a shared stack of layers several times per token, so one
+checkpoint can trade inference compute for accuracy by changing its loop count. In practice the
+loop count is fixed per deployment, or chosen per token by a halting gate whose savings do not
+survive batched serving. We study how a looped model should allocate depth in multi-step tool
+use, where each call is executed and the final answer can be checked. With Ouro-2.6B fine-tuned
+for chained calls and evaluated on NESTful, and Dory-1.0-4B as a second model for the
+per-step analysis, we find three things. First, choosing the loop count separately for each tool
+call appears to help, but a sampling control with the same budget matches it on both models: the
+gain comes from search, not from allocating depth. Second, one loop is too shallow and three
+loops are no better than randomly mixing two and four at equal compute, so the decision that
+matters is two loops or four. Third, how much depth a request needs is a stable property that
+the request text does not reveal, but that early loops do: they agree on boilerplate and
+disagree on the decision tokens of the first tool call. An escalation router that starts every
+request at two loops and reads these signals \pending{matches four-loop accuracy at X\% of its
+compute} on held-out NESTful requests. We also find that most MathQA validation problems have
+a near-duplicate in the training split, which inflates results on this widely used source.
+\end{abstract}

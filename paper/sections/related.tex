@@ -1,0 +1,60 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Looped and recurrent-depth language models.}
+Weight sharing across depth goes back to Universal Transformers \citep{dehghani2019universal}.
+Recent work scales it to pretrained language models: a recurrent-depth model trained with a
+random number of iterations can spend more loops at test time \citep{geiping2025recurrent};
+Ouro trains a looped model with an entropy-regularised exit distribution over four loops
+\citep{zhu2025ouro}; Dory-1.0 loops a middle block between fixed input and output blocks and
+supports a last-loop KV cache \citep{nvidia2026dory}; Nanbeige4.2 runs its whole stack twice and
+reports little benefit from more passes \citep{nanbeige2026}. Theory and controlled studies relate
+loops to multi-step reasoning \citep{saunshi2025latent,kohli2026loop}, and fine-tuned looped
+models improve compositional tool calling \citep{popescu2026toolcalling}. These works fix the
+loop count or use the model's own halting rule at inference; we study how to allocate loops.
+
+\paragraph{Adaptive depth: halting, early exit and routing.}
+Adaptive computation time \citep{graves2016adaptive} and PonderNet \citep{banino2021pondernet}
+learn when a recurrent computation should stop; Ouro's exit gate follows this line
+\citep{zhu2025ouro}. Diagnoses of learned gates in looped transformers find that they are not
+Pareto-optimal and that their depth use does not track problem difficulty \citep{popescu2026halting,olszowiec2026monitoring}. In standard
+transformers, early exit stops at an intermediate layer when the model is confident
+\citep{schuster2022calm,elhoushi2024layerskip}, and learned routers skip or repeat layers per
+token or per input
+\citep{raposo2024mod,he2025routertuning,luo2025flexidepth,heakl2026drllm,li2025cola}, in one
+case choosing exit layers with reinforcement learning \citep{zhu2026lede}.
+Mixture-of-Recursions trains a per-token router over recursion depth during pretraining
+\citep{bae2025mor}. Our router differs in three ways: it acts once per request rather than per
+token, so batched serving keeps its savings; it is fitted after training on a frozen looped model;
+and it is evaluated on multi-step tool use with executed calls.
+
+\paragraph{Speculative decoding with loops.}
+Because a shallow loop's prediction is a prefix of the full computation, looped models can
+draft tokens at few loops and verify them at full depth without changing the output
+\citep{leviathan2023speculative,geiping2025recurrent}. LoopSpec pipelines this and reports about
+3$\times$ faster batch-size-1 decoding on Ouro-2.6B \citep{cho2026loopspec}, with related
+schemes in \citet{ha2026wavefront}, \citet{li2026das} and \citet{liu2026loopahead}. These methods
+reduce latency at a fixed depth and leave the output unchanged; they do not decide the depth.
+They are complementary to ours, and their observation that one-loop drafts usually match the
+four-loop output agrees with our finding that loops disagree mainly on decision tokens.
+Cross-loop distillation instead trains shallow loops to imitate the deepest one
+\citep{wang2026loopopd}.
+
+\paragraph{Allocating test-time compute.}
+Spending more inference compute on harder inputs can beat a larger model at equal cost
+\citep{snell2024scaling}, and learned predictors can allocate decoding budget per input
+\citep{damani2024learning}. Width-based methods sample several answers and vote
+\citep{wang2023selfconsistency}. Model routing and cascades choose between models of different
+sizes from the input or from a cheap model's confidence
+\citep{chen2024frugalgpt,ong2025routellm,gupta2024cascades}. We allocate depth within one looped
+model, compare depth with width at equal compute, and show that the input alone does not reveal
+which requests need more depth.
+
+\paragraph{Tool use.}
+Language models learn to call tools from demonstrations and synthetic data
+\citep{schick2023toolformer,patil2024gorilla,liu2024apigen} and are evaluated on single and
+parallel calls \citep{patil2025bfcl} and on nested sequences whose calls depend on earlier
+results \citep{basu2024nestful}. NESTful's math portion is built from the MathQA test split
+\citep{amini2019mathqa}, whose problems derive from AQuA-RAT \citep{ling2017aqua}; we use the
+same construction on MathQA's training split for fine-tuning and audit its overlap with
+validation and test.

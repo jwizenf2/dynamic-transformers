@@ -1,0 +1,66 @@
+\section{Introduction}
+\label{sec:intro}
+
+A looped (or recurrent-depth) language model applies a shared block of layers several times per
+token instead of stacking distinct layers
+\citep{dehghani2019universal,geiping2025recurrent,zhu2025ouro}. The loop count becomes an
+inference-time dial: the same checkpoint can run shallow and cheap or deep and more accurate.
+Looped models are now released by several groups, including Ouro \citep{zhu2025ouro}, Dory
+\citep{nvidia2026dory} and Nanbeige4.2 \citep{nanbeige2026}, and looping has been shown to help
+compositional tool calling specifically \citep{popescu2026toolcalling}. How a deployed model
+should set the dial is much less settled.
+
+Two practices dominate. Most deployments fix one loop count for all traffic; Dory's authors, for
+example, recommend two loops as a default and four when accuracy matters more
+\citep{nvidia2026dory}. The alternative is per-token halting, in the line of adaptive computation
+time \citep{graves2016adaptive}, Universal Transformers \citep{dehghani2019universal} and
+PonderNet \citep{banino2021pondernet}: Ouro trains an exit gate that can stop each token early
+\citep{zhu2025ouro}, and recurrent-depth models can stop when successive loops stop changing the
+prediction \citep{geiping2025recurrent}. Per-token exits fit poorly with how models are served.
+Requests are decoded in batches, and a batch step costs as much as its deepest token; in our
+measurements Ouro's gate is faster than a fixed depth of matching accuracy at batch size 1 but
+slower from batch size 4 on, while a depth fixed per request keeps its savings under batching (\S\pending{serving}). Recent
+analyses also find that learned halting gates do not track problem difficulty well
+\citep{popescu2026halting,olszowiec2026monitoring}.
+
+This paper asks at what granularity, and from what signal, a looped model should choose its
+depth, using multi-step tool use as the test bed. Tool use suits the question: a request unfolds
+as a sequence of calls, each call is executed, and the final result can be checked exactly, so
+every allocation policy can be scored by accuracy and by the compute it spends. We fine-tune
+Ouro-2.6B for chained calls, evaluate on the math portion of NESTful \citep{basu2024nestful}
+with every intermediate call executed, and compare three granularities of allocation (per tool
+call, per request and per token) against fixed depths and against random mixes of fixed depths
+at equal compute. Confirmatory tests are fixed in advance and run once on held-out NESTful
+requests.
+
+Our findings are:
+
+\begin{itemize}
+  \item \textbf{Per-call depth is search, not allocation.} An oracle that picks the best loop
+  count for each call reaches .308 on NESTful against .225 for four loops (with an earlier
+fine-tuned checkpoint), which looks like a
+  large gain. But an oracle that spends the same budget on sampled continuations at four loops
+  reaches .325. The same holds for Dory-1.0-4B (.633 vs .617). Varying depth per call mostly
+  perturbs the trajectory; it does not allocate compute where it is needed.
+  \item \textbf{The useful decision is two loops or four.} On 240 NESTful requests, one loop
+  solves .171, two .383, three .442 and four .492 of requests. Three loops is exactly as accurate
+  as randomly mixing two- and four-loop runs at the same compute (.441), and one loop is too
+  shallow even for single calls. Per request, 85 are solved at both two and four loops, 33 only
+  at four and 7 only at two; a router that knew these outcomes would reach .521 at 0.83 times the
+  compute of four loops.
+  \item \textbf{Depth need is predictable from early loops, not from the request.} Whether a
+  request is solved at a given depth is largely stable across sampled runs, yet features of the
+  request text predict it no better than chance. Signals from the model itself do, once they are
+  read at the right tokens: early loops agree with the final loop on the boilerplate that opens
+  a tool call and disagree on the function name and argument values.
+  \item \textbf{A deployable escalation router.} Every request starts at two loops; after the
+  first ${\sim}45$ tokens, loop-1 and loop-2 signals on those decision tokens decide whether to
+  switch to four loops. Nothing extra is computed to decide. \pending{Final held-out result:
+  accuracy and compute relative to four loops on NESTful requests 240--719; gain over the best
+  random mix with 90\% interval.}
+  \item \textbf{A data-leakage audit.} Most MathQA validation problems (1,001 of 1,293 after our
+  task construction) have a near-duplicate or an identical computation in the training split.
+  Scores on them overstate held-out accuracy (at four loops, .489 on near-duplicates vs .346 on
+  clean problems in one evaluation slice), which matters for any work that trains on MathQA and evaluates on
+  NESTful, whose math portion comes from the MathQA test split.
+\end{itemize}
