@@ -540,6 +540,18 @@
   NESTful [240, 720) confirmation. Reading: per-request routing on this task is capped around +3
   points at equal compute / ~14% compute at equal accuracy, because the benefit of extra depth for a
   given request is mostly run-to-run noise.
+- 2026-10-29 pre-registration of the step-2 confirmation (`scripts/lab/router_confirm2.py`
+  docstring, committed before any NESTful [240, 720) data): frozen early router (12 loop-1/2
+  features, soft labels, all 531 MathQA tasks); primary = gain over the depth 1–4 random-mix hull at
+  the 0.75x operating point (training out-of-fold rule), bootstrap 90% CI; secondaries:
+  non-inferiority vs fixed-4 at 0.85x (margin .03), step-1 router at equal realised cost, fixed-3,
+  LEV-style, pooled [0, 720), strata. Fable review: code faithful; corrected the power claim
+  (bootstrap SD .0165 at n = 240, not .013) and flagged that [240, 720) is shallower (mean gold
+  calls 6.1/4.75 vs 7.8; the depth-balanced order runs out of long chains), where the step-1 gain
+  on [0, 240) was +.007 on <= 5-call vs +.042 on longer tasks, so power is ~0.35–0.4; slice kept
+  (all remaining deep tasks are in it), strata pre-registered. Smoke run on the seen [0, 240):
+  step-1 router reproduces .471 at 0.764x; the new router .467 at 0.74x (+.031 vs mix) and .488 at
+  0.85x (fixed-4 .492; paired −.004, CI −.025 to +.017). [0, 240) is not a clean test.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
