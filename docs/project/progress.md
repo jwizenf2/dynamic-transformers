@@ -506,6 +506,28 @@
   .475 = fixed-4 at 0.76x cost; requests 120–239 router .467 vs fixed-3 .483 / fixed-4 .508.
   Reading: the effect size transfers almost exactly but n = 240 cannot exclude zero at 90%.
   Test-pool labels for step 2 collected (239 tasks, greedy d1/2/4 + probe).
+- Phase A data (job f15ee917, commit 53540bd): 3 extra sampled dialogues per depth (2, 4) and
+  loop-1/2 hidden states at the probe tokens for the 531 router-training tasks (292 clean val + 239
+  MathQA-test pool). `scripts/lab/phase_a_labels.py`, `scripts/lab/phase_a_router.py`,
+  `results/phase_a/`.
+  * Label reliability (A2b, pre-registered): greedy d2/d4 .305/.437 (patterns 11/10/01/00 =
+    149/13/83/286). Per-depth success is very predictable from 4 samples (AUC .93 at d4, .92 at
+    d2), but the benefit of 4 loops is noisy: corr of Δ = P_4 − P_2 between disjoint sample halves
+    .25 (Spearman-Brown to 4 samples .40); the 4-sample Δ ranks the greedy "4 helps" label with AUC
+    .77, an approximate ceiling for any router (the simulation said ~.75 is needed to match fixed-4
+    at 0.76–0.80x).
+  * Router development (5x5 CV, development data only), AUC for "4 helps" / gain over the 2-4
+    random mix at the mid budget / accuracy at 0.85x / cost to reach fixed-4 − 1 point:
+    12 loop-1/2 features .643 / +.026 / .417 / 0.874x; same trained on soft labels (greedy + 4
+    samples) .652 / +.034 / .424 / 0.859x; hidden states (nested PCA/logistic, soft labels)
+    .664 / +.026 / .422 / 0.872x; fixed-4 .437.
+  * LEV-style stopper (agreement of 2- and 4-loop answers, no correctness labels, threshold for
+    98% agreement on unlabelled requests): AUC .46, −.020 vs the random mix; at its own threshold it
+    escalates 87% for .422 at 0.95x. In generative tool use with ~54% of requests failed at both
+    depths, 2- and 4-loop answers disagree on unsolvable requests too, so agreement-based stopping
+    escalates them uselessly; correctness supervision is needed.
+  * Reading: soft labels help a little; hidden states add ranking (.664) but not policy gain; all
+    methods are well below the .77 ceiling and reach fixed-4 − 1 point only at ~0.86x cost.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
