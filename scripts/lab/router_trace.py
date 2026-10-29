@@ -59,12 +59,16 @@ def forward_2(model, tokens: mx.array, caches) -> tuple[mx.array, mx.array]:
     return states[0], states[1]
 
 
-def readout(model, h: mx.array) -> tuple[mx.array, mx.array]:
-    """(log-probs [.., V] float32, exit gate [..])."""
-    z = model.lm_head(h).astype(mx.float32)
-    logp = z - mx.logsumexp(z, axis=-1, keepdims=True)
+def readout(model, h: mx.array) -> tuple[mx.array, mx.array, mx.array]:
+    """For h [1, L, H]: (raw logits in model dtype, log-probs float32, exit gate), each [1, L, ...].
+
+    lm_head runs on the 3-D tensor like ``OuroForCausalLM.__call__`` so the decoding decision
+    (argmax of the raw logits) uses the same kernel and rounding as the original decode."""
+    z = model.lm_head(h)
+    zf = z.astype(mx.float32)
+    logp = zf - mx.logsumexp(zf, axis=-1, keepdims=True)
     gate = mx.sigmoid(model.model.early_exit_gate(h.astype(mx.float32)))[..., 0]
-    return logp, gate
+    return z, logp, gate
 
 
 def trace_one(model, tok, e, functions, args, stop_ids, has_digit):
@@ -94,9 +98,9 @@ def trace_one(model, tok, e, functions, args, stop_ids, has_digit):
             pre = len(tok.encode("<|im_end|>\n<|im_start|>tool\n", add_special_tokens=False))
             suf = len(tok.encode("<|im_end|>\n<|im_start|>assistant\n", add_special_tokens=False))
             lo, hi = pre, max(pre + 1, len(ids) - suf)  # target positions inside the response
-            lp, _ = readout(model, h2[0, lo - 1 : hi - 1])
+            _, lp, _ = readout(model, h2[:, lo - 1 : hi - 1])
             tgt = mx.array(ids[lo:hi])
-            s = np.array(-mx.take_along_axis(lp, tgt[:, None], axis=-1)[:, 0])
+            s = np.array(-mx.take_along_axis(lp[0], tgt[:, None], axis=-1)[:, 0])
             dig = has_digit[np.array(ids[lo:hi])]
             tool = {
                 "len": len(ids),
@@ -104,8 +108,12 @@ def trace_one(model, tok, e, functions, args, stop_ids, has_digit):
                 "surprisal_mean": round(float(s.mean()), 4),
                 "surprisal_max": round(float(s.max()), 4),
                 "surprisal_digits": round(float(s[dig].mean()), 4) if dig.any() else None,
+                "surprisal": [round(float(x), 3) for x in s],
+                "digit": [int(x) for x in dig],
             }
-        h1, h2 = h1[:, -1], h2[:, -1]
+        # first decode step reads the full chunk's loop-2 states (as the original decode did,
+        # lm_head over [1, L, H] then the last row); later steps are single tokens
+        h1 = h1[:, -1:]
         feats = {
             k: []
             for k in (
@@ -127,11 +135,13 @@ def trace_one(model, tok, e, functions, args, stop_ids, has_digit):
         hs2, hd = [], []
         out_ids: list[int] = []
         for _ in range(args.max_tokens):
-            lp1, g1 = readout(model, h1[0])
-            lp2, g2 = readout(model, h2[0])
+            _, lp1, g1 = readout(model, h1)
+            z2, lp2, g2 = readout(model, h2)
+            lp1, g1, lp2, g2 = lp1[0, -1], g1[0, -1], lp2[0, -1], g2[0, -1]
+            h2 = h2[:, -1:]
             p1, p2 = mx.exp(lp1), mx.exp(lp2)
             t1, t2 = mx.topk(lp1, 2), mx.topk(lp2, 2)
-            a1, a2 = mx.argmax(lp1), mx.argmax(lp2)
+            a1, a2 = mx.argmax(lp1), mx.argmax(z2[0, -1])  # decision on raw logits
             vals = mx.stack(
                 [
                     -(p1 * lp1).sum(),
@@ -145,8 +155,8 @@ def trace_one(model, tok, e, functions, args, stop_ids, has_digit):
                     (p2 * (lp2 - lp1)).sum(),
                     (a1 == a2).astype(mx.float32),
                     lp1[a2],
-                    mx.linalg.norm(h2[0].astype(mx.float32) - h1[0].astype(mx.float32))
-                    / (mx.linalg.norm(h1[0].astype(mx.float32)) + 1e-6),
+                    mx.linalg.norm(h2[0, -1].astype(mx.float32) - h1[0, -1].astype(mx.float32))
+                    / (mx.linalg.norm(h1[0, -1].astype(mx.float32)) + 1e-6),
                 ]
             )
             v = np.array(vals)
@@ -154,16 +164,15 @@ def trace_one(model, tok, e, functions, args, stop_ids, has_digit):
             for key, x in zip(list(feats)[:-1], v, strict=True):
                 feats[key].append(round(float(x), 4))
             feats["digit"].append(int(has_digit[tid]))
-            hs2.append(np.array(h2[0].astype(mx.float32)))
-            hd.append(np.array((h2[0] - h1[0]).astype(mx.float32)))
+            hs2.append(np.array(h2[0, -1].astype(mx.float32)))
+            hd.append(np.array((h2[0, -1] - h1[0, -1]).astype(mx.float32)))
             if tid in stop_ids:
                 break
             out_ids.append(tid)
             h1, h2 = forward_2(model, mx.array([[tid]]), caches)
-            h1, h2 = h1[:, -1], h2[:, -1]
         log["tokens"] += len(out_ids)
         text = tok.decode(out_ids)
-        texts.append(text[:300])
+        texts.append(text)
         turns.append({"tool_before": tool, "n_tokens": len(out_ids), **feats})
         hidden.append(np.stack([np.mean(hs2, 0), np.mean(hd, 0)]))
         return [{"name": c["name"], "arguments": c["arguments"]} for c in parse_hermes(text)]
@@ -203,15 +212,16 @@ def main() -> None:
     model, tok = load_model(args.model, None, args.adapters)
     stop_ids = {0, tok.convert_tokens_to_ids("<|im_end|>")}
     vocab = tok.convert_ids_to_tokens(list(range(len(tok))))
-    has_digit = np.array([any(c.isdigit() for c in (t or "")) for t in vocab])
+    has_digit = np.array([any(c in "0123456789" for c in (t or "")) for t in vocab])
     tasks = None if args.tasks == "nestful" else args.tasks
     examples, functions = requests(args.start + args.n, tasks)
     examples = examples[args.start :]
-    smoke = [json.loads(x) for x in Path(args.smoke).read_text().splitlines()]
-    smoke = smoke[args.start : args.start + len(examples)] if len(smoke) > len(examples) else smoke
-    assert [(e.id, e.query) for e in examples] == [(r["id"], r["query"]) for r in smoke], (
-        "tasks differ from the router smoke's"
-    )
+    smoke = {r["id"]: r for r in map(json.loads, Path(args.smoke).read_text().splitlines())}
+    missing = [e.id for e in examples if e.id not in smoke]
+    assert not missing, f"{len(missing)} tasks not in the router smoke rows, e.g. {missing[:3]}"
+    for e in examples:  # same task as the labelled run: query and gold chain length
+        r = smoke[e.id]
+        assert (r["query"], r["gold_calls"]) == (e.query, len(e.calls)), f"{e.id} differs"
     out = Path(f"results/router_trace/{Path(args.adapters).parent.name}_{args.tag}")
     (out / "hidden").mkdir(parents=True, exist_ok=True)
     path = out / "examples.jsonl"

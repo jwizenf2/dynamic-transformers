@@ -110,6 +110,22 @@ A6. Bandit (after A5): online learning of the same decision from bandit feedback
     with regret curves (exact, since outcomes at both depths are known); note the deployment reward
     problem (correctness is not observed online). MCTS is not used: the per-request decision has
     2–3 actions with known outcomes, and per-step depth is search.
+A8. Late decision points (pre-registered 2026-10-29, before trace data; `router_trace.py`
+    records loop-1/2 signals on every token of the actual 2-loop dialogue, tool-response
+    surprisal per token, per-turn hidden states). Decision points: {after ~45 tokens (current),
+    after the first tool result, after turn 2, end of the 2-loop run (cascade)}. Policy at each
+    point: stay at 2 or restart the request at 4 loops from the prompt (the only policy the recorded
+    4-loop outcomes support; "continue at 4 from turn t" is not evaluable offline). Cost on
+    escalation: 2-loop work so far + 4·T_4, with the prompt's loop-1/2 caches reused (stated as an
+    assumption; no latency claim, escalation is sequential). Features at point t use only turns
+    <= t (row-level turns/finished/value only at the end). Labels: the trace's own 2-loop
+    correctness vs the existing d4 greedy outcome. One model class (L2 logistic on aggregated
+    turn features, plus the 12 early features), 5x5 CV. Selection rule: highest accuracy at a fixed
+    cost cap of 0.90x fixed-4 on the 292 clean tasks; check that the chosen point replicates on the
+    239 pool tasks; then freeze for NESTful [240, 720) (needs d2 traces and d4 greedy on 480 new
+    requests). The cascade cannot save compute (even its oracle costs ~0.94x on clean with cache
+    reuse, 1.27x without); its only possible value is accuracy above fixed-4 at ~1x, reported as
+    such.
 A7. LEV-style baseline (as soon as A2 labels land): LEV's features from consecutive loops (answer
     change, KL, margin, entropy, top probability) read at the same probe tokens, logistic stopper
     predicting agreement with the deepest answer, threshold set on unlabelled requests; compared
