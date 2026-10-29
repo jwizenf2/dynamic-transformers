@@ -528,6 +528,18 @@
     escalates them uselessly; correctness supervision is needed.
   * Reading: soft labels help a little; hidden states add ranking (.664) but not policy gain; all
     methods are well below the .77 ceiling and reach fixed-4 − 1 point only at ~0.86x cost.
+- Late decision points (A8; job 82abf1ad, commit 4f4cdfa; `scripts/lab/phase_a_trace_analysis.py`,
+  `results/phase_a/trace_points.json`): traces reproduce the labelled 2-loop outcomes on 531/531.
+  Clean 292 CV, AUC "4 helps" / accuracy at 0.90x / gain over the 2-4 mix: early .644 / .339 /
+  +.029; after first tool result .622 / .336 / +.022; after turn 2 .658 / .342 / +.022; end
+  (cascade) .694 / .353 / +.022; fixed-4 .360. Pool (trained on clean): early +.031, later points
+  +.006 to +.010. Later signals raise ranking slightly but never reach the ~.77 ceiling and the wasted
+  2-loop work cancels it; the cascade never beats fixed-4. The pre-registered rule (max accuracy at
+  0.90x) picks "end", which fails the objective (below fixed-4, smallest gain); deviation recorded:
+  no later point improves on the early router, so the early router (denoised labels) goes to the
+  NESTful [240, 720) confirmation. Reading: per-request routing on this task is capped around +3
+  points at equal compute / ~14% compute at equal accuracy, because the benefit of extra depth for a
+  given request is mostly run-to-run noise.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
