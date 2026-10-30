@@ -552,6 +552,23 @@
   (all remaining deep tasks are in it), strata pre-registered. Smoke run on the seen [0, 240):
   step-1 router reproduces .471 at 0.764x; the new router .467 at 0.74x (+.031 vs mix) and .488 at
   0.85x (fixed-4 .492; paired −.004, CI −.025 to +.017). [0, 240) is not a clean test.
+- Step-2 confirmation (job 5d8bb524, commit b9aaf91; `results/router_confirm2/confirm.json`, rows
+  kept in `~/AI/keep/router_confirm2_nestful240` on the lab): NOT REPLICATED in substance. Fixed
+  d1–4 on NESTful [240, 720) .167/.369/.452/.504 (cost .25/.50/.76/1.0x); perfect 2-vs-4 router
+  .544 at 0.59x. Primary (0.75x): router .448 at 0.741x, gain over the mix +.002 (90% CI −.025 to
+  +.023); verdict label CONSISTENT only because the point estimate is above zero, which is effectively
+  zero. S1: at 0.85x .483 vs fixed-4 .504, paired −.021 (CI −.037 to −.006; 5 wins / 15 losses), so
+  not non-inferior and significantly worse than fixed-4. S2: step-1 router +.005 vs mix; new vs
+  step-1 at equal cost −.004 (CI −.017 to +.008). S3: vs fixed-3 at 0.75x −.004 (29/31). S4
+  LEV-style +.001 (escalates 92%). AUC "4 helps" .58 (development .65). S7: <= 5 calls +.005, > 5
+  calls −.003, [240, 480) −.010, [480, 720) +.014, so the [0, 240) long-chain effect did not recur.
+  S5 pooled [0, 720) (includes the once-seen slice): +.012 at 0.75x (CI −.010 to +.029), +.016 at
+  0.85x (CI +.000 to +.029).
+  Reading: early-token routing between 2 and 4 loops does not reliably beat mixing fixed depths
+  on held-out NESTful (at ~0.75x it equals fixed 3 loops), despite +.146 oracle headroom. Together
+  with the label ceiling (benefit of depth corr .25 between sample halves), the evidence is that
+  which request benefits from depth is mostly run-to-run noise, not a property early signals can
+  read. Per the pre-registration this closes router tuning on NESTful.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
