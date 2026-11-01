@@ -569,6 +569,24 @@
   with the label ceiling (benefit of depth corr .25 between sample halves), the evidence is that
   which request benefits from depth is mostly run-to-run noise, not a property early signals can
   read. Per the pre-registration this closes router tuning on NESTful.
+- Depth extrapolation (job 182dc87a, commit 3ec5226; `scripts/lab/depth_extrapolation.py`,
+  `results/depth_extrapolation/report.json`, rows kept in `~/AI/keep/depth_extrapolation` on the
+  lab): chain v3 greedy on NESTful at 5, 6, 8 loops (trained with 4). Held-out [240, 720):
+  d4/d5/d6/d8 .504/.504/.487/.198 at 1/1.26/1.52/1.91x cost; primary d6 − d4 −.017 (90% CI −.040
+  to +.006; 20 wins / 28 losses): FLAT. All 720: .500/.497/.492/.196. Depth 8 collapses (more
+  tool errors per dialogue, 1.3 vs .01; corrupted JSON keys such as "asigns"). Vote over {4, 5, 6}
+  .499 vs d4 .500; over {4, 6, 8} worse. Oracles 4-vs-6 .542, 4-vs-8 .521. Reading: accuracy
+  saturates at the trained depth; extra loops are not a test-time compute knob for this model.
+- Correction from the same data (exploratory, after the pre-registered analysis): beyond
+  saturation, outcomes flip on ~8–9% of requests with no net change (4→5: 29 gains / 31 losses;
+  4→6: 30/36), a greedy perturbation noise floor. 2→4 flips 20% (117 gains / 26 losses), and
+  78% of the 2→4 gains are also solved at both 5 and 6 loops (93% for requests solved at 2 and 4).
+  So under greedy decoding the need for depth is largely a stable property of the request; the
+  earlier reading "mostly run-to-run noise" holds for sampled runs (T .7) but overstated the
+  greedy case. On [240, 720) the frozen router ranks the stable label (d2 wrong, >= 2 of d4–d6
+  right; 82 requests) with AUC .574 (greedy label .583), while its per-depth models rank success
+  well (P_4 for deep-correct .756, P_2 for d2-correct .772). The bottleneck is the features: early
+  signals measure how hard a request is, not whether it is in the band that extra depth fixes.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
