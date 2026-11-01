@@ -608,6 +608,17 @@
   Reading: in executed multi-step tool use, recurrent depth improves problem formulation (which
   quantities to combine, which operation), raises per-step reliability and so helps more on
   longer chains; it does not fix format, copying or arithmetic, which the tools already handle.
+- Router failure diagnosis (`scripts/lab/router_diagnosis.py`, `results/router_diagnosis/`,
+  plan and literature in `docs/research/router_diagnosis_2026-11-01.md`; offline, exploratory):
+  rescued requests' 2- and 4-loop dialogues are token-identical through the 45-token probe window
+  in 55–57% of cases (median first difference at token ~50); loop-1/2 readouts predict which
+  tokens loop 4 will revise (AUC .87 function names, .96 numbers), yet adding loop-3/4 readouts,
+  the realised revisions or first-turn verification raises "4 helps" AUC only from .60/.64 to
+  .64/.66 (NESTful/MathQA); only full-trajectory divergence reaches .70/.76. Direct benefit
+  targets and quadratic models do not help. Decomposition: "2 loops wrong" AUC .79/.82, "4 right"
+  .77/.79, but "4 right among 2-loop failures" .66/.68. 2-loop sample disagreement: first turns
+  AUC .51, final answers .54–.57. Reading: mostly an early-prediction limit (the outcome separates
+  later in the trajectory), with rescuability, not difficulty, as the missing signal.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
