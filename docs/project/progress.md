@@ -619,6 +619,14 @@
   .77/.79, but "4 right among 2-loop failures" .66/.68. 2-loop sample disagreement: first turns
   AUC .51, final answers .54–.57. Reading: mostly an early-prediction limit (the outcome separates
   later in the trajectory), with rescuability, not difficulty, as the missing signal.
+- Tier 1 (`router_diagnosis2.py`, `router_switch.py`, `results/router_diagnosis/tier1.json`,
+  `results/router_switch/report.json`): rescue AUC among 2-loop failures .68 → .72 with hidden
+  states (MathQA), .63–.66 (NESTful, greedy or stable labels). Fork tokens rank at the 97th–99th
+  percentile of loop-1/2 uncertainty within their dialogue, equally for outcome-changing and
+  neutral forks (AUC .44–.55). One-way switch to 4 loops at the first uncertain token (exact
+  4-loop dialogue and cost when it fires before the fork; offline-evaluable): at <= 0.90x,
+  −.009 (clean) / +.009 (pool) vs the random mix; reaches fixed-4 only at 0.95–0.99x; 5–8% of
+  switches late. Reading: early-prediction limit; uncertainty is local, consequence is global.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 

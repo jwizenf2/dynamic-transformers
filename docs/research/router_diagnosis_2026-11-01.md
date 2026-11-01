@@ -165,3 +165,38 @@ under batching (`progress.md`, serving bench).
   routing with continuation may work; run Tier 2 item 4.
 * Both fail → report the early-prediction limit as the finding: the need for depth is a stable
   property of the request that the model only reveals by computing it.
+
+## Tier 1 results (2026-11-01, `router_diagnosis2.py`, `router_switch.py`)
+
+**Rescuability (item 1).** Among requests 2 loops gets wrong (as if a perfect 2-loop verifier
+existed), AUC for "4 loops fixes it": MathQA early features .68, + loop-1/2 hidden states (PCA 32)
+.72–.73, + whole 2-loop trace .69, all .72; NESTful early features .66, + loop-3/4 readouts and
+revisions .66; stable labels (depths 4–6) .63–.64. Below the bar of "well above .70": a better
+router on the same signals is not the fix.
+
+**Fork-point signals (item 2).** At the first token where the 2- and 4-loop dialogues differ, the
+2-loop trace is highly uncertain: the fork ranks at the 97th–99th percentile of the dialogue's
+tokens by loop-2 entropy, margin, KL(p_2 ‖ p_1) and log p_1. But equally so for forks that
+change the outcome and forks that do not (AUC rescued vs neutral forks .44–.55). The model
+knows where its trajectory can branch, not which branch matters.
+
+**One-way switch (new, evaluable offline).** Decode at 2 loops; at the first token whose loop-1/2
+signal exceeds τ, compute loops 3–4 over the context and continue at 4 loops. A switch at or
+before the fork reproduces the 4-loop dialogue exactly at exactly the 4-loop cost (no wasted
+work), so restart waste, the reason late decision points failed in A8, is removed. Result
+(MathQA, selection on clean, check on pool): best signal loop-2 entropy, at <= 0.90x fixed-4
+cost accuracy .325 vs mix .334 on clean (−.009, lower bound) and .506 vs .497 on pool (+.009);
+fixed-4 accuracy is reached only at 0.95–0.99x. Only 5–8% of switches land after the fork, so
+timing is not the problem; selectivity is: nearly every dialogue has some uncertain token.
+Tier-2 item 4 (mid-dialogue escalation runs) is therefore not needed: the switch evaluation
+already covers continuation exactly wherever it matters.
+
+**Decision.** Rescue AUC is not well above .70, and fork-time signals do not separate consequential
+from inconsequential forks; an online switch without restart waste still equals the random mix.
+Verification of the drafted call (Tier-2 item 5) faces the same problem: at a fork, a deep pass
+shows that the deep model would write something else, which every fork has by definition, not
+whether that change leads to success. Conclusion: an early-prediction limit. Loops 1–2 encode
+where computation is uncertain (token level, AUC .87–.96 for deep revisions; forks at the 97th+
+percentile), but whether extra depth changes the final outcome is decided by how a fork
+propagates through later steps, which no single-step signal shows. For the paper: uncertainty is
+local, consequence is global.
