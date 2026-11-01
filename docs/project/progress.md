@@ -587,6 +587,27 @@
   right; 82 requests) with AUC .574 (greedy label .583), while its per-depth models rank success
   well (P_4 for deep-correct .756, P_2 for d2-correct .772). The bottleneck is the features: early
   signals measure how hard a request is, not whether it is in the band that extra depth fixes.
+- What extra loops buy (`scripts/lab/depth_anatomy.py`, `results/depth_anatomy/report.json`;
+  offline, exploratory, NESTful [0, 720) at 1–6 loops; dialogues replayed from stored texts, replay
+  matches the stored outcome on 100%):
+  * Error taxonomy (share of requests, d2 → d4): format 0 → 0, execution errors .006 → .004,
+    unfinished .039 → .022, stopped early .022 → .024, wrong operation .072 → .065, invented value
+    .008 → .021, argument order .017 → .019, wrong plan (gold operations on available numbers,
+    combined into the wrong quantities) .458 → .343. Of the 117 requests 4 loops fixes, 99 were
+    wrong-plan errors at 2 loops and 13 wrong-operation; the first divergent call is the first
+    call in 43% (mean 22% into the chain; a valid alternative path also counts as divergence, so
+    this leans early). Examples: 12 months instead of 8, multiplying areas instead of a gcd.
+  * Depth x chain length: the 2→4 gain grows with chain length, +.09/+.06/+.12/+.19/+.12 for
+    2/3/4–5/6–8/9+ gold calls (6–8: 90% CI +.14 to +.25); by dependency depth +.06/+.12/+.15/+.15.
+    Per-step reliability fit acc ≈ a·s^L: s = .80/.85/.89/.91/.92/.92 for 1–6 loops with a ~.8,
+    so depth raises per-step reliability, which compounds over long chains, and saturates at 4.
+  * Token settling (48-token first-turn probe, 31.8k tokens): loop 2's top token differs from
+    loop 4's on 14.2% of function-name tokens, 3.8% of number tokens, 0.2% of JSON/markup
+    tokens; settled by loop 1: 67% / 89% / 99.6%. Extra loops are spent on choosing the
+    operation, not on format.
+  Reading: in executed multi-step tool use, recurrent depth improves problem formulation (which
+  quantities to combine, which operation), raises per-step reliability and so helps more on
+  longer chains; it does not fix format, copying or arithmetic, which the tools already handle.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
