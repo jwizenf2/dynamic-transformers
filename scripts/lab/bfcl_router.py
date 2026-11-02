@@ -17,9 +17,10 @@ SUPPORTED if the interval's lower bound exceeds .60 (the NESTful value). Power n
 only ~5–7% of BFCL prompts (chain v3 .846 → .879 from 2 to 4 loops), ~60 positives, so the
 interval is roughly ±.07 and SUPPORTED needs an AUC of about .67 or more. Secondary: the rescue
 AUC among 2-loop failures; the policy's gain over the 2–4 random mix at the mid budget (cost:
-d·(prompt + generated tokens) per depth, escalation 4·T_4 + 2k as on NESTful); the same for 1 vs
-2 loops with loop-1 features only (loop-1 entropy mean/max, min margin, mean gate); fork-free
-share (requests whose 2- and 4-loop outputs are identical) per outcome pattern.
+d·(prompt + generated tokens) per depth; escalating from a to b loops costs b·T_b + a·k for
+the k draft tokens, as on NESTful); the same for 1 vs 2 loops with loop-1 features only
+(loop-1 entropy mean/max, min margin, mean gate); fork-free share (requests whose 2- and 4-loop
+outputs are identical; texts are stored up to 600 characters) per outcome pattern.
 """
 
 from __future__ import annotations
@@ -109,9 +110,7 @@ def main() -> None:
             "auc_helps": auc(s, helps),
             "auc_helps_ci90": boot_auc(s, helps),
             "rescue_auc_among_failures": auc(cv_scores(x[m], y[a][m], y[b][m]), y[b][m]),
-            "gain_vs_mix_mid_budget": policy_gain(
-                s, y[a], y[b], a * tok[a], b * tok[b] + (2 * k if b == 4 else 0)
-            ),
+            "gain_vs_mix_mid_budget": policy_gain(s, y[a], y[b], a * tok[a], b * tok[b] + a * k),
         }
     patterns = {
         "helps": (y[2] == 0) & (y[4] == 1),

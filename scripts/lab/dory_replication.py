@@ -3,9 +3,11 @@
     PYTHONPATH=scripts/lab python scripts/lab/dory_replication.py
 
 Pre-registered 2026-11-02, before the run. Data: Dory greedy (``--temp 0``), reasoning off,
-multi-turn NESTful [0, 720) at 1–4 loops (``dory_nestful_multiturn.py --n 720 --loops 1 2 3 4
+multi-turn NESTful [0, 480) at 1–4 loops (``dory_nestful_multiturn.py --n 480 --loops 1 2 3 4
 --temp 0 --no-thinking --tag greedy_nothink``), each dialogue's turns rendered in Hermes format
-(``texts``) so ``depth_anatomy`` replays them unchanged.
+(``texts``) so ``depth_anatomy`` replays them unchanged; a turn whose raw answer
+(``raw_texts``) attempts a call that does not parse counts as a ``format`` error. (n = 480, not
+720: Dory recomputes the whole conversation each turn, ~150 s per request at 4 loop counts.)
 
 Dory's main depth step is 1 → 2 loops (earlier greedy n = 60: .267/.350/.383/.350), Ouro's is
 2 → 4; the predictions are stated for each model's main step (shallow s → deep t; for Dory
@@ -67,7 +69,13 @@ def main() -> None:
         for L in LOOPS:
             run = r["runs"][f"d{L}_greedy"]
             c = da.classify(run, r["example"], functions, gold)[0]
-            if c != "correct" and not run["calls"]:
+            raw = run.get("raw_texts") or []
+            if c != "correct" and any(
+                ("<tool_call>" in a or "<function=" in a) and "<tool_call>" not in t
+                for a, t in zip(raw, run["texts"], strict=False)
+            ):
+                c = "format"  # a call was attempted but did not parse
+            elif c != "correct" and not run["calls"]:
                 c = "no_tool_use"
             cats[(i, L)] = c
     report = {
@@ -80,15 +88,15 @@ def main() -> None:
     for s, t in ((1, 2), (2, 4)):
         fixed = [i for i in range(n) if not y[s][i] and y[t][i]]
         types = Counter(cats[(i, s)] for i in fixed)
-        deeper = [L for L in LOOPS if L > t] or [L for L in LOOPS if L > s and L != t]
-        stable = [i for i in fixed if all(y[L][i] for L in deeper)]
+        deeper = [L for L in LOOPS if L > t]  # none for 2→4: stability not defined
+        stable = [i for i in fixed if all(y[L][i] for L in deeper)] if deeper else []
         report[f"fixed_{s}to{t}"] = {
             "n": len(fixed),
             "error_type_at_shallow": dict(types.most_common()),
             "formulation_share": (types["wrong_plan"] + types["wrong_operation"])
             / max(1, len(fixed)),
             "also_right_at": deeper,
-            "stable_share": len(stable) / max(1, len(fixed)),
+            "stable_share": len(stable) / max(1, len(fixed)) if deeper else None,
         }
     calls = np.array([r["gold_calls"] for r in rows])
     s, t = MAIN

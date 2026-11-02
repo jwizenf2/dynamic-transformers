@@ -30,7 +30,7 @@ format):
    the last executed call's result must match the gold answer.
 Per turn we log generated tokens, reasoning tokens and prompt tokens, and per dialogue the turns
 rendered in Hermes format (``texts``: each turn's calls as ``<tool_call>`` JSON, or the final
-answer text); compute is reported as
+answer text) and the raw visible answers (``raw_texts``); compute is reported as
 block-tokens: blocks run per token (8 input + 20 x L recurrent + 8 output) x (prompt + generated)
 tokens per turn, prefill included; loop-tokens (L x tokens) are also logged but overstate the cost
 of extra loops for Dory, whose input and output blocks run once. Rows are appended and a
@@ -107,6 +107,7 @@ def dialogue(model, tok, ex, functions, loops, args, seed_base) -> dict:
     last = (False, "no calls")
     turns, n_calls, errors, finished = [], 0, 0, False
     texts: list[str] = []
+    raw_texts: list[str] = []  # visible answers as generated (malformed calls stay visible)
     for t in range(args.max_turns + 1):
         prompt = tok.apply_chat_template(
             messages,
@@ -122,6 +123,7 @@ def dialogue(model, tok, ex, functions, loops, args, seed_base) -> dict:
         calls = parse_calls(answer)
         # Hermes rendering of the turn (calls, or the final answer text) so the Ouro analyses
         # (depth_anatomy, router_diagnosis) can replay Dory dialogues unchanged
+        raw_texts.append(answer)
         texts.append(
             "\n".join(
                 "<tool_call>\n"
@@ -181,6 +183,7 @@ def dialogue(model, tok, ex, functions, loops, args, seed_base) -> dict:
         "decode_block_tokens": blocks(model, loops) * gen,
         "value": repr(last[1])[:80],
         "texts": texts,
+        "raw_texts": raw_texts,
         "per_turn": turns,
     }
 

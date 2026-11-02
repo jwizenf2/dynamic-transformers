@@ -57,10 +57,9 @@ def main() -> None:
         "full": rows_for(["plan_full"]),
         "ops": rows_for(["plan_ops"]),
     }
-    plan_examples = {
-        c: {e.id: e for e in load_tasks(Path(f"results/nestful_plans/{c}_tasks.jsonl"))}
-        for c in ("full", "ops")
-    }
+    for c in ("full", "ops"):  # same requests and gold chains as the no-plan condition
+        plan = {e.id: e for e in load_tasks(Path(f"results/nestful_plans/{c}_tasks.jsonl"))}
+        assert all(plan[e.id].calls == e.calls for e in examples), c
     for c, rows in conds.items():
         assert all(i in rows for i in ids), f"{c}: missing requests"
     y = {
@@ -103,11 +102,12 @@ def main() -> None:
         for d in (2, 4):
             cnt = Counter()
             for e in examples:
-                ex = plan_examples[c][e.id] if c != "none" else e
+                # the original query for every condition: classify reads numbers from the query,
+                # and the plan's numbers would otherwise hide invented values
                 cnt[
                     classify(
                         conds[c][e.id]["runs"][f"d{d}_greedy"],
-                        ex,
+                        e,
                         functions,
                         gold_values(e, functions),
                     )[0]

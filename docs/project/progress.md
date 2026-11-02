@@ -627,6 +627,15 @@
   4-loop dialogue and cost when it fires before the fork; offline-evaluable): at <= 0.90x,
   −.009 (clean) / +.009 (pool) vs the random mix; reaches fixed-4 only at 0.95–0.99x; 5–8% of
   switches late. Reading: early-prediction limit; uncertainty is local, consequence is global.
+- 2026-11-02 next run set prepared (`docs/research/next_runs_2026-11-02.md`): plan-given NESTful
+  ablation (`make_nestful_plans.py`, `plan_ablation.py`; full plan / function names only, d2 and
+  d4 on [0, 720)), BFCL short-horizon routing control (`bfcl_probe.py`, `bfcl_router.py`), Dory
+  replication (`dory_nestful_multiturn.py` now logs Hermes-rendered and raw turns;
+  `dory_replication.py`, NESTful [0, 480), loops 1–4, greedy, reasoning off), each with
+  pre-registered predictions; Fable review applied. New-model survey: Nanbeige4.2-3B (tool-native,
+  2 loops, loop count set from config at load) and Huginn-0125 (re-reads input, random-depth
+  training) are the best candidates; both need `trust_remote_code`, refused by the automated
+  permission check, pending the user's decision.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
