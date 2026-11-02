@@ -28,7 +28,9 @@ format):
    executed with NESTful's functions (``run_call``); results return as tool messages.
 4. Ends at a turn without calls or after ``--max-turns`` turns with calls. Graded like NESTful:
    the last executed call's result must match the gold answer.
-Per turn we log generated tokens, reasoning tokens and prompt tokens; compute is reported as
+Per turn we log generated tokens, reasoning tokens and prompt tokens, and per dialogue the turns
+rendered in Hermes format (``texts``: each turn's calls as ``<tool_call>`` JSON, or the final
+answer text); compute is reported as
 block-tokens: blocks run per token (8 input + 20 x L recurrent + 8 output) x (prompt + generated)
 tokens per turn, prefill included; loop-tokens (L x tokens) are also logged but overstate the cost
 of extra loops for Dory, whose input and output blocks run once. Rows are appended and a
@@ -104,6 +106,7 @@ def dialogue(model, tok, ex, functions, loops, args, seed_base) -> dict:
     results: dict = {}
     last = (False, "no calls")
     turns, n_calls, errors, finished = [], 0, 0, False
+    texts: list[str] = []
     for t in range(args.max_turns + 1):
         prompt = tok.apply_chat_template(
             messages,
@@ -117,6 +120,18 @@ def dialogue(model, tok, ex, functions, loops, args, seed_base) -> dict:
         text, n_gen, n_prompt = generate(model, tok, prompt, loops, args.max_tokens, sampler)
         reasoning, answer = ("", text.strip()) if args.no_thinking else split_thinking(text)
         calls = parse_calls(answer)
+        # Hermes rendering of the turn (calls, or the final answer text) so the Ouro analyses
+        # (depth_anatomy, router_diagnosis) can replay Dory dialogues unchanged
+        texts.append(
+            "\n".join(
+                "<tool_call>\n"
+                + json.dumps({"name": c["name"], "arguments": c["arguments"]}, ensure_ascii=False)
+                + "\n</tool_call>"
+                for c in calls
+            )
+            if calls
+            else answer
+        )
         turns.append(
             {
                 "tokens": n_gen,
@@ -165,6 +180,7 @@ def dialogue(model, tok, ex, functions, loops, args, seed_base) -> dict:
         "block_tokens": blocks(model, loops) * sum(x["tokens"] + x["prompt"] for x in turns),
         "decode_block_tokens": blocks(model, loops) * gen,
         "value": repr(last[1])[:80],
+        "texts": texts,
         "per_turn": turns,
     }
 
