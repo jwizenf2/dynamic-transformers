@@ -113,10 +113,21 @@ def main() -> None:
     parser.add_argument("--max-turns", type=int, default=8)
     parser.add_argument("--max-tokens", type=int, default=256)
     parser.add_argument("--cache-limit-gb", type=float, default=2.0)
+    parser.add_argument(
+        "--edit",
+        default=None,
+        help="loop-drift edit after loop 4 (loop_edit.EditedOuro): none, project_pc<k>, "
+        "project_contrast, project_mean, damp_<beta>; directions from --edit-dirs",
+    )
+    parser.add_argument("--edit-dirs", default="results/loop_edit/directions.npz")
     args = parser.parse_args()
 
     mx.set_cache_limit(int(args.cache_limit_gb * 1024**3))
     model, tok = load_model(args.model, None, args.adapters)
+    if args.edit:
+        from loop_edit import EditedOuro, edit_spec
+
+        model = EditedOuro(model, *edit_spec(args.edit, args.edit_dirs))
     stop_ids = {0, tok.convert_tokens_to_ids("<|im_end|>")}
     tasks = None if args.tasks == "nestful" else args.tasks
     examples, functions = requests(args.start + args.n, tasks)

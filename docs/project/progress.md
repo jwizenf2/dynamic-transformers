@@ -636,6 +636,24 @@
   2 loops, loop count set from config at load) and Huginn-0125 (re-reads input, random-depth
   training) are the best candidates; both need `trust_remote_code`, refused by the automated
   permission check, pending the user's decision.
+- Run set 3 (job c03a5b60, commit e21bae9; rows kept in `~/AI/keep/runset3` on the lab), first
+  three stages:
+  * Plan ablation (`plan_ablation.py`, `results/plan_ablation/report.json`): accuracy d2/d4 with no
+    plan .374/.500, full gold plan .824/.904, function names only .356/.442. Primary: 2→4 gain
+    .126 → .081 with the full plan (difference +.046, 90% CI +.015 to +.076): SUPPORTED. By gold
+    calls the full-plan gain is 0 on 2–3 calls (both 100%), +.01 on 4–5, +.08 on 6–8 (.90 → .98,
+    same unfinished share) and +.29 on 9+ (.25 → .54); on 9+ the 8-turn limit binds (unfinished
+    .59 vs .40) and 4 loops issue more calls per turn (1.66 vs 1.43), so that part is partly a
+    turn-cap effect. Function names alone do not help (wrong-operation errors .072 → .021 but
+    wrong-plan errors stay .45; unfinished rises): choosing which quantities to combine is the
+    hard part, not choosing the operation. Reading: with the plan given, the benefit of depth
+    disappears on short chains and remains as execution reliability on long ones.
+  * BFCL short-horizon control (`bfcl_router.py`, `results/bfcl_router/report.json`; 1,000
+    prompts, d1/d2/d4 .702/.846/.879): "4 helps" (4.5%) AUC .788 (90% CI .73–.84) vs NESTful .60:
+    SUPPORTED as pre-registered; gain over the 2–4 mix at the mid budget +.013; 1 vs 2 loops AUC
+    .69, gain +.030. But the rescue AUC among 2-loop failures is .665, the same as NESTful (.66):
+    the higher AUC comes from detecting failure in single-turn prompts, not from better
+    prediction of whether depth rescues a failure.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
