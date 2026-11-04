@@ -654,6 +654,25 @@
     .69, gain +.030. But the rescue AUC among 2-loop failures is .665, the same as NESTful (.66):
     the higher AUC comes from detecting failure in single-turn prompts, not from better
     prediction of whether depth rescues a failure.
+  * Dory replication (`dory_replication.py`, `results/dory_replication/report.json`; NESTful
+    [0, 480), greedy, reasoning off; rows in `~/AI/keep/runset3/dory_multiturn`): loops 1–4
+    .327/.346/.365/.363, nearly flat. Outcomes flip between loop counts on 31% of requests from 1
+    to 2 (79 gains / 70 losses), 21% from 2 to 3, 18% from 3 to 4 (Ouro 2→4: 20% with 117 / 26).
+    P1 formulation majority among 1→2 fixes .56 (SUPPORTED, weakly); P2 compounding not supported
+    (gain +.015 on both 2–3 and 6–8 calls); P3 stability .51 (NOT SUPPORTED). Reading: on this task
+    Dory's loop count acts mostly as a perturbation (consistent with the earlier Dory oracle, where
+    depth behaved like sampling), so the Ouro account cannot be tested on Dory; the benefit of depth
+    is model-dependent, and the findings are scoped to a model whose accuracy rises with depth.
+- Loop-drift edit test (job 729f0dde, commit 371709a; `loop_edit_eval.py`,
+  `results/loop_edit/eval.json`; pre-registered in `docs/research/loop_edit_2026-11-03.md`): at 8
+  loops on NESTful [0, 240), unedited .192 (1.81 tool errors per dialogue); projecting out the top
+  16 drift directions .375 (+.183, 90% CI +.138 to +.234; 52 wins / 8 losses): REPAIRED, errors
+  .24 per dialogue, but still below 4 loops (−.117, CI −.167 to −.067). Direction-free damping
+  (β .5) .496, equal to 4 loops (+.004, CI −.017 to +.029) at twice the compute. Reading: the
+  collapse past the trained depth is drift of the recurrent state, removable by pulling the state
+  back toward its loop-4 value, but it is not low-dimensional (16 directions recover only part)
+  and removing it adds no accuracy beyond 4 loops: extra loops are not a compute knob for this
+  model even when they no longer break the output.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
