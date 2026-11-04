@@ -199,10 +199,11 @@ PLANS = {
         ],
     },
     # Replication (2026-11-04, docs/research/replication_2026-11-04.md): chain v3's recipe with
-    # training seeds 1 and 2 (data order; the LoRA weights are warm-started from the same
-    # stage-1 model, so the LoRA init seed has no effect), and the whole two-stage recipe on
-    # Ouro-1.4B (stage 1 = depth-full's Hermes SFT, stage 2 = chain v3's mix). BFCL is evaluated
-    # here; the NESTful, plan and probe evaluations run as separate commands of the same job.
+    # training seeds 1 and 2 (data order and the replayed 3,000-conversation Hermes subset; the
+    # LoRA weights are warm-started from the same stage-1 model, so the LoRA init seed has no
+    # effect), and the whole two-stage recipe on Ouro-1.4B (stage 1 = depth-full's Hermes SFT,
+    # stage 2 = chain v3's mix). BFCL is evaluated here; the NESTful, plan and probe evaluations
+    # run as later stages of ``run_stages.py --plan replication``.
     "chains-v3-s1": {
         "prepare": CHAINS_V3_PREPARE,
         "train": [

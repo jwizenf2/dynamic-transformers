@@ -21,7 +21,7 @@ reproduces every earlier number) are fixed before any of the runs.
 A finding counts as replicated across training runs if it is SUPPORTED for at least two of the
 three seeds (0, 1, 2); the paper reports each seed's value and the mean and spread.
 
-## Runs (four lab jobs, serialised by a lock directory `~/AI/keep/gpu.lock` on the lab)
+## Runs (one resumable lab job, `run_stages.py --plan replication`; stages in this order)
 
 1. **Unseen confirmation**, chain v3 seed 0, NESTful [720, 1200) (never run; 480 requests, 228
    with 2–3 calls and 73 with 6–8): greedy dialogues at 1, 2, 3, 4, 6 loops, the 48-token probe,
@@ -30,7 +30,8 @@ three seeds (0, 1, 2); the paper reports each seed's value and the mean and spre
    the model's own [0, 720) data). ~16 h.
 2. **Chain v3, seed 1** (`sft_queue.py --plan chains-v3-s1`: chain v3's data and recipe, warm
    start from the same stage-1 adapters, kept at `~/AI/keep/ouro-depth-full`, sha256 cb5ebeb3…;
-   the seed changes the data order; BFCL at 1/2/4 loops), then on NESTful [0, 720): dialogues at
+   the seed changes the data order and which 3,000 Hermes conversations are replayed
+   (the LoRA weights come from the warm start); BFCL at 1/2/4 loops), then on NESTful [0, 720): dialogues at
    1–4 loops, probe, full plan at 2 and 4 loops; BFCL probe. Analysis with cross-validated rescue
    router. ~32 h.
 3. **Ouro-1.4B** (`--plan ouro14`: stage 1 = depth-full's Hermes SFT with the depth loss, stage
