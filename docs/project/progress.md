@@ -673,6 +673,14 @@
   back toward its loop-4 value, but it is not low-dimensional (16 directions recover only part)
   and removing it adds no accuracy beyond 4 loops: extra loops are not a compute knob for this
   model even when they no longer break the output.
+- 2026-11-04 replication queued (job d5e54bae, commit 33f9298, project
+  dynamic-transformers-replication; `run_stages.py --plan replication`, 28 stages, ~105 h;
+  pre-registration `docs/research/replication_2026-11-04.md`, analysis `replication_metrics.py`
+  P1–P6): unseen NESTful [720, 1200) confirmation with chain v3 (depths 1–4 and 6, probe, full
+  plan), chain v3 seeds 1 and 2 (stage-2 re-runs from the kept stage-1 adapters), Ouro-1.4B
+  two-stage recipe; each model evaluated on NESTful [0, 720) (1–4 loops, probe, full plan) and
+  BFCL (1/2/4 loops, probe). Fable review applied: one resumable job with signal forwarding and
+  stages gated on finished training (a lock between jobs could deadlock after a preemption).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
