@@ -681,6 +681,19 @@
   two-stage recipe; each model evaluated on NESTful [0, 720) (1–4 loops, probe, full plan) and
   BFCL (1/2/4 loops, probe). Fable review applied: one resumable job with signal forwarding and
   stages gated on finished training (a lock between jobs could deadlock after a preemption).
+- Replication stage 1, unseen confirmation (chain v3 seed 0, NESTful [720, 1200), never run before;
+  `results/replication/ouro-chain-depth-v3_nestful720.json`; rows kept in `~/AI/keep/replication`
+  on the lab; one yield during the stage, resumed, all 480 requests complete): accuracy at 1/2/3/4/6
+  loops .213/.458/.548/.594/.583; full plan at 2/4 .952/.985.
+  * P1 formulation SUPPORTED: 74 of 85 requests fixed by 4 loops were formulation errors at 2 (.87).
+  * P2 compounding NOT SUPPORTED: gain by gold calls +.09/+.15/+.19/+.36 (2–3/4–5/6–8/9+, the last
+    n = 14), 6–8 minus 2–3 +.10 with 90% CI −.007 to +.21 (73 long requests): the same direction,
+    but the interval touches zero.
+  * P3 plan ablation SUPPORTED: 2→4 gain .135 without a plan, .033 with it (difference +.102, CI
+    +.065 to +.140).
+  * P4 stability SUPPORTED: 80% of 4-loop fixes also right at 6 loops.
+  * P5 rescue limit SUPPORTED: router frozen on [0, 720) ranks "4 helps" at AUC .52 and rescue among
+    2-loop failures at .57 on the unseen requests.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
