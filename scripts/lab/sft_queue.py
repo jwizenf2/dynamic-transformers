@@ -49,6 +49,18 @@ MATHQA_CLEAN = "results/mathqa/validation_clean_tasks.jsonl"
 # Chain v3 (job 65b8f28d), copied out of its project folder (a new commit replaces the folder)
 # to ~/AI/keep on the lab; sha256 2c89ba25…60dc.
 V3 = "/Users/jeremywizenfeld/AI/keep/ouro-chain-depth-v3/adapters.safetensors"
+# The same stage-1 model copied to ~/AI/keep (sha256 cb5ebeb3…e565), for the replication runs.
+DEPTH_FULL_KEEP = "/Users/jeremywizenfeld/AI/keep/ouro-depth-full/adapters.safetensors"
+OURO14 = ["--model", "ByteDance/Ouro-1.4B"]
+CHAINS_V3_PREPARE = [
+    (
+        CHAINS_V2,
+        [PY, "scripts/lab/make_chains.py", "--n", "8000", "--seed", "1"]
+        + ["--parallel-p", "0.2", "--single-p", "0.1"],
+    ),
+    (MATHQA, [PY, "scripts/lab/make_mathqa.py"]),
+]
+CHAINS_V3_ARGS = ["--extra-data", CHAINS_V2, MATHQA, "--hermes-train-n", "3000", "--epochs", "1"]
 
 # name, loss, extra trainer args
 PLANS = {
@@ -185,6 +197,50 @@ PLANS = {
                 ["--n", "292", "--variant", "plain", "--tasks", MATHQA_CLEAN, "--steps", "2", "4"],
             ),
         ],
+    },
+    # Replication (2026-11-04, docs/research/replication_2026-11-04.md): chain v3's recipe with
+    # training seeds 1 and 2 (data order; the LoRA weights are warm-started from the same
+    # stage-1 model, so the LoRA init seed has no effect), and the whole two-stage recipe on
+    # Ouro-1.4B (stage 1 = depth-full's Hermes SFT, stage 2 = chain v3's mix). BFCL is evaluated
+    # here; the NESTful, plan and probe evaluations run as separate commands of the same job.
+    "chains-v3-s1": {
+        "prepare": CHAINS_V3_PREPARE,
+        "train": [
+            (
+                "chain-depth-v3-s1",
+                "depth",
+                ["--init-adapters", DEPTH_FULL_KEEP, *CHAINS_V3_ARGS, "--seed", "1"],
+            )
+        ],
+        "eval": [("bfcl", ["--n", "0", "--steps", "1", "2", "4"])],
+    },
+    "chains-v3-s2": {
+        "prepare": CHAINS_V3_PREPARE,
+        "train": [
+            (
+                "chain-depth-v3-s2",
+                "depth",
+                ["--init-adapters", DEPTH_FULL_KEEP, *CHAINS_V3_ARGS, "--seed", "2"],
+            )
+        ],
+        "eval": [("bfcl", ["--n", "0", "--steps", "1", "2", "4"])],
+    },
+    "ouro14": {
+        "prepare": CHAINS_V3_PREPARE,
+        "train": [
+            ("ouro14-depth-full", "depth", OURO14),
+            (
+                "ouro14-chain-depth-v3",
+                "depth",
+                [
+                    *OURO14,
+                    "--init-adapters",
+                    "results/ouro_sft/ouro14-depth-full/adapters.safetensors",
+                    *CHAINS_V3_ARGS,
+                ],
+            ),
+        ],
+        "eval": [("bfcl", ["--n", "0", "--steps", "1", "2", "4", *OURO14])],
     },
     "seeds": {
         "train": [

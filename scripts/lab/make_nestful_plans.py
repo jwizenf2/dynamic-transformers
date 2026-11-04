@@ -1,6 +1,7 @@
 """NESTful requests with the solution plan given in the request (formulation ablation).
 
     python scripts/lab/make_nestful_plans.py      # results/nestful_plans/{full,ops}_tasks.jsonl
+    python scripts/lab/make_nestful_plans.py --start 720 --n 480 --tag 720   # unseen slice
 
 Why: the depth anatomy (``depth_anatomy.py``) found that 4 loops fix mostly formulation errors
 at 2 loops (which quantities to combine, which operation), not format, copying or arithmetic.
@@ -20,6 +21,7 @@ NESTful-format tasks (``ouro_nestful_multiturn.load_tasks``) for ``router_smoke.
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
@@ -57,7 +59,13 @@ def ops_plan(calls: list[dict]) -> str:
 
 
 def main() -> None:
-    examples, _ = requests(720)
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--start", type=int, default=0)
+    parser.add_argument("--n", type=int, default=720)
+    parser.add_argument("--tag", default="", help="file name suffix, e.g. 720 → full720_tasks")
+    args = parser.parse_args()
+    examples, _ = requests(args.start + args.n)
+    examples = examples[args.start :]
     out = Path("results/nestful_plans")
     out.mkdir(parents=True, exist_ok=True)
     for name, plan in (("full", full_plan), ("ops", ops_plan)):
@@ -71,7 +79,7 @@ def main() -> None:
             }
             for e in examples
         ]
-        (out / f"{name}_tasks.jsonl").write_text(
+        (out / f"{name}{args.tag}_tasks.jsonl").write_text(
             "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
         )
     print(json.dumps({"n": len(examples), "out": str(out)}))
