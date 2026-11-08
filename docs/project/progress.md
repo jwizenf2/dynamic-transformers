@@ -694,6 +694,23 @@
   * P4 stability SUPPORTED: 80% of 4-loop fixes also right at 6 loops.
   * P5 rescue limit SUPPORTED: router frozen on [0, 720) ranks "4 helps" at AUC .52 and rescue among
     2-loop failures at .57 on the unseen requests.
+- Replication stages 2–3 (job d5e54bae, at stage 27/28 after 112 h, two yields resumed; the
+  six `cp`/`mkdir` keep stages fail inside the lab sandbox, adapters copied to `~/AI/keep` by hand:
+  chain-depth-v3-s1 e2ddd690…, chain-depth-v3-s2 ae417e9b…, ouro14-depth-full e3f0c06f…,
+  ouro14-chain-depth-v3 d8414b72…; results in `~/AI/keep/replication`):
+  * Chain v3 seed 1, NESTful [0, 720): accuracy 1–4 loops .181/.389/.465/.522; full plan .801/.915.
+    P1 SUPPORTED (.83), P2 SUPPORTED (+.091, CI +.017 to +.161), P3 NOT SUPPORTED (gain .133 →
+    .114 with the plan, difference +.019, CI −.013 to +.053), P5 SUPPORTED (rescue AUC .61), P6
+    SUPPORTED (BFCL .858/.894 at 2/4; "4 helps" AUC .75 vs NESTful .56; BFCL rescue .63).
+  * Ouro-1.4B (same two-stage recipe): accuracy .099/.258/.357/.381; full plan .644/.796. P1
+    SUPPORTED (.84), P2 SUPPORTED (+.107, CI +.035 to +.177), P3 NOT SUPPORTED (gain .122 → .151,
+    difference −.029, CI −.065 to +.004), P5 NOT SUPPORTED by a hair (rescue AUC .723 vs <= .72),
+    P6 SUPPORTED (BFCL .793/.858; AUC .72 vs .60; rescue .64). Stage-1 1.4B BFCL at 4 loops .866.
+  * Exploratory (not pre-registered), P3 by chain length: with the plan the 2→4 gain on 2–5-call
+    chains falls from +.095/+.108/+.085/+.117 to +.005/+.010/+.049/+.008 (seed 0 / seed 1 / 1.4B /
+    seed 0 unseen), while on 9+-call chains, where 2 loops fail to execute the plan (2-loop
+    accuracy .06–.57), the gain stays or grows. The aggregate P3 depends on the mix of chain lengths;
+    the robust form is: a given plan removes the benefit of depth where execution is easy.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
