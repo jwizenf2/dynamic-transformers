@@ -2,6 +2,8 @@
 
     python scripts/lab/make_nestful_plans.py      # results/nestful_plans/{full,ops}_tasks.jsonl
     python scripts/lab/make_nestful_plans.py --start 720 --n 480 --tag 720   # unseen slice
+    python scripts/lab/make_nestful_plans.py --tasks results/gsm8k/test_tasks.jsonl --n 800 \
+        --out results/gsm8k_plans                                             # GSM8K
 
 Why: the depth anatomy (``depth_anatomy.py``) found that 4 loops fix mostly formulation errors
 at 2 loops (which quantities to combine, which operation), not format, copying or arithmetic.
@@ -63,10 +65,12 @@ def main() -> None:
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--n", type=int, default=720)
     parser.add_argument("--tag", default="", help="file name suffix, e.g. 720 → full720_tasks")
+    parser.add_argument("--tasks", default=None, help="NESTful-format task file (default NESTful)")
+    parser.add_argument("--out", default="results/nestful_plans")
     args = parser.parse_args()
-    examples, _ = requests(args.start + args.n)
+    examples, _ = requests(args.start + args.n, args.tasks)
     examples = examples[args.start :]
-    out = Path("results/nestful_plans")
+    out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     for name, plan in (("full", full_plan), ("ops", ops_plan)):
         rows = [

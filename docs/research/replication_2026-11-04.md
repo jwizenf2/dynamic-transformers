@@ -76,3 +76,20 @@ loops fix formulation errors (83–96% of the requests they fix) and help more o
 early signals rank rescuable failures only weakly (AUC .57–.73) and routing does not beat the
 random mix (`router_confirm2.py`); single-turn tasks make failure easier to detect but not
 rescue. The plan ablation holds where execution is easy and is composition-dependent overall.
+
+## Second benchmark and stability for all seeds (pre-registered 2026-11-12, before the runs)
+
+GSM8K test (openai/gsm8k @ 740312a, MIT) converted to NESTful-format tool chains
+(`dht.toolcall.gsm8k`, `make_gsm8k.py`): each `<<expr=result>>` annotation becomes calls over
+NESTful's tools, intermediate results flow by reference, and a problem is kept if its chain is
+connected (no dead intermediate results) and executes to the `####` answer: 950 of 1,319 kept
+(241 disconnected, 84 single-call, 39 mismatched, 5 unparseable); 2–12 calls. None of our
+fine-tunes saw GSM8K (base-model pretraining exposure cannot be ruled out). Run with chain v3
+seed 0 on the first 800 tasks in depth-balanced order: dialogues at 1, 2, 3, 4, 6 loops, the probe,
+the full-plan condition at 2 and 4 loops (`run_stages.py --plan gsm8k-p4`). Analysis:
+`replication_metrics.py --model ouro-chain-depth-v3 --tasks results/gsm8k/test_tasks.jsonl
+--nestful-tag gsm8k --plan-tag gsm8k_plan_full --start 0 --n 800` (rescue router by
+cross-validation), with predictions P1–P5 exactly as above (P6 N/A). In the same job, depth-6
+NESTful [0, 720) dialogues for seeds 1 and 2 (`--deep-tag nestful_d6`), so P4 is tested on all
+three seeds. GSM8K problems are shorter and more direct than MathQA's; if depth matters less there,
+that is reported as such.

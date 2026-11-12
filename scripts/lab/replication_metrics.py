@@ -4,7 +4,8 @@
     PYTHONPATH=scripts/lab python scripts/lab/replication_metrics.py --model ouro-chain-depth-v3 \
         --nestful-tag nestful720 --plan-tag plan_full720 --start 720 --n 480 \
         --rescue-train nestful nestful240
-    # training seed / other model on [0, 720) (rescue AUC by cross-validation)
+    # training seed / other model on [0, 720) (rescue AUC by cross-validation); --deep-tag adds
+    # depth-6 rows run separately (P4); --tasks evaluates another task file (GSM8K)
     PYTHONPATH=scripts/lab python scripts/lab/replication_metrics.py --model chain-depth-v3-s1 \
         --nestful-tag nestful --plan-tag plan_full --start 0 --n 720 \
         --bfcl-outcomes results/ouro_sft_eval/chain-depth-v3-s1/bfcl/examples.jsonl \
@@ -106,12 +107,18 @@ def main() -> None:
     ap.add_argument("--rescue-train", nargs="*", default=[], help="tags to freeze the router on")
     ap.add_argument("--bfcl-outcomes", default=None)
     ap.add_argument("--bfcl-probe", default=None)
+    ap.add_argument("--tasks", default=None, help="NESTful-format task file (default NESTful)")
+    ap.add_argument("--deep-tag", default=None, help="extra folder with depth-6 rows, joined by id")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
-    examples, functions = requests(args.start + args.n)
+    examples, functions = requests(args.start + args.n, args.tasks)
     examples = examples[args.start :]
     base = rows(SMOKE / f"{args.model}_{args.nestful_tag}")
+    if args.deep_tag:
+        for i, r in rows(SMOKE / f"{args.model}_{args.deep_tag}").items():
+            if i in base:
+                base[i]["runs"].update(r["runs"])
     plan = rows(SMOKE / f"{args.model}_{args.plan_tag}")
     ids = [e.id for e in examples]
     assert all(i in base and i in plan for i in ids), "missing requests"

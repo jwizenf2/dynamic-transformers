@@ -94,6 +94,21 @@ def seed_or_model_stages(plan: str, name: str, model: list[str]) -> list[dict]:
     ]
 
 
+GSM8K = "results/gsm8k/test_tasks.jsonl"
+GSM8K_PLAN = "results/gsm8k_plans/full_tasks.jsonl"
+GSM8K_SMOKE = "results/router_smoke/ouro-chain-depth-v3_gsm8k/examples.jsonl"
+
+
+def depth6_stage(name: str) -> dict:
+    """Depth-6 dialogues on NESTful [0, 720) for a kept model (P4 stability)."""
+    a = f"{KEEP}/{name}/adapters.safetensors"
+    return {
+        "cmd": [PY, "scripts/lab/router_smoke.py", "--adapters", a, "--tasks", "nestful"]
+        + ["--n", "720", "--depths", "6", "--modes", "greedy", "--tag", "nestful_d6"],
+        "needs": [a],
+    }
+
+
 PLANS = {
     # docs/research/replication_2026-11-04.md: unseen confirmation, seed 1, Ouro-1.4B, seed 2
     "replication": [
@@ -121,6 +136,34 @@ PLANS = {
         *seed_or_model_stages("chains-v3-s1", "chain-depth-v3-s1", []),
         *seed_or_model_stages("ouro14", "ouro14-chain-depth-v3", O14),
         *seed_or_model_stages("chains-v3-s2", "chain-depth-v3-s2", []),
+    ],
+    # docs/research/replication_2026-11-04.md, "Second benchmark": GSM8K test as tool chains with
+    # chain v3 seed 0 (1–4 and 6 loops, probe, full plan), then depth 6 for seeds 1 and 2 (P4)
+    "gsm8k-p4": [
+        {"cmd": [PY, "scripts/lab/make_gsm8k.py"]},
+        {
+            "cmd": [PY, "scripts/lab/make_nestful_plans.py", "--tasks", GSM8K, "--n", "800"]
+            + ["--out", "results/gsm8k_plans"],
+            "needs": [GSM8K],
+        },
+        {
+            "cmd": [PY, "scripts/lab/router_smoke.py", "--adapters", V3, "--tasks", GSM8K]
+            + ["--n", "800", "--depths", "1", "2", "3", "4", "6", "--modes", "greedy"]
+            + ["--tag", "gsm8k"],
+            "needs": [GSM8K],
+        },
+        {
+            "cmd": [PY, "scripts/lab/router_probe2.py", "--adapters", V3, "--tasks", GSM8K]
+            + ["--n", "800", "--tag", "gsm8k", "--smoke", GSM8K_SMOKE],
+            "needs": [GSM8K_SMOKE],
+        },
+        {
+            "cmd": [PY, "scripts/lab/router_smoke.py", "--adapters", V3, "--tasks", GSM8K_PLAN]
+            + ["--n", "800", "--depths", "2", "4", "--modes", "greedy", "--tag", "gsm8k_plan_full"],
+            "needs": [GSM8K_PLAN],
+        },
+        depth6_stage("chain-depth-v3-s1"),
+        depth6_stage("chain-depth-v3-s2"),
     ],
 }
 
