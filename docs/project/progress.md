@@ -717,6 +717,14 @@
   2–5-call chains +.095 → +.008. Combined table and reading in
   `docs/research/replication_2026-11-04.md`: P1, P2, P3, P5, P6 replicate across seeds by the
   pre-registered two-of-three rule; Ouro-1.4B supports P1, P2, P6.
+- 2026-11-12 second benchmark and P4 for all seeds queued (job d7c03c93, commit bca0a07,
+  `run_stages.py --plan gsm8k-p4`, ~30 h): GSM8K test converted to NESTful-format tool chains
+  (`dht.toolcall.gsm8k`, `make_gsm8k.py`; 950 of 1,319 kept: connected chains that execute to the
+  `####` answer; 8 unit tests), chain v3 seed 0 on the first 800 at 1–4 and 6 loops, probe and full
+  plan; depth 6 on NESTful [0, 720) for seeds 1 and 2. Pre-registered (P1–P5) in
+  `docs/research/replication_2026-11-04.md`; Fable review applied (gold answers are the `####`
+  values; reference-attribution quirks stated as limitations). Nanbeige still waits on the
+  user's local feasibility check (`trust_remote_code` is refused for the assistant).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
