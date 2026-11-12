@@ -44,3 +44,35 @@ Scope notes, stated in the paper: the seeds re-run only the stage-2 fine-tune (s
 NESTful is the only multi-step benchmark (BFCL is the single-turn control); Dory is reported as a
 model whose accuracy barely changes with depth on this task (loop count acts as a perturbation),
 not as a replication.
+
+## Results (job d5e54bae, finished 2026-11-08; analysed 2026-11-12)
+
+Accuracy at 1/2/3/4 loops on NESTful [0, 720): seed 0 .168/.374/.449/.500; seed 1
+.181/.389/.465/.522; seed 2 .164/.374/.475/.494; Ouro-1.4B .099/.258/.357/.381. Unseen [720, 1200),
+seed 0: .213/.458/.548/.594 (6 loops .583).
+
+| Prediction | Seed 0 [0,720) | Seed 1 | Seed 2 | Seeds replicated | Ouro-1.4B | Seed 0 unseen |
+|---|---|---|---|---|---|---|
+| P1 formulation (share) | ✓ .96 | ✓ .83 | ✓ .85 | 3/3 | ✓ .84 | ✓ .87 |
+| P2 compounding (6–8 minus 2–3) | ✓ +.12 | ✓ +.09 | ✓ +.10 | 3/3 | ✓ +.11 | ✗ +.10 (CI −.007 to +.21) |
+| P3 plan ablation (gain difference) | ✓ +.046 | ✗ +.019 | ✓ +.039 | 2/3 | ✗ −.029 | ✓ +.102 |
+| P4 stability (right at 6) | — | — | — | — | — | ✓ .80 |
+| P5 rescue AUC <= .72 | ✓ .66 | ✓ .61 | ✗ .731 | 2/3 | ✗ .723 | ✓ .57 (frozen) |
+| P6 BFCL (AUC BFCL vs NESTful; BFCL rescue) | ✓ .79 vs .60; .67 | ✓ .75 vs .56; .63 | ✓ .67 vs .64; .66 | 3/3 | ✓ .72 vs .60; .64 | — |
+
+By the pre-registered rule (SUPPORTED for at least two of three seeds) P1, P2, P3, P5 and P6 replicate.
+Ouro-1.4B supports P1, P2, P6 and misses P3 and, narrowly, P5. The unseen confirmation supports
+P1, P3, P4, P5 and misses P2 (73 long requests).
+
+Exploratory (not pre-registered): P3 split by chain length. 2→4 gain on 2–5-call chains without /
+with the full plan: seed 0 +.095/+.005, seed 1 +.108/+.010, seed 2 +.095/+.008, Ouro-1.4B
++.085/+.049, seed 0 unseen +.117/+.008. On 9+-call chains the plan does not remove the gain (2-loop
+accuracy with the plan .06–.57: the shallow model cannot execute long plans). The aggregate P3
+depends on the mix of chain lengths; the stable statement is that a given plan removes the
+benefit of depth where execution is easy.
+
+Reading for the paper: across three training seeds, two model sizes and unseen requests, extra
+loops fix formulation errors (83–96% of the requests they fix) and help more on longer chains;
+early signals rank rescuable failures only weakly (AUC .57–.73) and routing does not beat the
+random mix (`router_confirm2.py`); single-turn tasks make failure easier to detect but not
+rescue. The plan ablation holds where execution is easy and is composition-dependent overall.

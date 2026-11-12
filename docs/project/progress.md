@@ -711,6 +711,12 @@
     seed 0 unseen), while on 9+-call chains, where 2 loops fail to execute the plan (2-loop
     accuracy .06–.57), the gain stays or grows. The aggregate P3 depends on the mix of chain lengths;
     the robust form is: a given plan removes the benefit of depth where execution is easy.
+- Replication finished (job d5e54bae, 2026-11-08; all 28 stages, keep-copy stages fail in the
+  sandbox only). Seed 2: accuracy .164/.374/.475/.494; P1 ✓ .85, P2 ✓ +.099, P3 ✓ +.039 (CI
+  +.008 to +.071), P5 ✗ rescue AUC .731, P6 ✓ (BFCL .67 vs NESTful .64; rescue .66); plan split on
+  2–5-call chains +.095 → +.008. Combined table and reading in
+  `docs/research/replication_2026-11-04.md`: P1, P2, P3, P5, P6 replicate across seeds by the
+  pre-registered two-of-three rule; Ouro-1.4B supports P1, P2, P6.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
