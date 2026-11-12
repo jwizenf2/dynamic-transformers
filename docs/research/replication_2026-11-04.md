@@ -93,3 +93,11 @@ cross-validation), with predictions P1–P5 exactly as above (P6 N/A). In the sa
 NESTful [0, 720) dialogues for seeds 1 and 2 (`--deep-tag nestful_d6`), so P4 is tested on all
 three seeds. GSM8K problems are shorter and more direct than MathQA's; if depth matters less there,
 that is reported as such.
+
+Review notes (2026-11-12, applied before queueing): gold answers are the `####` values (6 of the
+800 tasks had float noise in the executed value). Stated limitations of the conversion: a number
+that equals more than one earlier result refers to the latest one (45 of 950 tasks; execution is
+unaffected), and a constant that coincides with an earlier result becomes a reference (e.g.
+60 seconds in `120/60`); both affect dependency-depth buckets and the plan wording, not grading.
+An intermediate result that equals a question number stays a literal, which drops some tasks as
+disconnected (conservative).

@@ -25,8 +25,8 @@ Construction (per problem):
   where the solution did part of the arithmetic without an annotation and the next annotation
   starts from an unannotated number), and executing the calls
   reproduces the ``####`` answer (relative tolerance 1e-4, absolute 1e-6); the gold answer is the
-  executed value, as in ``mathqa.build_task``. The tool list is NESTful-style
-  (``mathqa.tool_list``: gold tools, core tools, random other math tools).
+  ``####`` value (not the executed float, which can carry rounding noise). The tool list is
+  NESTful-style (``mathqa.tool_list``: gold tools, core tools, random other math tools).
 """
 
 from __future__ import annotations
@@ -174,5 +174,7 @@ def build_task(
         "query": row["question"].strip(),
         "tools": tools,
         "calls": calls,
-        "answer": float(value),
+        # the #### answer, checked above to match the executed value: execution can carry float
+        # noise (9/14*84 = 34.00000000000001) that answers_match would demand exactly
+        "answer": float(target),
     }, "ok"

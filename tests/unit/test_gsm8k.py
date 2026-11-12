@@ -97,3 +97,24 @@ def test_connected_rejects_dead_intermediate_results():
     # 2*3 = 6 is done in prose, so the next annotation starts from an unannotated 6
     dead = solution_calls("<<200/100=2>>2, so 2*3=6 g, <<6*7=42>>42\n#### 42", "200 100 3 7")
     assert not connected(dead)
+
+
+def test_gold_answer_is_the_clean_final_answer():
+    spec = {
+        n: {
+            "name": n,
+            "parameters": {"arg_0": {"type": "float"}, "arg_1": {"type": "float"}},
+            "output_parameters": {"result": {"type": "float"}},
+        }
+        for n in ("add", "subtract", "multiply", "divide", "inverse")
+    }
+    functions = SimpleNamespace(
+        add=lambda a, b: a + b,
+        subtract=lambda a, b: a - b,
+        multiply=lambda a, b: a * b,
+        divide=lambda a, b: a / b,
+        inverse=lambda a: 1 / a,
+    )
+    row = {"question": "9 of 14 parts of 84", "answer": "<<9/14*84=34>>34\n#### 34"}
+    task, why = build_task(row, spec, functions, random.Random(0))
+    assert why == "ok" and repr(task["answer"]) == "34.0"
