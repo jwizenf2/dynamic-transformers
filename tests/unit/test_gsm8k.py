@@ -115,6 +115,7 @@ def test_gold_answer_is_the_clean_final_answer():
         divide=lambda a, b: a / b,
         inverse=lambda a: 1 / a,
     )
-    row = {"question": "9 of 14 parts of 84", "answer": "<<9/14*84=34>>34\n#### 34"}
+    # 0.1 * 3 = 0.30000000000000004, times 10 = 3.0000000000000004
+    row = {"question": "0.1 of 3, times 10", "answer": "<<0.1*3=0.3>>0.3, <<0.3*10=3>>3\n#### 3"}
     task, why = build_task(row, spec, functions, random.Random(0))
-    assert why == "ok" and repr(task["answer"]) == "34.0"
+    assert why == "ok" and repr(task["answer"]) == "3.0"
