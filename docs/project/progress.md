@@ -725,6 +725,14 @@
   `docs/research/replication_2026-11-04.md`; Fable review applied (gold answers are the `####`
   values; reference-attribution quirks stated as limitations). Nanbeige still waits on the
   user's local feasibility check (`trust_remote_code` is refused for the assistant).
+- Nanbeige4.2-3B feasibility (user ran `scripts/lab/nanbeige_check.py 2 1 3` locally, in an
+  isolated env with transformers 4.45.1 + sentencepiece + protobuf; under our transformers 5.17 its
+  remote code fails at `past_key_values.get_max_length()` on the lazily built cache): at its
+  trained 2 loops it answers the tool prompt correctly (`multiply(12, 7)` in its XML call format);
+  with `num_loops` 1 the output is gibberish and with 3 it breaks within a few tokens. The loop
+  count is fixed in practice (trained on the final loop only), so Nanbeige cannot be a
+  depth-allocation model; dropped. Consistent with Ouro's collapse beyond its trained depth: a
+  looped model offers a usable range of depths only where it was trained on them.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
