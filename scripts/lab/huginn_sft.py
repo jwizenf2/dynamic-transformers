@@ -24,7 +24,7 @@ the coda (attention ``Wqkv``/``proj``, MLP ``fc``/``proj``) and the injection ``
 weights frozen in bfloat16, adapters in float32. Validation: assistant-token cross-entropy on 100
 held-out Hermes conversations at 4, 16 and 32 steps (state seeded, ``--eval-every``).
 
-Memory: the MPS pool is capped (``PYTORCH_MPS_HIGH_WATERMARK_RATIO`` 0.6) and its cache emptied
+Memory: the MPS pool is capped (high/low watermark ratios 0.6/0.5) and its cache emptied
 after every optimizer step; without that, variable-length samples fragmented the cache until the
 first lab run failed at step 141 (job 2c10087a).
 
@@ -48,7 +48,10 @@ from pathlib import Path
 
 # Cap PyTorch's MPS pool well below the machine's memory (set before torch initialises MPS): the
 # first lab run reached 174 GB, 144 GB of it freed-but-cached blocks from variable-length samples.
-os.environ.setdefault("PYTORCH_MPS_HIGH_WATERMARK_RATIO", "0.6")
+# Both ratios are set: torch rejects a high ratio below the low one (default 1.4). HUGINN_MPS_HIGH
+# and HUGINN_MPS_LOW override them (e.g. on a smaller machine).
+os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = os.environ.get("HUGINN_MPS_HIGH", "0.6")
+os.environ["PYTORCH_MPS_LOW_WATERMARK_RATIO"] = os.environ.get("HUGINN_MPS_LOW", "0.5")
 
 import torch  # noqa: E402
 from huggingface_hub import hf_hub_download
