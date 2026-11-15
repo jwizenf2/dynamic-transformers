@@ -99,6 +99,7 @@ CHAINS_V2 = "results/chains/chains_s1_n8000_p0.2_s0.1.json"
 MATHQA = "results/mathqa/train_sft.json"
 HUGINN = "results/huginn_sft/huginn-chain/adapters.safetensors"
 HUGINN_DONE = "results/huginn_sft/huginn-chain/done"
+HUGINN_KEEP_STATE = f"{KEEP}/huginn-chain/state.pt"
 PLAN480 = "results/nestful_plans/full480_tasks.jsonl"
 GSM8K = "results/gsm8k/test_tasks.jsonl"
 GSM8K_PLAN = "results/gsm8k_plans/full_tasks.jsonl"
@@ -181,6 +182,13 @@ PLANS = {
             "skip_if": CHAINS_V2,
         },
         {"cmd": [PY, "scripts/lab/make_mathqa.py"], "skip_if": MATHQA},
+        # restore the kept checkpoint into a fresh project folder (a new commit replaces it)
+        {"cmd": ["mkdir", "-p", "results/huginn_sft/huginn-chain"], "needs": [HUGINN_KEEP_STATE]},
+        {
+            "cmd": ["cp", HUGINN_KEEP_STATE, "results/huginn_sft/huginn-chain/state.pt"],
+            "needs": [HUGINN_KEEP_STATE],
+            "skip_if": "results/huginn_sft/huginn-chain/state.pt",
+        },
         {
             "cmd": [PY, "scripts/lab/huginn_sft.py", "--name", "huginn-chain", "--resume"]
             + ["--extra-data", CHAINS_V2, MATHQA],

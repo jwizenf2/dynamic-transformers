@@ -24,6 +24,10 @@ the coda (attention ``Wqkv``/``proj``, MLP ``fc``/``proj``) and the injection ``
 weights frozen in bfloat16, adapters in float32. Validation: assistant-token cross-entropy on 100
 held-out Hermes conversations at 4, 16 and 32 steps (state seeded, ``--eval-every``).
 
+Memory: the MPS pool is capped (``PYTORCH_MPS_HIGH_WATERMARK_RATIO`` 0.6) and its cache emptied
+after every optimizer step; without that, variable-length samples fragmented the cache until the
+first lab run failed at step 141 (job 2c10087a).
+
 Resume: ``--resume`` continues from ``results/huginn_sft/<name>/state.pt`` (adapters, optimizer,
 data order, step), saved every ``--save-every`` steps and on SIGUSR1 (the lab asking the job to
 yield), after which SIGUSR1 is re-raised so the lab records a stop. Output: ``adapters.safetensors``
@@ -42,7 +46,11 @@ import sys
 import time
 from pathlib import Path
 
-import torch
+# Cap PyTorch's MPS pool well below the machine's memory (set before torch initialises MPS): the
+# first lab run reached 174 GB, 144 GB of it freed-but-cached blocks from variable-length samples.
+os.environ.setdefault("PYTORCH_MPS_HIGH_WATERMARK_RATIO", "0.6")
+
+import torch  # noqa: E402
 from huggingface_hub import hf_hub_download
 from safetensors.torch import save_file
 
@@ -266,9 +274,12 @@ def main() -> None:
             loss = loss_fn(model, ids, mask, steps, device) / args.grad_accum
             loss.backward()
             avg.append(float(loss.detach()) * args.grad_accum)
+            del loss
         torch.nn.utils.clip_grad_norm_(params, 1.0)
         opt.step()
         sched.step()
+        if torch.backends.mps.is_available():
+            torch.mps.empty_cache()  # release cached blocks (fragmentation across lengths)
         step += 1
         print(f"::progress {step}/{total} steps", flush=True)
         if step % 10 == 0:
