@@ -101,3 +101,16 @@ unaffected), and a constant that coincides with an earlier result becomes a refe
 60 seconds in `120/60`); both affect dependency-depth buckets and the plan wording, not grading.
 An intermediate result that equals a question number stays a literal, which drops some tasks as
 disconnected (conservative).
+
+### Results (job d7c03c93, finished 2026-11-14)
+
+GSM8K (chain v3 seed 0, 800 tasks): accuracy at 1/2/3/4/6 loops .295/.605/.738/.764/.746; with the
+full plan at 2/4 .929/.979. P1 SUPPORTED (142 of 155 requests fixed by 4 loops were formulation
+errors at 2, .92). P2 SUPPORTED: 2→4 gain +.091/+.182/+.345 for 2–3/4–5/6–8 calls (6–8 minus 2–3
++.254, CI +.171 to +.346; 9+ has only 10 tasks). P3 SUPPORTED: gain .159 without the plan, .050
+with it (difference +.109, CI +.080 to +.138). P4 SUPPORTED: 79% of 4-loop fixes right at 6 loops.
+P5 SUPPORTED: rescue AUC .61 ("4 helps" .58).
+
+Depth 6 on NESTful [0, 720) for seeds 1 and 2: accuracy at 6 loops .515 and .514 (4 loops .522,
+.494); P4 SUPPORTED for both (.74 and .92 of 4-loop fixes right at 6). With seed 0 (.82 on [0, 720),
+.80 unseen) the stability of the need for depth replicates on all three seeds.

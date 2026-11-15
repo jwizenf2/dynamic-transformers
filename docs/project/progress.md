@@ -733,6 +733,17 @@
   count is fixed in practice (trained on the final loop only), so Nanbeige cannot be a
   depth-allocation model; dropped. Consistent with Ouro's collapse beyond its trained depth: a
   looped model offers a usable range of depths only where it was trained on them.
+- GSM8K and depth-6 seeds (job d7c03c93, 21 h, all stages exit 0; rows kept in `~/AI/keep/gsm8k`
+  on the lab): GSM8K chain v3 .295/.605/.738/.764/.746 at 1/2/3/4/6 loops; P1 ✓ .92, P2 ✓
+  (+.09/+.18/+.35 by chain length; 6–8 minus 2–3 +.254, CI +.171 to +.346), P3 ✓ (+.109, CI +.080
+  to +.138), P4 ✓ .79, P5 ✓ rescue AUC .61. Seeds 1 and 2 at 6 loops .515/.514, P4 ✓ .74/.92. All
+  pre-registered predictions hold on the second benchmark; P4 holds on all three seeds.
+- Huginn-0125 (vendored `third_party/huginn`, rev bb6621b, audited; `huginn_model.py` loader with
+  a preallocated per-step KV cache; `huginn_check.py`): zero-shot on the first NESTful request,
+  output improves with depth but never solves the step (4 steps prose, 8 copies the tool list,
+  16–64 valid `<tool_call>` JSON with the wrong operation), so a tool-calling fine-tune is needed.
+  Lab timing (job 2f7060cb, waited for d7c03c93): 96 tokens after a 1,291-token prompt in
+  5/7/9/18/50 s at 4/8/16/32/64 steps (load 9 min). A 32 GB MacBook swaps at 32 steps.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
