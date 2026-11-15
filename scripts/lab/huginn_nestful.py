@@ -2,7 +2,7 @@
 
     python scripts/lab/huginn_nestful.py \
         --adapters results/huginn_sft/huginn-chain/adapters.safetensors \
-        --tasks nestful --n 480 --steps 4 8 16 32 64 --tag nestful
+        --tasks nestful --n 480 --steps 4 8 32 64 --tag nestful
 
 Same protocol as ``router_smoke.py`` greedy dialogues for Ouro, so the Ouro analyses
 (``replication_metrics.py``, ``depth_anatomy.py``) read the rows unchanged: the plain Hermes
@@ -14,7 +14,8 @@ Differences forced by the model: Huginn's chat template (``<|begin_header|>{role
 ``huginn_sft.py`` renders the training dialogues); ``num_steps`` recurrence steps for every token
 of the dialogue; greedy decoding with the random initial state seeded per position
 (``huginn_model.greedy``), so runs are reproducible. Costs are logged as tokens (prompt and
-generated); a token at r steps runs 2 + 4r + 2 transformer blocks.
+generated); a token at r steps runs 2 + 4r + 2 transformer blocks. Huginn's rotary table has 4,096
+positions: a dialogue that would exceed it ends there (unfinished, ``truncated_at_block_size``).
 
 Rows (``results/router_smoke/<adapters parent>_<tag>/examples.jsonl``): id, query, gold_calls and
 ``runs["d<r>_greedy"]`` with correct, value, turns, calls, errors, finished, tokens, prompt_tokens
@@ -54,6 +55,9 @@ def load_adapted(adapters: str | None):
     return model.eval(), tok
 
 
+BLOCK_SIZE = 4096  # Huginn's config.block_size: length of the precomputed rotary table
+
+
 def header(role: str) -> str:
     return f"<|begin_header|>{role}<|end_header|>\n\n"
 
@@ -71,7 +75,7 @@ def dialogue(model, tok, e, functions, r: int, args, stop_ids) -> dict:
         + header("Huginn")
     )
     cache = StepCache()
-    log = {"tokens": 0, "prompt_tokens": 0, "texts": []}
+    log = {"tokens": 0, "prompt_tokens": 0, "texts": [], "truncated_at_block_size": False}
 
     def assistant(feedback: str | None) -> list[dict]:
         chunk = (
@@ -86,8 +90,14 @@ def dialogue(model, tok, e, functions, r: int, args, stop_ids) -> dict:
             )
         )
         ids = tok.encode(chunk, add_special_tokens=False)
+        # Huginn's rotary table covers BLOCK_SIZE positions; a dialogue that reaches it ends
+        # here (counted unfinished, flagged), where Ouro has no such limit
+        room = BLOCK_SIZE - cache.get_seq_length() - len(ids)
+        if room <= 0:
+            log["truncated_at_block_size"] = True
+            return []
         log["prompt_tokens"] += len(ids)
-        out = greedy(model, ids, cache, r, args.max_tokens, stop_ids)
+        out = greedy(model, ids, cache, r, min(args.max_tokens, room - 1), stop_ids)
         log["tokens"] += len(out)
         text = tok.decode(out)
         log["texts"].append(text)
@@ -108,7 +118,7 @@ def main() -> None:
     ap.add_argument("--tasks", default="nestful")
     ap.add_argument("--start", type=int, default=0)
     ap.add_argument("--n", type=int, default=480)
-    ap.add_argument("--steps", type=int, nargs="+", default=[4, 8, 16, 32, 64])
+    ap.add_argument("--steps", type=int, nargs="+", default=[4, 8, 32, 64])
     ap.add_argument("--tag", required=True)
     ap.add_argument("--max-turns", type=int, default=8)
     ap.add_argument("--max-tokens", type=int, default=256)

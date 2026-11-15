@@ -136,6 +136,10 @@ def loss_fn(model, ids, mask, steps, device) -> torch.Tensor:
 
 @torch.no_grad()
 def validate(model, val, device, steps_list=(4, 16, 32)) -> dict:
+    """Assistant-token CE at fixed depths; the global RNG (which drives the training depth draws
+    and the recurrent state's random init) is saved and restored around the seeded evaluation."""
+    cpu_state = torch.get_rng_state()
+    mps_state = torch.mps.get_rng_state() if torch.backends.mps.is_available() else None
     res = {}
     for r in steps_list:
         tot = 0.0
@@ -143,6 +147,9 @@ def validate(model, val, device, steps_list=(4, 16, 32)) -> dict:
             torch.manual_seed(k)
             tot += float(loss_fn(model, ids, mask, (r, 0), device))
         res[r] = round(tot / max(1, len(val)), 4)
+    torch.set_rng_state(cpu_state)
+    if mps_state is not None:
+        torch.mps.set_rng_state(mps_state)
     return res
 
 

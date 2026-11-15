@@ -146,13 +146,13 @@ def main() -> None:
     report["plan_accuracy"] = {d: float(yp[d].mean()) for d in (S, D)}
 
     # P1 formulation and error types
-    cats = {2: [], 4: []}
+    cats = {S: [], D: []}
     for e in examples:
         g = gold_values(e, functions)
         for d in (S, D):
             cats[d].append(classify(base[e.id]["runs"][f"d{d}_greedy"], e, functions, g)[0])
     fixed = [k for k in range(n) if y[S][k] == 0 and y[D][k] == 1]
-    types = Counter(cats[2][k] for k in fixed)
+    types = Counter(cats[S][k] for k in fixed)
     share = (types["wrong_plan"] + types["wrong_operation"]) / max(1, len(fixed))
     report["error_share"] = {d: dict(Counter(cats[d]).most_common()) for d in (S, D)}
     report["P1_formulation"] = {

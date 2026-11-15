@@ -172,7 +172,8 @@ PLANS = {
         depth6_stage("chain-depth-v3-s2"),
     ],
     # docs/research/huginn_2026-11-14.md: Huginn-0125 LoRA tool fine-tune with randomised depth on
-    # chain v3's stage-2 mix, then NESTful [0, 480) at 4–64 steps and the full plan at 8 and 32
+    # chain v3's stage-2 mix, then NESTful [0, 480) at 4, 8, 32, 64 steps and the full plan at
+    # 8 and 32
     "huginn": [
         {
             "cmd": [PY, "scripts/lab/make_chains.py", "--n", "8000", "--seed", "1"]
@@ -187,7 +188,7 @@ PLANS = {
         },
         {
             "cmd": [PY, "scripts/lab/huginn_nestful.py", "--adapters", HUGINN, "--tasks", "nestful"]
-            + ["--n", "480", "--steps", "4", "8", "16", "32", "64", "--tag", "nestful"],
+            + ["--n", "480", "--steps", "4", "8", "32", "64", "--tag", "nestful"],
             "needs": [HUGINN_DONE],
         },
         {
