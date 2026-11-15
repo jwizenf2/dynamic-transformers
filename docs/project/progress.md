@@ -744,6 +744,12 @@
   16–64 valid `<tool_call>` JSON with the wrong operation), so a tool-calling fine-tune is needed.
   Lab timing (job 2f7060cb, waited for d7c03c93): 96 tokens after a 1,291-token prompt in
   5/7/9/18/50 s at 4/8/16/32/64 steps (load 9 min). A 32 GB MacBook swaps at 32 steps.
+- Huginn experiment queued (job 2c10087a, commit edfd07c, `run_stages.py --plan huginn`, ~45–60 h):
+  LoRA tool fine-tune with randomised recurrence depth (`huginn_sft.py`; chain v3's stage-2 mix,
+  6,000 conversations, mean 16 steps, backprop 4), then NESTful [0, 480) at 4/8/32/64 steps and the
+  full plan at 8/32 (`huginn_nestful.py`). Pre-registered in `docs/research/huginn_2026-11-14.md`
+  (precondition 8 → 32 gain > 0; P1–P4 with 8/32/64; P7 no collapse at 64). Fable review applied
+  (depth-generic error bookkeeping, 4,096-position cap, RNG restored after validation).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
