@@ -8,6 +8,7 @@ The lab has no job dependencies, so a multi-day queue runs as one job (as ``sft_
   collection scripts skip done request ids, ``sft_queue.py`` skips trained models and finished
   evals), so resubmitting the same command in the same project folder continues where the last
   attempt stopped; finished stages only reload a model and exit.
+* A stage with ``skip_if`` is skipped when that path exists (data preparation).
 * A stage runs only if every path in its ``needs`` exists (e.g. the adapters a fine-tune
   stage should have written); otherwise it is skipped and reported. A failing stage does not stop
   the stages after it, except through their ``needs``.
@@ -94,6 +95,11 @@ def seed_or_model_stages(plan: str, name: str, model: list[str]) -> list[dict]:
     ]
 
 
+CHAINS_V2 = "results/chains/chains_s1_n8000_p0.2_s0.1.json"
+MATHQA = "results/mathqa/train_sft.json"
+HUGINN = "results/huginn_sft/huginn-chain/adapters.safetensors"
+HUGINN_DONE = "results/huginn_sft/huginn-chain/done"
+PLAN480 = "results/nestful_plans/full480_tasks.jsonl"
 GSM8K = "results/gsm8k/test_tasks.jsonl"
 GSM8K_PLAN = "results/gsm8k_plans/full_tasks.jsonl"
 GSM8K_SMOKE = "results/router_smoke/ouro-chain-depth-v3_gsm8k/examples.jsonl"
@@ -165,6 +171,35 @@ PLANS = {
         depth6_stage("chain-depth-v3-s1"),
         depth6_stage("chain-depth-v3-s2"),
     ],
+    # docs/research/huginn_2026-11-14.md: Huginn-0125 LoRA tool fine-tune with randomised depth on
+    # chain v3's stage-2 mix, then NESTful [0, 480) at 4–64 steps and the full plan at 8 and 32
+    "huginn": [
+        {
+            "cmd": [PY, "scripts/lab/make_chains.py", "--n", "8000", "--seed", "1"]
+            + ["--parallel-p", "0.2", "--single-p", "0.1"],
+            "skip_if": CHAINS_V2,
+        },
+        {"cmd": [PY, "scripts/lab/make_mathqa.py"], "skip_if": MATHQA},
+        {
+            "cmd": [PY, "scripts/lab/huginn_sft.py", "--name", "huginn-chain", "--resume"]
+            + ["--extra-data", CHAINS_V2, MATHQA],
+            "needs": [CHAINS_V2, MATHQA],
+        },
+        {
+            "cmd": [PY, "scripts/lab/huginn_nestful.py", "--adapters", HUGINN, "--tasks", "nestful"]
+            + ["--n", "480", "--steps", "4", "8", "16", "32", "64", "--tag", "nestful"],
+            "needs": [HUGINN_DONE],
+        },
+        {
+            "cmd": [PY, "scripts/lab/make_nestful_plans.py", "--n", "480", "--tag", "480"],
+            "skip_if": PLAN480,
+        },
+        {
+            "cmd": [PY, "scripts/lab/huginn_nestful.py", "--adapters", HUGINN, "--tasks", PLAN480]
+            + ["--n", "480", "--steps", "8", "32", "--tag", "plan_full"],
+            "needs": [HUGINN_DONE, PLAN480],
+        },
+    ],
 }
 
 current: list[subprocess.Popen] = []
@@ -188,6 +223,10 @@ def main() -> None:
     t0, log = time.time(), []
     stages = PLANS[args.plan]
     for k, st in enumerate(stages, 1):
+        if st.get("skip_if") and Path(st["skip_if"]).exists():
+            log.append({"stage": k, "skipped": True, "exists": st["skip_if"]})
+            print(json.dumps(log[-1]), flush=True)
+            continue
         missing = [p for p in st.get("needs", []) if not Path(p).exists()]
         if missing:
             log.append({"stage": k, "skipped": True, "missing": missing})

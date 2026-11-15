@@ -29,7 +29,11 @@ loops and the BFCL probe. Each prediction is reported SUPPORTED / NOT SUPPORTED 
   ``--rescue-train`` slices of the same model if given, else 5x5 cross-validation.
 * P6 short horizon (only with BFCL): "4 helps" AUC on BFCL > the NESTful "4 helps" AUC of the same
   model (both cross-validated), and BFCL rescue AUC <= .72.
-Also: accuracy by depth, gain by gold calls, error-type shares at 2 and 4 loops.
+Also: accuracy by depth, gain by gold calls, error-type shares at the two depths.
+
+The main step defaults to 2 → 4 loops (Ouro) with 6 loops for P4; ``--shallow/--deep/--stable``
+set it for other models (Huginn: 8 → 32 recurrence steps, 64 for P4, pre-registered 2026-11-14 in
+docs/research/huginn_2026-11-14.md). P5 and P6 need the Ouro loop-1/2 probe and are N/A without it.
 """
 
 from __future__ import annotations
@@ -109,6 +113,9 @@ def main() -> None:
     ap.add_argument("--bfcl-probe", default=None)
     ap.add_argument("--tasks", default=None, help="NESTful-format task file (default NESTful)")
     ap.add_argument("--deep-tag", default=None, help="extra folder with depth-6 rows, joined by id")
+    ap.add_argument("--shallow", type=int, default=2, help="shallow depth of the main step")
+    ap.add_argument("--deep", type=int, default=4, help="deep depth of the main step")
+    ap.add_argument("--stable", type=int, default=6, help="deeper depth for P4")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
@@ -122,31 +129,32 @@ def main() -> None:
     plan = rows(SMOKE / f"{args.model}_{args.plan_tag}")
     ids = [e.id for e in examples]
     assert all(i in base and i in plan for i in ids), "missing requests"
-    depths = [d for d in (1, 2, 3, 4, 6) if f"d{d}_greedy" in base[ids[0]]["runs"]]
+    S, D, ST = args.shallow, args.deep, args.stable
+    depths = sorted(int(k[1:].split("_")[0]) for k in base[ids[0]]["runs"])
     y = {
         d: np.array([base[i]["runs"][f"d{d}_greedy"]["correct"] for i in ids], float)
         for d in depths
     }
     yp = {
         d: np.array([plan[i]["runs"][f"d{d}_greedy"]["correct"] for i in ids], float)
-        for d in (2, 4)
+        for d in (S, D)
     }
     calls = np.array([len(e.calls) for e in examples])
     n = len(ids)
     report = {"model": args.model, "slice": [args.start, args.start + args.n], "n": n}
     report["accuracy"] = {d: float(y[d].mean()) for d in depths}
-    report["plan_accuracy"] = {d: float(yp[d].mean()) for d in (2, 4)}
+    report["plan_accuracy"] = {d: float(yp[d].mean()) for d in (S, D)}
 
     # P1 formulation and error types
     cats = {2: [], 4: []}
     for e in examples:
         g = gold_values(e, functions)
-        for d in (2, 4):
+        for d in (S, D):
             cats[d].append(classify(base[e.id]["runs"][f"d{d}_greedy"], e, functions, g)[0])
-    fixed = [k for k in range(n) if y[2][k] == 0 and y[4][k] == 1]
+    fixed = [k for k in range(n) if y[S][k] == 0 and y[D][k] == 1]
     types = Counter(cats[2][k] for k in fixed)
     share = (types["wrong_plan"] + types["wrong_operation"]) / max(1, len(fixed))
-    report["error_share"] = {d: dict(Counter(cats[d]).most_common()) for d in (2, 4)}
+    report["error_share"] = {d: dict(Counter(cats[d]).most_common()) for d in (S, D)}
     report["P1_formulation"] = {
         "n_fixed": len(fixed),
         "types": dict(types.most_common()),
@@ -155,7 +163,7 @@ def main() -> None:
     }
 
     # P2 compounding
-    gain = y[4] - y[2]
+    gain = y[D] - y[S]
     report["gain_by_gold_calls"] = {
         f"{lo}-{hi}": {
             "n": int(((calls >= lo) & (calls <= hi)).sum()),
@@ -182,27 +190,46 @@ def main() -> None:
         report["P2_compounding"] = {"n_short": len(short), "n_long": len(long_), "verdict": "N/A"}
 
     # P3 plan ablation
-    diff = gain - (yp[4] - yp[2])
+    diff = gain - (yp[D] - yp[S])
     ci = boot(lambda i: diff[i].mean(), n)
     report["P3_plan_ablation"] = {
         "gain_none": float(gain.mean()),
-        "gain_full_plan": float((yp[4] - yp[2]).mean()),
+        "gain_full_plan": float((yp[D] - yp[S]).mean()),
         "difference": float(diff.mean()),
         "ci90": ci,
         "verdict": verdict(ci[0] > 0),
     }
 
     # P4 stability
-    if 6 in y:
-        st = float(np.mean([y[6][k] for k in fixed])) if fixed else None
+    if ST in y:
+        st = float(np.mean([y[ST][k] for k in fixed])) if fixed else None
         report["P4_stability"] = {
-            "share_right_at_6": st,
+            f"share_right_at_{ST}": st,
             "verdict": verdict(st >= 0.6 if st is not None else None),
         }
     else:
         report["P4_stability"] = {"verdict": "N/A"}
 
-    # P5 rescue limit
+    # Precondition and P7 (pre-registered for Huginn): the main step helps, and no collapse
+    # beyond it
+    report["precondition_deep_minus_shallow"] = {
+        "difference": float(gain.mean()),
+        "ci90": boot(lambda i: gain[i].mean(), n),
+    }
+    if ST in y:
+        d7 = y[ST] - y[D]
+        ci7 = boot(lambda i: d7[i].mean(), n)
+        report["P7_no_collapse"] = {
+            "difference": float(d7.mean()),
+            "ci90": ci7,
+            "verdict": verdict(ci7[0] > -0.03),
+        }
+
+    # P5 rescue limit (needs the Ouro loop-1/2 probe; N/A for other models)
+    if not (PROBE / f"{args.model}_{args.nestful_tag}").exists():
+        report["P5_rescue_limit"] = {"verdict": "N/A"}
+        report["P6_short_horizon"] = {"verdict": "N/A"}
+        return finish(report, args)
     pr = probes(args.model, [args.nestful_tag])
     x = np.nan_to_num(np.stack([features_escalate(pr[i], base[i]["query"]) for i in ids]))
     helps = ((y[2] == 0) & (y[4] == 1)).astype(float)
@@ -263,6 +290,10 @@ def main() -> None:
     else:
         report["P6_short_horizon"] = {"verdict": "N/A"}
 
+    finish(report, args)
+
+
+def finish(report: dict, args) -> None:
     path = Path(args.out or f"results/replication/{args.model}_{args.nestful_tag}.json")
     path.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(report, indent=1, default=float)
