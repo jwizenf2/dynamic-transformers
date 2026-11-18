@@ -57,3 +57,15 @@ extrapolated to ~8,000 labels it would reach ~.63, far below the ~.75 that match
 The one curve still rising steeply is the hidden-state PCA model on MathQA (+.04 per doubling,
 only 424 training problems), which the existing labelled NESTful and GSM8K problems could test at
 ~2,000 problems by re-running only the probe with hidden states (no new dialogues).
+
+## Follow-up: hidden states at ~2,000 problems (pre-registered 2026-11-18, before the probe run)
+
+Re-run the 48-token probe with loop-1/2 hidden states on the already-labelled NESTful [0, 1200)
+and GSM8K (800) problems (`run_stages.py --plan hidden-probes`; no new dialogues), giving 2,531
+problems with hidden states. Inputs: mean loop-2 state and mean h_2 − h_1 over the probe tokens
+(as on MathQA) plus the benchmark. Models: PCA (32 or 64 components, fitted on the training fold)
++ L2 logistic, and an MLP; same seeds, folds and training sizes as above
+(`router_nonlinear.py --hidden-followup`). Decision: a large hidden-state label collection (the
+advisor's scale-up) is worthwhile only if the best hidden-state model reaches AUC >= .70 at full
+size and still rises by >= .01 from 1,000 to full; otherwise early hidden states, like the summary
+signals, do not carry enough information to route.

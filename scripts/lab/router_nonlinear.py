@@ -1,6 +1,7 @@
 """Learning curves for linear vs nonlinear early-signal routers (offline, pre-registered).
 
     PYTHONPATH=scripts/lab python scripts/lab/router_nonlinear.py
+    PYTHONPATH=scripts/lab python scripts/lab/router_nonlinear.py --hidden-followup
 
 See docs/research/router_nonlinear_2026-11-18.md for the question, models and decision rule.
 Data: chain v3 seed 0 greedy outcomes at 2 and 4 loops and the 48-token probe (``router_probe2``)
@@ -13,6 +14,7 @@ loop-1/2 argmax disagreement) plus the token type and the benchmark.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -73,6 +75,7 @@ def load():
                 )  # [t, 8]
                 rows.append(
                     {
+                        "id": r["id"],
                         "src": src,
                         "y2": float(r["runs"]["d2_greedy"]["correct"]),
                         "y4": float(r["runs"]["d4_greedy"]["correct"]),
@@ -315,8 +318,93 @@ def hidden_curve(rows) -> dict:
     }
 
 
+HID_TAGS = {"nestful": ["nestful_hid", "nestful240_hid", "nestful720_hid"], "gsm8k": ["gsm8k_hid"]}
+
+
+def hidden_rows(rows) -> list[dict]:
+    """Rows with saved loop-1/2 hidden states: MathQA (original probe) plus the re-run probes
+    of NESTful and GSM8K (``run_stages.py --plan hidden-probes``), joined by request id."""
+    paths = {}
+    for tags in HID_TAGS.values():
+        for t in tags:
+            for f in Path(f"results/router_probe2/{M}_{t}/hidden").glob("*.npy"):
+                paths[f.stem] = f
+    out = []
+    for r in rows:
+        if r["hidden"] is not None:
+            out.append(r)
+        elif r["id"] in paths:
+            out.append({**r, "hidden": paths[r["id"]]})
+    return out
+
+
+def hidden_curve_all(rows) -> dict:
+    """Pre-registered follow-up: hidden-state routers at up to ~2,000 training problems."""
+    sub = hidden_rows(rows)
+    x = []
+    for r in sub:
+        h = np.load(r["hidden"]).astype(np.float32)
+        x.append(np.concatenate([h[:, 1].mean(0), (h[:, 1] - h[:, 0]).mean(0)]))
+    x = np.hstack([np.array(x), source_onehot(sub)])
+    y = np.array([r["y2"] == 0 and r["y4"] == 1 for r in sub], float)
+    n = len(sub)
+    res: dict = {}
+    for seed in range(SEEDS):
+        rng = np.random.default_rng(seed)
+        order = rng.permutation(n)
+        preds: dict = {}
+        for f in range(FOLDS):
+            te = order[f::FOLDS]
+            pool = np.setdiff1d(order, te)
+            for size in SIZES:
+                tr = pool if size is None or size >= len(pool) else rng.choice(pool, size, False)
+                a, b = standardise(x[tr], x[te])
+                mu = a.mean(0)
+                _, _, vt = np.linalg.svd(a - mu, full_matrices=False)
+                key = size or "full"
+                for k in (32, 64):
+                    kk = min(k, len(tr) // 4)
+                    preds.setdefault((key, f"pca{k}_logistic"), np.zeros(n))[te] = predict(
+                        (a - mu) @ vt[:kk].T, y[tr], (b - mu) @ vt[:kk].T, l2=10.0
+                    )
+                preds.setdefault((key, "mlp"), np.zeros(n))[te] = train_net(
+                    lambda d=a.shape[1]: MLP(d, 32),
+                    [torch.tensor(a, dtype=torch.float32)],
+                    y[tr],
+                    [torch.tensor(b, dtype=torch.float32)],
+                    seed * 100 + f,
+                    wd=1e-2,
+                )
+            print(json.dumps({"hidden_seed": seed, "fold": f}), flush=True)
+        for (size, model), p in preds.items():
+            res.setdefault(model, {}).setdefault(str(size), []).append(auc(p, y))
+    curves = {
+        model: {size: {"mean": float(np.mean(v)), "sd": float(np.std(v))} for size, v in by.items()}
+        for model, by in res.items()
+    }
+    best = max(curves, key=lambda m: curves[m]["full"]["mean"])
+    full, k1 = curves[best]["full"]["mean"], curves[best]["1000"]["mean"]
+    return {
+        "n": n,
+        "curves": curves,
+        "decision": {
+            "best": best,
+            "auc_full": full,
+            "rise_1000_to_full": full - k1,
+            "scale_up_worthwhile": bool(full >= 0.70 and full - k1 >= 0.01),
+        },
+    }
+
+
 def main() -> None:
     rows = load()
+    if "--hidden-followup" in sys.argv:
+        out = Path("results/router_nonlinear")
+        out.mkdir(parents=True, exist_ok=True)
+        text = json.dumps(hidden_curve_all(rows), indent=1, default=float)
+        (out / "hidden_followup.json").write_text(text)
+        print(text)
+        return
     helps = np.mean([r["y2"] == 0 and r["y4"] == 1 for r in rows])
     report = {
         "n": len(rows),

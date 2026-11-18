@@ -116,6 +116,16 @@ def depth6_stage(name: str) -> dict:
     }
 
 
+def hidden_probe_stage(tasks: str, start: int, n: int, smoke: str, tag: str = "nestful") -> dict:
+    """``router_probe2 --hidden`` for an already-labelled slice (rows matched to ``smoke``)."""
+    return {
+        "cmd": [PY, "scripts/lab/router_probe2.py", "--adapters", V3, "--tasks", tasks]
+        + ["--start", str(start), "--n", str(n), "--hidden", "--smoke", smoke]
+        + ["--tag", f"{tag}_hid"],
+        "needs": [smoke] + ([] if tasks == "nestful" else [tasks]),
+    }
+
+
 PLANS = {
     # docs/research/replication_2026-11-04.md: unseen confirmation, seed 1, Ouro-1.4B, seed 2
     "replication": [
@@ -171,6 +181,35 @@ PLANS = {
         },
         depth6_stage("chain-depth-v3-s1"),
         depth6_stage("chain-depth-v3-s2"),
+    ],
+    # docs/research/router_nonlinear_2026-11-18.md, follow-up: the 48-token probe again with
+    # loop-1/2 hidden states saved, on the already-labelled NESTful [0, 1200) and GSM8K problems
+    # (no new dialogues; the probe asserts the same requests in the same order as the labels)
+    "hidden-probes": [
+        {"cmd": [PY, "scripts/lab/make_gsm8k.py"], "skip_if": GSM8K},
+        hidden_probe_stage("nestful", 0, 240, f"{KEEP}/router_smoke_nestful/examples.jsonl"),
+        hidden_probe_stage(
+            "nestful",
+            240,
+            480,
+            f"{KEEP}/router_confirm2_nestful240/router_smoke/ouro-chain-depth-v3_nestful240/"
+            "examples.jsonl",
+            "nestful240",
+        ),
+        hidden_probe_stage(
+            "nestful",
+            720,
+            480,
+            f"{KEEP}/replication/router_smoke/ouro-chain-depth-v3_nestful720/examples.jsonl",
+            "nestful720",
+        ),
+        hidden_probe_stage(
+            GSM8K,
+            0,
+            800,
+            f"{KEEP}/gsm8k/router_smoke/ouro-chain-depth-v3_gsm8k/examples.jsonl",
+            "gsm8k",
+        ),
     ],
     # docs/research/huginn_2026-11-14.md: Huginn-0125 LoRA tool fine-tune with randomised depth on
     # chain v3's stage-2 mix, then NESTful [0, 480) at 4, 8, 32, 64 steps and the full plan at
