@@ -750,6 +750,13 @@
   full plan at 8/32 (`huginn_nestful.py`). Pre-registered in `docs/research/huginn_2026-11-14.md`
   (precondition 8 → 32 gain > 0; P1–P4 with 8/32/64; P7 no collapse at 64). Fable review applied
   (depth-generic error bookkeeping, 4,096-position cap, RNG restored after validation).
+- Huginn results (job afda0f9d after an OOM at step 141 in job 2c10087a, fixed: MPS cache emptied per
+  step, both watermark ratios set; resubmitted with an equivalent command because the lab sized
+  the job from the crashed run's 186 GB peak). NESTful [0, 480) at 4/8/32/64 steps
+  .015/.042/.088/.083, full plan .329/.396 at 8/32. Precondition met (+.046, CI +.029 to +.063; 24
+  gains / 2 losses); P1 ✓ .92, P4 ✓ .875, P7 ✓ (64 − 32 = −.004); P2 ✗ (reversed, floor on long
+  chains), P3 ✗ (−.021). Weak model (4–9%); partial support with a floor effect
+  (`docs/research/huginn_2026-11-14.md`).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
