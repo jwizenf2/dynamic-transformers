@@ -757,6 +757,14 @@
   gains / 2 losses); P1 ✓ .92, P4 ✓ .875, P7 ✓ (64 − 32 = −.004); P2 ✗ (reversed, floor on long
   chains), P3 ✗ (−.021). Weak model (4–9%); partial support with a floor effect
   (`docs/research/huginn_2026-11-14.md`).
+- Nonlinear routers (advisor's suggestion; `router_nonlinear.py`, pre-registered in
+  `docs/research/router_nonlinear_2026-11-18.md`): learning curves on 2,531 labelled problems
+  (NESTful 1,200, GSM8K 800, MathQA 531). AUC "4 helps" at ~2,025 training problems: linear .587,
+  pairwise interactions .588, MLP on pooled per-token statistics .611, sequence network .590;
+  rescue AUC .53–.56. MLP gain +.023 (< .03 rule): scaling labels for summary-signal routers is not
+  worthwhile (~+.01 per doubling). MathQA hidden states: PCA-logistic .57 → .61 → .65 at 100 → 200
+  → 424, still rising; testable at ~2,000 by re-running the probe with hidden states on the
+  already-labelled NESTful and GSM8K problems.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
