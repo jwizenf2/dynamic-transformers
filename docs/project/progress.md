@@ -770,6 +770,11 @@
   problems PCA-logistic .64, MLP .664 (+.029 from 1,000). Below the pre-registered .70: not
   worthwhile by the rule; best early router so far, ~+.03 per doubling (extrapolated ~.72 at 8k,
   ~.75 at 16k labels).
+- Window/attention/labels (`router_window_hidden.py`): router AUC rises with the decision window
+  (.60 at 16 tokens → .69 at 128 → .72 at the end) but the share of rescuable requests still on
+  the 4-loop path falls as fast (.81 → .14 → 0); the switch policy is at or below the random mix
+  at every window. Attention pooling over hidden states .618 and stable labels .65 do not beat the
+  mean-pooled MLP (.664). Open: whether a 4-loop continuation recovers after divergence.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 

@@ -81,3 +81,37 @@ it still rises (+.029 from 1,000 to full). The hidden-state MLP is the best earl
 match fixed-4 at ~0.8x compute. Collecting that many labels (2- and 4-loop dialogues at ~30 s per
 problem, ~60 h per 7,000; GSM8K train is the only large unused source) is a judgement call left to
 the authors; the pre-registered rule says no.
+
+## Decision window, attention over hidden states, cleaner labels (2026-11-20, exploratory)
+
+`router_window_hidden.py`, `results/router_nonlinear/window_hidden.json`.
+
+Window (MathQA 531 2-loop traces; MLP / logistic AUC for "4 helps"; timely = share of "4 helps"
+requests not yet diverged from the 4-loop dialogue at the decision point; switch policy accuracy
+lower bound at <= 0.90x fixed-4 cost vs the random mix, fixed-4 .437):
+
+| Decide after | AUC MLP | AUC logistic | timely | gain vs mix (MLP) |
+|---|---|---|---|---|
+| 16 tokens | .602 | .570 | .81 | +.000 |
+| 32 | .601 | .547 | .64 | −.028 |
+| 48 | .634 | .578 | .57 | −.041 |
+| 64 | .665 | .649 | .36 | −.063 |
+| 96 | .680 | .656 | .22 | −.065 |
+| 128 | .693 | .651 | .14 | −.072 |
+| 192 | .696 | .657 | .04 | −.055 |
+| 256 | .714 | .691 | .01 | −.037 |
+| end of turn 1 | .640 | .619 | .36 | −.042 |
+| end of turn 2 | .679 | .646 | .12 | −.073 |
+| end (restart) | .718 | .695 | 0 | −.012 |
+
+Ranking improves with every token the router waits, but the requests it would rescue diverge
+from the 4-loop path at the same rate: by 64 tokens two thirds of them have, and by 192 nearly all.
+The information that makes "4 helps" predictable arrives with the divergence itself, so no window
+both ranks well and switches in time. Caveat: a switch after divergence is scored as not
+rescuing (lower bound; midpoint = the 2-loop outcome); whether the 4-loop continuation of a
+diverged 2-loop prefix recovers is not in the data.
+
+Hidden states (2,531 problems, full training size, AUC greedy / stable label): mean-pooled MLP
+trained on greedy labels .664 / .662; trained on stable labels (wrong at 2, right at 4 and 6;
+14.6% vs 17.4%) .649 / .651; attention pooling over the 48 tokens .618 / .615. Neither the
+attention model nor cleaner labels improve on the mean-pooled MLP.
