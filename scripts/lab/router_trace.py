@@ -173,7 +173,7 @@ def trace_one(model, tok, e, functions, args, stop_ids, has_digit):
         log["tokens"] += len(out_ids)
         text = tok.decode(out_ids)
         texts.append(text)
-        turns.append({"tool_before": tool, "n_tokens": len(out_ids), **feats})
+        turns.append({"tool_before": tool, "n_tokens": len(out_ids), "ids": out_ids, **feats})
         hidden.append(np.stack([np.mean(hs2, 0), np.mean(hd, 0)]))
         return [{"name": c["name"], "arguments": c["arguments"]} for c in parse_hermes(text)]
 

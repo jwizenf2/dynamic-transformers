@@ -116,6 +116,14 @@ def depth6_stage(name: str) -> dict:
     }
 
 
+def late_switch_stage(tasks: str, n: int, tag: str, smoke: list[str]) -> dict:
+    return {
+        "cmd": [PY, "scripts/lab/late_switch.py", "--adapters", V3, "--tasks", tasks]
+        + ["--n", str(n), "--tag", tag, "--points", "64", "128", "--smoke", *smoke],
+        "needs": ([] if tasks == "nestful" else [tasks]) + smoke,
+    }
+
+
 def hidden_probe_stage(tasks: str, start: int, n: int, smoke: str, tag: str = "nestful") -> dict:
     """``router_probe2 --hidden`` for an already-labelled slice (rows matched to ``smoke``)."""
     return {
@@ -181,6 +189,39 @@ PLANS = {
         },
         depth6_stage("chain-depth-v3-s1"),
         depth6_stage("chain-depth-v3-s2"),
+    ],
+    # docs/research/late_switch_2026-11-20.md: 2-loop traces with a switch to 4 loops at trace
+    # steps 64 and 128 (MathQA development first, then the NESTful and GSM8K test sets)
+    "late-switch": [
+        {"cmd": [PY, "scripts/lab/make_gsm8k.py"], "skip_if": GSM8K},
+        late_switch_stage(
+            f"{KEEP}/mathqa_v3/validation_clean_tasks.jsonl",
+            292,
+            "mathqa_clean",
+            [f"{KEEP}/router_smoke_v3/examples.jsonl"],
+        ),
+        late_switch_stage(
+            f"{KEEP}/mathqa_v3/testpool_tasks.jsonl",
+            239,
+            "mathqa_pool",
+            [f"{KEEP}/router_smoke_v3_testpool/examples.jsonl"],
+        ),
+        late_switch_stage(
+            "nestful",
+            720,
+            "nestful",
+            [
+                f"{KEEP}/router_smoke_nestful/examples.jsonl",
+                f"{KEEP}/router_confirm2_nestful240/router_smoke/ouro-chain-depth-v3_nestful240/"
+                "examples.jsonl",
+            ],
+        ),
+        late_switch_stage(
+            GSM8K,
+            800,
+            "gsm8k",
+            [f"{KEEP}/gsm8k/router_smoke/ouro-chain-depth-v3_gsm8k/examples.jsonl"],
+        ),
     ],
     # docs/research/router_nonlinear_2026-11-18.md, follow-up: the 48-token probe again with
     # loop-1/2 hidden states saved, on the already-labelled NESTful [0, 1200) and GSM8K problems
