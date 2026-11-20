@@ -224,3 +224,7 @@ datasets/
 *.pth
 *.safetensors
 .DS_Store
+
+# Hidden-state and array dumps from lab runs (results/*/hidden/*.npy, directions.npz)
+*.npy
+*.npz
