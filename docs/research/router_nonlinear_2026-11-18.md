@@ -69,3 +69,15 @@ problems with hidden states. Inputs: mean loop-2 state and mean h_2 − h_1 over
 advisor's scale-up) is worthwhile only if the best hidden-state model reaches AUC >= .70 at full
 size and still rises by >= .01 from 1,000 to full; otherwise early hidden states, like the summary
 signals, do not carry enough information to route.
+
+### Result (job d8a9267a; `results/router_nonlinear/hidden_followup.json`, 2026-11-20)
+
+2,531 problems with hidden states. AUC for "4 helps" at 250 / 500 / 1,000 / full (~2,025):
+PCA32-logistic .588 / .609 / .637 / .642; PCA64-logistic .585 / .605 / .636 / .644; MLP .590 /
+.605 / .635 / .664 (sd .01). Decision: best (MLP) .664 < .70: NOT worthwhile by the rule, although
+it still rises (+.029 from 1,000 to full). The hidden-state MLP is the best early router found
+(summary-feature linear .587, summary MLP .611). Its curve gains ~.03 per doubling; extrapolated,
+~8,000 labels would give ~.72 and ~16,000 ~.75, the level the earlier policy simulation needed to
+match fixed-4 at ~0.8x compute. Collecting that many labels (2- and 4-loop dialogues at ~30 s per
+problem, ~60 h per 7,000; GSM8K train is the only large unused source) is a judgement call left to
+the authors; the pre-registered rule says no.

@@ -765,6 +765,11 @@
   worthwhile (~+.01 per doubling). MathQA hidden states: PCA-logistic .57 → .61 → .65 at 100 → 200
   → 424, still rising; testable at ~2,000 by re-running the probe with hidden states on the
   already-labelled NESTful and GSM8K problems.
+- Hidden-state follow-up (job d8a9267a, probe re-run with hidden states on NESTful [0, 1200) and
+  GSM8K; rows kept in `~/AI/keep/hidprobes`): 2,531 problems; AUC "4 helps" at ~2,025 training
+  problems PCA-logistic .64, MLP .664 (+.029 from 1,000). Below the pre-registered .70: not
+  worthwhile by the rule; best early router so far, ~+.03 per doubling (extrapolated ~.72 at 8k,
+  ~.75 at 16k labels).
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
