@@ -775,6 +775,13 @@
   the 4-loop path falls as fast (.81 → .14 → 0); the switch policy is at or below the random mix
   at every window. Attention pooling over hidden states .618 and stable labels .65 do not beat the
   mean-pooled MLP (.664). Open: whether a 4-loop continuation recovers after divergence.
+- Late-switch experiment queued (job 8e59c776, commit a9d5286, `run_stages.py --plan late-switch`,
+  ~21–23 h; pre-registered `docs/research/late_switch_2026-11-20.md`): 2-loop traces with 4-loop
+  continuations from trace steps 64 and 128 on MathQA (development), NESTful [0, 720) and GSM8K 800
+  (test); `late_switch.py` asserts tasks match the stored labelled runs; `late_switch_analysis.py`
+  reports the validation (switch before divergence = stored 4-loop outcome; 1.0 on a local sample),
+  recovery rates, oracle, and the CV router's gain over the random mix (primary: NESTful at
+  <= 0.90x). Fable review applied. `.npy`/`.npz` now git-ignored.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 
