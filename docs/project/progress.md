@@ -782,6 +782,11 @@
   reports the validation (switch before divergence = stored 4-loop outcome; 1.0 on a local sample),
   recovery rates, oracle, and the CV router's gain over the random mix (primary: NESTful at
   <= 0.90x). Fable review applied. `.npy`/`.npz` now git-ignored.
+- Late-switch results (job 8e59c776; rows kept in `~/AI/keep/late_switch`): validation .987–1.0;
+  recovery of 2-loop failures that 4 loops fixes, switching at 64 / 128: MathQA .48/.46, NESTful
+  .52/.42, GSM8K .54/.40. Primary NESTful (T 64, MLP, chosen on MathQA): −.031 vs the random mix
+  (CI −.046 to −.007), NOT CONFIRMED; GSM8K −.030 (CI −.048 to −.010). Oracle late switch +.07 to
+  +.11 at ~0.56x. Late switching keeps about half the headroom but the router cannot find it.
 
 ## 2026-10-16 — Router v3 (early-decoding probe) and fine-tuning pipeline
 

@@ -46,3 +46,27 @@ in one pass where the stored run prefilled chunk by chunk (different kernel path
 asserts that every task matches the stored labelled runs (query, gold chain length) before any
 GPU time; decision points count the trace steps of each turn (turns cut at 256 tokens have no
 stop step).
+
+## Results (job 8e59c776, finished 2026-11-21; `results/late_switch/analysis.json`)
+
+Validation: a switch before the 2-/4-loop divergence reproduces the stored 4-loop outcome on
+.987–1.000 of such requests (MathQA .993/.994, NESTful .987/.990, GSM8K .991/1.000 at T = 64/128).
+
+Recovery (share of requests wrong at 2 loops and right at 4 that the switch at T rescues; at 64 /
+128): MathQA .48 / .46, NESTful .52 / .42, GSM8K .54 / .40. Requests wrong at both depths are almost
+never rescued (.01–.12); switching loses .03–.08 of the requests right at 2 loops. Switching every
+request at 64 gives MathQA .365, NESTful .446, GSM8K .710 against fixed 4 loops .437 / .500 / .764
+at similar cost.
+
+Selection on MathQA: T = 64, MLP (gain −.038, the best of the four). Primary, NESTful [0, 720):
+gain over the random mix at <= 0.90x −.031 (90% CI −.046 to −.007): NOT CONFIRMED. GSM8K: −.030 (CI
+−.048 to −.010): NOT CONFIRMED. Router AUC for "the switch at T rescues": .58–.72. Oracle late switch
+(exactly the rescued requests): +.068 to +.106 over the mix at 0.54–0.57x.
+
+Reading (by the pre-registered rules: not confirmed, with a moderate recovery rate): about half of
+the requests that 4 loops fix can still be fixed after the 2-loop run has diverged, so deciding
+later keeps part of the headroom; but the router ranks those requests too weakly, and each switch
+costs about a full 4-loop run, so late switching does not beat the fixed-depth mix. With the
+window analysis this completes the routing picture: early decisions are timely but uninformed,
+late decisions are better informed but can recover only about half of the benefit, and neither
+reaches a useful policy.
