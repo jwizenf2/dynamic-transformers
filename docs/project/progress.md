@@ -1265,3 +1265,7 @@ No existing user file was removed and no full-scale training was launched.
   GSM8K train (5,510 of 7,473 converted) 2-/4-loop labels with hidden-state probes in chunks of
   1,000. Pre-registered in `docs/research/router_scale_2026-11-22.md` (Fable review applied: MLP
   pre-committed, 1–4 hull baseline, quantile-threshold secondary, separate analysis script).
+- 2026-11-22 benchmark audit (`docs/research/benchmark_audit_2026-11-22.md`): no issue changes
+  the 2-vs-4 conclusions; MathQA float-noise golds lower MathQA accuracy ~1.4 points at both
+  depths; rounding tolerance passes a few approximate answers (more at d4 on NESTful [0, 240));
+  isqrt/int-log tool semantics, 2 bad MathQA golds and 4 NESTful duplicate pairs to disclose.
