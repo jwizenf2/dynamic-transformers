@@ -1260,3 +1260,8 @@ No existing user file was removed and no full-scale training was launched.
    reproduction configuration and name the opposite direction as a correction.
 3. Resolve reward/context conventions before integrating tree routing and queues;
    then validate tiny DHT end to end before defining the AG News comparison budget.
+- 2026-11-22 router scale-up queued (job be26f74b, commit 5cda0b8, `run_stages.py --plan
+  router-scale`, ~29 h): GSM8K test for seeds 1 and 2 (2/4/6 loops, probe, full plan), then
+  GSM8K train (5,510 of 7,473 converted) 2-/4-loop labels with hidden-state probes in chunks of
+  1,000. Pre-registered in `docs/research/router_scale_2026-11-22.md` (Fable review applied: MLP
+  pre-committed, 1–4 hull baseline, quantile-threshold secondary, separate analysis script).
