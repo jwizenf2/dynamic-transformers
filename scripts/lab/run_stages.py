@@ -104,6 +104,8 @@ PLAN480 = "results/nestful_plans/full480_tasks.jsonl"
 GSM8K = "results/gsm8k/test_tasks.jsonl"
 GSM8K_PLAN = "results/gsm8k_plans/full_tasks.jsonl"
 GSM8K_SMOKE = "results/router_smoke/ouro-chain-depth-v3_gsm8k/examples.jsonl"
+GSM8K_TRAIN = "results/gsm8k/train_tasks.jsonl"
+GSM8K_TRAIN_N, GSM8K_CHUNK = 5510, 1000
 
 
 def depth6_stage(name: str) -> dict:
@@ -132,6 +134,46 @@ def hidden_probe_stage(tasks: str, start: int, n: int, smoke: str, tag: str = "n
         + ["--tag", f"{tag}_hid"],
         "needs": [smoke] + ([] if tasks == "nestful" else [tasks]),
     }
+
+
+def gsm8k_seed_stages(name: str) -> list[dict]:
+    """GSM8K test (800) for a kept training seed: 2, 4, 6 loops, the probe, the full plan."""
+    a = f"{KEEP}/{name}/adapters.safetensors"
+    smoke = f"results/router_smoke/{name}_gsm8k/examples.jsonl"
+    return [
+        {
+            "cmd": [PY, "scripts/lab/router_smoke.py", "--adapters", a, "--tasks", GSM8K]
+            + ["--n", "800", "--depths", "2", "4", "6", "--modes", "greedy", "--tag", "gsm8k"],
+            "needs": [a, GSM8K],
+        },
+        {
+            "cmd": [PY, "scripts/lab/router_probe2.py", "--adapters", a, "--tasks", GSM8K]
+            + ["--n", "800", "--tag", "gsm8k", "--smoke", smoke],
+            "needs": [smoke],
+        },
+        {
+            "cmd": [PY, "scripts/lab/router_smoke.py", "--adapters", a, "--tasks", GSM8K_PLAN]
+            + ["--n", "800", "--depths", "2", "4", "--modes", "greedy", "--tag", "gsm8k_plan_full"],
+            "needs": [a, GSM8K_PLAN],
+        },
+    ]
+
+
+def gsm8k_train_stages(start: int) -> list[dict]:
+    """Router labels on a GSM8K-train chunk: 2- and 4-loop greedy dialogues, then the 48-token
+    probe with loop-1/2 hidden states on the same requests (chain v3 seed 0)."""
+    n = min(GSM8K_CHUNK, GSM8K_TRAIN_N - start)
+    tag = f"gsm8ktrain{start}"
+    smoke = f"results/router_smoke/ouro-chain-depth-v3_{tag}/examples.jsonl"
+    return [
+        {
+            "cmd": [PY, "scripts/lab/router_smoke.py", "--adapters", V3, "--tasks", GSM8K_TRAIN]
+            + ["--start", str(start), "--n", str(n), "--depths", "2", "4"]
+            + ["--modes", "greedy", "--tag", tag],
+            "needs": [GSM8K_TRAIN],
+        },
+        hidden_probe_stage(GSM8K_TRAIN, start, n, smoke, tag),
+    ]
 
 
 PLANS = {
@@ -251,6 +293,22 @@ PLANS = {
             f"{KEEP}/gsm8k/router_smoke/ouro-chain-depth-v3_gsm8k/examples.jsonl",
             "gsm8k",
         ),
+    ],
+    # docs/research/router_scale_2026-11-22.md: GSM8K test for training seeds 1 and 2 (the second
+    # benchmark on all three seeds), then router labels with hidden states on GSM8K train in
+    # chunks of 1,000 (each chunk usable on its own if the run is stopped)
+    "router-scale": [
+        {"cmd": [PY, "scripts/lab/make_gsm8k.py"], "skip_if": GSM8K},
+        {"cmd": [PY, "scripts/lab/make_gsm8k.py", "--split", "train"], "skip_if": GSM8K_TRAIN},
+        {
+            "cmd": [PY, "scripts/lab/make_nestful_plans.py", "--tasks", GSM8K, "--n", "800"]
+            + ["--out", "results/gsm8k_plans"],
+            "needs": [GSM8K],
+            "skip_if": GSM8K_PLAN,
+        },
+        *gsm8k_seed_stages("chain-depth-v3-s1"),
+        *gsm8k_seed_stages("chain-depth-v3-s2"),
+        *[st for s in range(0, GSM8K_TRAIN_N, GSM8K_CHUNK) for st in gsm8k_train_stages(s)],
     ],
     # docs/research/huginn_2026-11-14.md: Huginn-0125 LoRA tool fine-tune with randomised depth on
     # chain v3's stage-2 mix, then NESTful [0, 480) at 4, 8, 32, 64 steps and the full plan at

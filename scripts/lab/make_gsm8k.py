@@ -1,8 +1,12 @@
 """Write GSM8K test problems as NESTful-format tool-calling tasks (``dht.toolcall.gsm8k``).
 
-    python scripts/lab/make_gsm8k.py        # results/gsm8k/test_tasks.jsonl
+    python scripts/lab/make_gsm8k.py                  # results/gsm8k/test_tasks.jsonl
+    python scripts/lab/make_gsm8k.py --split train    # results/gsm8k/train_tasks.jsonl
 
-Downloads the GSM8K ``main`` test split (openai/gsm8k, MIT) at a pinned revision, converts each
+The train split is only used as router-training labels (docs/research/router_scale_2026-11-22.md);
+no language model is fine-tuned on it.
+
+Downloads a GSM8K ``main`` split (openai/gsm8k, MIT) at a pinned revision, converts each
 problem's annotated solution into calls over NESTful's vendored tools, keeps the problems whose
 calls execute to the gold answer (at least two calls), and writes tasks readable by
 ``ouro_nestful_multiturn.load_tasks`` (``router_smoke.py --tasks``). Prints the reasons for
@@ -39,6 +43,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--seed", type=int, default=0, help="tool-list sampling")
     parser.add_argument("--out", default="results/gsm8k")
+    parser.add_argument("--split", choices=["test", "train"], default="test")
     args = parser.parse_args()
 
     specs = nf.VENDORED / "tool_specs.json"
@@ -49,7 +54,10 @@ def main() -> None:
         nf.checked(nf.VENDORED / "basic_functions.py", "basic_functions.py")
     )
     path = hf_hub_download(
-        GSM8K, "main/test-00000-of-00001.parquet", repo_type="dataset", revision=GSM8K_REVISION
+        GSM8K,
+        f"main/{args.split}-00000-of-00001.parquet",
+        repo_type="dataset",
+        revision=GSM8K_REVISION,
     )
     rows = pq.read_table(path).to_pylist()
     rng = random.Random(args.seed)
@@ -58,10 +66,10 @@ def main() -> None:
         task, why = build_task(row, catalog, functions, rng)
         reasons[why] += 1
         if task:
-            tasks.append({"id": f"gsm8k-test-{k}", **task})
+            tasks.append({"id": f"gsm8k-{args.split}-{k}", **task})
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    (out / "test_tasks.jsonl").write_text(
+    (out / f"{args.split}_tasks.jsonl").write_text(
         "".join(json.dumps(t, ensure_ascii=False) + "\n" for t in tasks)
     )
     stats = {
@@ -74,7 +82,9 @@ def main() -> None:
             sorted(Counter(dependency_depth(t["calls"]) for t in tasks).items())
         ),
     }
-    (out / "stats.json").write_text(json.dumps(stats, indent=1))
+    (out / ("stats.json" if args.split == "test" else f"{args.split}_stats.json")).write_text(
+        json.dumps(stats, indent=1)
+    )
     print(json.dumps(stats, indent=1))
 
 
