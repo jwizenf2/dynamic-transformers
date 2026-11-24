@@ -1269,3 +1269,7 @@ No existing user file was removed and no full-scale training was launched.
   the 2-vs-4 conclusions; MathQA float-noise golds lower MathQA accuracy ~1.4 points at both
   depths; rounding tolerance passes a few approximate answers (more at d4 on NESTful [0, 240));
   isqrt/int-log tool semantics, 2 bad MathQA golds and 4 NESTful duplicate pairs to disclose.
+- 2026-11-24 job be26f74b: GSM8K for seeds 1 and 2 done, P1–P5 SUPPORTED on both (GSM8K now
+  replicates on three seeds; results in `router_scale_2026-11-22.md`). The GSM8K-train stages
+  failed on a U+2028 in one query (splitlines); fixed in commit 8c964b7 and requeued as job
+  e84e11bd (`run_stages.py --plan router-scale-train`).

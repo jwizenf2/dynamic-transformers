@@ -78,3 +78,21 @@ two of the three seeds (seed 0 supported all five).
 From the earlier GSM8K job (~1.7 s per request-loop on the lab), ~6 h per seed for step 1 and
 ~10 s per request for 2 + 4 loops, so ~16–18 h for GSM8K train: ~29 h in total. Each train chunk is
 usable on its own if the run is stopped early; the analyses then use the chunks that finished.
+
+## Results, Analysis 3 (job be26f74b, 2026-11-24; `results/replication/gsm8k_s{1,2}.json`)
+
+GSM8K test (800) for chain v3 seeds 1 / 2: accuracy at 2/4/6 loops .598/.785/.789 and
+.600/.776/.785; with the full plan at 2/4 .954/.983 and .944/.978.
+
+| Prediction | Seed 0 | Seed 1 | Seed 2 |
+|---|---|---|---|
+| P1 formulation share | ✓ .92 | ✓ .92 | ✓ .89 |
+| P2 compounding (6–8 minus 2–3 calls) | ✓ +.254 | ✓ +.320 (CI +.235 to +.407) | ✓ +.178 (CI +.104 to +.254) |
+| P3 plan ablation | ✓ +.109 | ✓ +.159 (CI +.130 to +.188) | ✓ +.143 (CI +.115 to +.170) |
+| P4 stability (right at 6) | ✓ .79 | ✓ .90 | ✓ .81 |
+| P5 rescue AUC <= .72 | ✓ .61 | ✓ .53 | ✓ .50 |
+
+All five predictions replicate on GSM8K on all three seeds; no collapse from 4 to 6 loops (+.004,
++.009). The GSM8K-train stages of the same job failed before any GPU work (a query containing
+U+2028, split by `str.splitlines()` when loading the tasks); fixed (readers split on "\n" only;
+the test-set order is unchanged) and requeued alone as job e84e11bd (`--plan router-scale-train`).
