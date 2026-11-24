@@ -60,7 +60,7 @@ SEQUENTIAL = (
 
 def load_tasks(path: Path) -> list[NestfulExample]:
     """NESTful-format tasks from ``make_mathqa.py`` (``<split>_tasks.jsonl``)."""
-    rows = [json.loads(x) for x in path.read_text(encoding="utf-8").splitlines() if x]
+    rows = [json.loads(x) for x in path.read_text(encoding="utf-8").split("\n") if x]
     return [NestfulExample(r["id"], r["query"], r["tools"], r["calls"], r["answer"]) for r in rows]
 
 

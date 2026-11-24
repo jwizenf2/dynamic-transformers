@@ -310,6 +310,12 @@ PLANS = {
         *gsm8k_seed_stages("chain-depth-v3-s2"),
         *[st for s in range(0, GSM8K_TRAIN_N, GSM8K_CHUNK) for st in gsm8k_train_stages(s)],
     ],
+    # the GSM8K-train part alone (job be26f74b finished the seed stages; its train stages failed
+    # on a U+2028 inside a query, which str.splitlines() split; readers now split on "\n")
+    "router-scale-train": [
+        {"cmd": [PY, "scripts/lab/make_gsm8k.py", "--split", "train"], "skip_if": GSM8K_TRAIN},
+        *[st for s in range(0, GSM8K_TRAIN_N, GSM8K_CHUNK) for st in gsm8k_train_stages(s)],
+    ],
     # docs/research/huginn_2026-11-14.md: Huginn-0125 LoRA tool fine-tune with randomised depth on
     # chain v3's stage-2 mix, then NESTful [0, 480) at 4, 8, 32, 64 steps and the full plan at
     # 8 and 32

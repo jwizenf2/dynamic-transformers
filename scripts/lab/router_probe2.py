@@ -123,7 +123,7 @@ def main() -> None:
     stop_ids = {0, tok.convert_tokens_to_ids("<|im_end|>")}
     examples, _ = requests(args.start + args.n, None if args.tasks == "nestful" else args.tasks)
     examples = examples[args.start :]
-    smoke = [json.loads(x) for x in Path(args.smoke).read_text().splitlines()]
+    smoke = [json.loads(x) for x in Path(args.smoke).read_text().split("\n") if x]
     assert [(e.id, e.query) for e in examples] == [(r["id"], r["query"]) for r in smoke], (
         "tasks differ from the router smoke's (rebuild of results/mathqa drifted?)"
     )
@@ -133,7 +133,7 @@ def main() -> None:
     path = out / "examples.jsonl"
     done, good = set(), []
     if path.exists():
-        for line in path.read_text().splitlines():
+        for line in path.read_text().split("\n"):
             try:
                 done.add(json.loads(line)["id"])
             except json.JSONDecodeError:

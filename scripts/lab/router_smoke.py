@@ -138,7 +138,7 @@ def main() -> None:
     path = out / "examples.jsonl"
     done, good = set(), []
     if path.exists():
-        for line in path.read_text().splitlines():
+        for line in path.read_text().split("\n"):
             try:
                 done.add(json.loads(line)["id"])
             except json.JSONDecodeError:
